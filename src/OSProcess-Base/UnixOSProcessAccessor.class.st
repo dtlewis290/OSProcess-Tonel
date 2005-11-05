@@ -276,6 +276,8 @@ UnixOSProcessAccessor >> forwardSigChld [
 	"Set a signal handler for SIGCHLD. Answer a new Semaphore, or nil if unable
 	to set the handler (possibly because it has already been set)."
 
+	"OSProcess accessor forwardSigChld"
+
 	^ self forwardSignal: self primSigChldNumber
 
 ]
@@ -284,6 +286,8 @@ UnixOSProcessAccessor >> forwardSigChld [
 UnixOSProcessAccessor >> forwardSigHup [
 	"Set a signal handler for SIGHUP. Answer a new Semaphore, or nil if unable
 	to set the handler (possibly because it has already been set)."
+
+	"OSProcess accessor forwardSigHup"
 
 	^ self forwardSignal: self primSigHupNumber
 
@@ -294,6 +298,8 @@ UnixOSProcessAccessor >> forwardSigInt [
 	"Set a signal handler for SIGINT. Answer a new Semaphore, or nil if unable
 	to set the handler (possibly because it has already been set)."
 
+	"OSProcess accessor forwardSigInt"
+
 	^ self forwardSignal: self primSigIntNumber
 
 ]
@@ -302,6 +308,8 @@ UnixOSProcessAccessor >> forwardSigInt [
 UnixOSProcessAccessor >> forwardSigKill [
 	"Set a signal handler for SIGKILL. Answer a new Semaphore, or nil if unable
 	to set the handler (possibly because it has already been set)."
+
+	"OSProcess accessor forwardSigKill"
 
 	self notify: 'SIGKILL and SIGSTOP signals cannot be caught, see man signal(2)'.
 	^ self forwardSignal: self primSigKillNumber
@@ -313,6 +321,8 @@ UnixOSProcessAccessor >> forwardSigPipe [
 	"Set a signal handler for SIGPIPE. Answer a new Semaphore, or nil if unable
 	to set the handler (possibly because it has already been set)."
 
+	"OSProcess accessor forwardSigPipe"
+
 	^ self forwardSignal: self primSigPipeNumber
 
 ]
@@ -321,6 +331,8 @@ UnixOSProcessAccessor >> forwardSigPipe [
 UnixOSProcessAccessor >> forwardSigQuit [
 	"Set a signal handler for SIGQUIT. Answer a new Semaphore, or nil if unable
 	to set the handler (possibly because it has already been set)."
+
+	"OSProcess accessor forwardSigQuit"
 
 	^ self forwardSignal: self primSigQuitNumber
 
@@ -331,7 +343,31 @@ UnixOSProcessAccessor >> forwardSigTerm [
 	"Set a signal handler for SIGTERM. Answer a new Semaphore, or nil if unable
 	to set the handler (possibly because it has already been set)."
 
+	"OSProcess accessor forwardSigTerm"
+
 	^ self forwardSignal: self primSigTermNumber
+
+]
+
+{ #category : #'signal forwarding' }
+UnixOSProcessAccessor >> forwardSigUsr1 [
+	"Set a signal handler for SIGUSR1. Answer a new Semaphore, or nil if unable
+	to set the handler (possibly because it has already been set)."
+
+	"OSProcess accessor forwardSigUsr1"
+
+	^ self forwardSignal: self primSigUsr1Number
+
+]
+
+{ #category : #'signal forwarding' }
+UnixOSProcessAccessor >> forwardSigUsr2 [
+	"Set a signal handler for SIGUSR2. Answer a new Semaphore, or nil if unable
+	to set the handler (possibly because it has already been set)."
+
+	"OSProcess accessor forwardSigUsr1"
+
+	^ self forwardSignal: self primSigUsr2Number
 
 ]
 
@@ -1934,6 +1970,24 @@ UnixOSProcessAccessor >> primSigTermNumber [
 
 ]
 
+{ #category : #'private - signal forwarding' }
+UnixOSProcessAccessor >> primSigUsr1Number [
+	"Integer value corresponding to SIGUSR1"
+
+	<primitive: 'primitiveSigUsr1Number' module: 'UnixOSProcessPlugin'>
+	^ nil
+
+]
+
+{ #category : #'private - signal forwarding' }
+UnixOSProcessAccessor >> primSigUsr2Number [
+	"Integer value corresponding to SIGUSR2"
+
+	<primitive: 'primitiveSigUsr2Number' module: 'UnixOSProcessPlugin'>
+	^ nil
+
+]
+
 { #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primSizeOfInt [
 	"Size of an integer for this C compiler on this machine."
@@ -2078,6 +2132,115 @@ UnixOSProcessAccessor >> register: fileRegionLock [
 	^ self emulateWin32FileLocking
 		ifTrue: [super register: fileRegionLock]
 		ifFalse: [fileRegionLock]
+
+]
+
+{ #category : #'signal forwarding' }
+UnixOSProcessAccessor >> restoreSigChld [
+	"Unset a SIGCHLD signal handler and unregister the Smalltalk semaphore.
+	Answer the unregistered Semaphore, or nil if unable to restore the signal
+	(possibly because no handler had been set)."
+
+	"OSProcess accessor restoreSigChld"
+
+	^ self restoreSignal: self primSigChldNumber
+
+]
+
+{ #category : #'signal forwarding' }
+UnixOSProcessAccessor >> restoreSigHup [
+	"Unset a SIGHUP signal handler and unregister the Smalltalk semaphore.
+	Answer the unregistered Semaphore, or nil if unable to restore the signal
+	(possibly because no handler had been set)."
+
+	"OSProcess accessor restoreSigHup"
+
+	^ self restoreSignal: self primSigHupNumber
+
+]
+
+{ #category : #'signal forwarding' }
+UnixOSProcessAccessor >> restoreSigInt [
+	"Unset a SIGINT signal handler and unregister the Smalltalk semaphore.
+	Answer the unregistered Semaphore, or nil if unable to restore the signal
+	(possibly because no handler had been set)."
+
+	"OSProcess accessor restoreSigInt"
+
+	^ self restoreSignal: self primSigIntNumber
+
+]
+
+{ #category : #'signal forwarding' }
+UnixOSProcessAccessor >> restoreSigKill [
+	"Unset a SIGKILL signal handler and unregister the Smalltalk semaphore.
+	Answer the unregistered Semaphore, or nil if unable to restore the signal
+	(possibly because no handler had been set)."
+
+	"OSProcess accessor restoreSigKill"
+
+	self notify: 'SIGKILL and SIGSTOP signals cannot be caught, see man signal(2)'.
+	^ self restoreSignal: self primSigIntNumber
+
+]
+
+{ #category : #'signal forwarding' }
+UnixOSProcessAccessor >> restoreSigPipe [
+	"Unset a SIGPIPE signal handler and unregister the Smalltalk semaphore.
+	Answer the unregistered Semaphore, or nil if unable to restore the signal
+	(possibly because no handler had been set)."
+
+	"OSProcess accessor restoreSigPipe"
+
+	^ self restoreSignal: self primSigPipeNumber
+
+]
+
+{ #category : #'signal forwarding' }
+UnixOSProcessAccessor >> restoreSigQuit [
+	"Unset a SIGQUIT signal handler and unregister the Smalltalk semaphore.
+	Answer the unregistered Semaphore, or nil if unable to restore the signal
+	(possibly because no handler had been set)."
+
+	"OSProcess accessor restoreSigQuit"
+
+	^ self restoreSignal: self primSigQuitNumber
+
+]
+
+{ #category : #'signal forwarding' }
+UnixOSProcessAccessor >> restoreSigTerm [
+	"Unset a SIGTERM signal handler and unregister the Smalltalk semaphore.
+	Answer the unregistered Semaphore, or nil if unable to restore the signal
+	(possibly because no handler had been set)."
+
+	"OSProcess accessor restoreSigTerm"
+
+	^ self restoreSignal: self primSigTermNumber
+
+]
+
+{ #category : #'signal forwarding' }
+UnixOSProcessAccessor >> restoreSigUsr1 [
+	"Unset a SIGUSR1 signal handler and unregister the Smalltalk semaphore.
+	Answer the unregistered Semaphore, or nil if unable to restore the signal
+	(possibly because no handler had been set)."
+
+	"OSProcess accessor restoreSigUsr1"
+
+	^ self restoreSignal: self primSigUsr1Number
+
+]
+
+{ #category : #'signal forwarding' }
+UnixOSProcessAccessor >> restoreSigUsr2 [
+	"Unset a SIGUSR2 signal handler and unregister the Smalltalk semaphore.
+	Answer the unregistered Semaphore, or nil if unable to restore the signal
+	(possibly because no handler had been set)."
+
+	"OSProcess accessor restoreSigUsr2"
+
+	^ self restoreSignal: self primSigUsr2Number
 
 ]
 
