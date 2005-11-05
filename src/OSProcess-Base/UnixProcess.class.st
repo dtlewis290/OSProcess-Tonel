@@ -667,7 +667,8 @@ UnixProcess class >> saveImageInBackground [
 	"UnixProcess saveImageInBackground"
 
 	^ self forkHeadlessSqueakAndDo:
-		[| newName timeStamp st | 
+		[| newName timeStamp st |
+		OSProcess accessor nice: 1. "lower priority of background OS process"
 		timeStamp _ (TimeStamp current printString first: 19) copyReplaceAll: ':' with: '-'.
 		newName _ 'squeak-' , timeStamp.
 		st _ SmalltalkImage current.
