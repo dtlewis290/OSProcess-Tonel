@@ -937,15 +937,20 @@ UnixProcess class >> uniqueNameForSavedImage [
 
 	"UnixProcess uniqueNameForSavedImage"
 
-	| now |
+	| now month day hour minute second |
 	now _ DateAndTime now.
+	month _ now month asString.
+	day _ now dayOfMonth asString.
+	hour _ now hour24 asString.
+	minute _ now minute asString.
+	second _ now second asString.
 	^ 'squeak-',
 		now year asString,
-		now month printString,
-		now dayOfMonth printString,
-		now hour24 printString,
-		now minute printString,
-		now second printString
+		(month size < 2 ifTrue: ['0', month] ifFalse: [month]),
+		(day size < 2 ifTrue: ['0', day] ifFalse: [day]),
+		(hour size < 2 ifTrue: ['0', hour] ifFalse: [hour]),
+		(minute size < 2 ifTrue: ['0', minute] ifFalse: [minute]),
+		(second size < 2 ifTrue: ['0', second] ifFalse: [second])
 
 ]
 
