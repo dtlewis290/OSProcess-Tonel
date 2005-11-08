@@ -654,34 +654,55 @@ UnixProcess class >> runTests [
 
 ]
 
-{ #category : #'utility - servers' }
+{ #category : #'utility - image save' }
 UnixProcess class >> saveImageInBackground [
+	"Same image in a background OS process."
+
+	"UnixProcess saveImageInBackground"
+
+	^ self saveImageInBackground: self uniqueNameForSavedImage nice: false
+
+]
+
+{ #category : #'utility - image save' }
+UnixProcess class >> saveImageInBackground: savedImageName nice: niceFlag [
 	"When Squeak is used as a server it is sometimes desirable to periodically
 	save image snapshots. This method forks a headless Squeak to perform a
 	snapshot without impacting the server Squeak. Very little additional memory
 	is required to do this because Unix copy-on-write memory management allows
 	the two Squeak images share object memory while the save is performed.
-	The saved image is given a time stamped name, and the image name of the
-	main server Squeak remains unchanged."
-
-	"UnixProcess saveImageInBackground"
+	The saved image is given a time stamped name, and the image name of
+	the main server Squeak remains unchanged. If niceFlag is true, the
+	background OS process runs at lowered scheduling priority."
 
 	^ self forkHeadlessSqueakAndDo:
-		[| newName timeStamp st |
-		OSProcess accessor nice: 1. "lower priority of background OS process"
-		timeStamp _ (TimeStamp current printString first: 19) copyReplaceAll: ':' with: '-'.
-		newName _ 'squeak-' , timeStamp.
+		[| st |
+		"Delay is required in the background process when forking a headless
+		Squeak, probably necessary to permit X session stuff to settle down."
+		(Delay forMilliseconds: 500) wait.
+		(niceFlag notNil and: [niceFlag]) ifTrue:
+			["lower priority of background OS process"
+			OSProcess accessor nice: 1].
 		st _ SmalltalkImage current.
-		(Delay forMilliseconds: 200) wait.
 		(SourceFiles at: 2) ifNotNil:
 			["ensure that copying the changes file will always work"
 			st closeSourceFiles.
-			st saveChangesInFileNamed: (st fullNameForChangesNamed: newName)].
-		st changeImageNameTo: newName,'.image';
+			st saveChangesInFileNamed: (st fullNameForChangesNamed: savedImageName)].
+		st changeImageNameTo: savedImageName,'.image';
 			closeSourceFiles;
 			openSourceFiles;  "so SNAPSHOT appears in new changes file"
 			saveImageSegments;
 			snapshot: true andQuit: true]
+
+]
+
+{ #category : #'utility - image save' }
+UnixProcess class >> saveImageInBackgroundNicely [
+	"Same image in a background OS process with lowered scheduling priority."
+
+	"UnixProcess saveImageInBackgroundNicely"
+
+	^ self saveImageInBackground: self uniqueNameForSavedImage nice: true
 
 ]
 
@@ -908,6 +929,24 @@ UnixProcess class >> testRunCommand [
 	out close.
 	err close.
 	^ proc
+]
+
+{ #category : #'utility - image save' }
+UnixProcess class >> uniqueNameForSavedImage [
+	"A time stamped image name that will sort in date order in a directory listing"
+
+	"UnixProcess uniqueNameForSavedImage"
+
+	| now |
+	now _ DateAndTime now.
+	^ 'squeak-',
+		now year asString,
+		now month printString,
+		now dayOfMonth printString,
+		now hour24 printString,
+		now minute printString,
+		now second printString
+
 ]
 
 { #category : #'external command processing' }
