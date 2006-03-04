@@ -130,9 +130,8 @@ OSFileLock >> test [
 		length: self length
 		exclusive: self isExclusive.
 		
-	^ (result == -1 or: [result isNil])
-		ifTrue: [false]
-		ifFalse: [result first]
+	^ (result == -1 or: [result isNil]) not ifTrue: [result first]
+
 ]
 
 { #category : #'system locking' }

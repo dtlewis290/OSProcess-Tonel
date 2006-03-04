@@ -78,7 +78,7 @@ OSProcessAccessor class >> initialize [
 
 	UseIOHandle _ (Smalltalk hasClassNamed: #IOHandle).
 	ThisOSProcessAccessor _ nil.
-	self emulateWin32FileLocking: true.
+	self emulateWin32FileLocking: false.
 	self allSubInstances do: [:e | e finalize; release]
 
 ]
