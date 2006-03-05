@@ -7,6 +7,7 @@ Class {
 	#superclass : #ThisOSProcess,
 	#instVars : [
 		'ppid',
+		'pthread',
 		'path',
 		'programName',
 		'arguments',
@@ -1666,6 +1667,17 @@ UnixProcess >> programName [
 
 ]
 
+{ #category : #accessing }
+UnixProcess >> pthread [
+	"The identity of the pthread in which the interpreter executes.
+	Always refresh pthread from the processAccessor, because it is possible for a child
+	to be reparented when the parent exits. The child does not know about this, so
+	we refresh pthread on every access."
+
+	^ pthread _ processAccessor primGetThreadID
+
+]
+
 { #category : #updating }
 UnixProcess >> refreshFromProcessAccessor [
 	"Set my instance variables to reflect the state of the OS process in which this Smalltalk
@@ -1675,6 +1687,7 @@ UnixProcess >> refreshFromProcessAccessor [
 		sessionID _ self processAccessor getSessionIdentifier.
 		pid _ processAccessor primGetPid.
 		ppid _ processAccessor primGetPPid.
+		pthread _ processAccessor primGetThreadID.
 		self setStdIn.
 		self setStdOut.
 		self setStdErr.
