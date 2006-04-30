@@ -1448,7 +1448,7 @@ UnixOSProcessAccessor >> primGetStdErrHandle [
 	^ nil
 ]
 
-{ #category : #'private - primitive access' }
+{ #category : #deprecated }
 UnixOSProcessAccessor >> primGetStdErrHandleWithSessionIdentifier: aByteArray [
 	"Answer the handle (a SQFile data structure in interp.c) for the standard error for the
 	OS process in which I am currently executing."
@@ -1466,7 +1466,7 @@ UnixOSProcessAccessor >> primGetStdInHandle [
 	^ nil
 ]
 
-{ #category : #'private - primitive access' }
+{ #category : #deprecated }
 UnixOSProcessAccessor >> primGetStdInHandleWithSessionIdentifier: aByteArray [
 	"Answer the handle (a SQFile data structure in interp.c) for the standard input for
 	the OS process in which I am currently executing."
@@ -1484,7 +1484,7 @@ UnixOSProcessAccessor >> primGetStdOutHandle [
 	^ nil
 ]
 
-{ #category : #'private - primitive access' }
+{ #category : #deprecated }
 UnixOSProcessAccessor >> primGetStdOutHandleWithSessionIdentifier: aByteArray [
 	"Answer the handle (a SQFile data structure in interp.c) for the standard output for the
 	OS process in which I am currently executing."
@@ -1675,7 +1675,7 @@ UnixOSProcessAccessor >> primSQFileFlush: aSQFileStruct [
 
 ]
 
-{ #category : #'private - primitive access' }
+{ #category : #deprecated }
 UnixOSProcessAccessor >> primSQFileFlush: aSQFileStruct withSessionIdentifier: aByteArray [
 	"Pass a struct SQFile on the stack, flush the external file stream."
 
@@ -1693,7 +1693,7 @@ UnixOSProcessAccessor >> primSQFileSetBlocking: aSQFileStruct [
 
 ]
 
-{ #category : #'private - primitive access' }
+{ #category : #deprecated }
 UnixOSProcessAccessor >> primSQFileSetBlocking: aSQFileStruct withSessionIdentifier: aByteArray [
 	"Pass a struct SQFile on the stack, and call fcntl() to set the file non-blocking."
 
@@ -1711,7 +1711,7 @@ UnixOSProcessAccessor >> primSQFileSetNonBlocking: aSQFileStruct [
 
 ]
 
-{ #category : #'private - primitive access' }
+{ #category : #deprecated }
 UnixOSProcessAccessor >> primSQFileSetNonBlocking: aSQFileStruct withSessionIdentifier: aByteArray [
 	"Pass a struct SQFile on the stack, and call fcntl() to set the file non-blocking."
 
@@ -1729,7 +1729,7 @@ UnixOSProcessAccessor >> primSQFileSetUnbuffered: aSQFileStruct [
 
 ]
 
-{ #category : #'private - primitive access' }
+{ #category : #deprecated }
 UnixOSProcessAccessor >> primSQFileSetUnbuffered: aSQFileStruct withSessionIdentifier: aByteArray [
 	"Pass a struct SQFile on the stack, set the file non-blocking."
 
@@ -2468,12 +2468,14 @@ UnixOSProcessAccessor >> unlockFileRegion: aFileLock [
 
 	aFileLock ifNil: [^ nil].
 	"Check region lock overlap for Win32 compatibility"
-	
-	^ (self unregister: aFileLock) ifNotNilDo:
-		[:unregisteredLock |
-		unregisteredLock unlock
-			ifFalse: [nil]
-			ifTrue: [unregisteredLock]]
+
+	^ self emulateWin32FileLocking
+		ifTrue: [(self unregister: aFileLock) ifNotNilDo:
+					[:unregisteredLock | unregisteredLock unlock
+						ifFalse: [nil]
+						ifTrue: [unregisteredLock]]]
+		ifFalse: [aFileLock unlock. nil "answer nil for Win32 compatibility"]
+
 ]
 
 { #category : #'file lock registry' }
