@@ -150,12 +150,12 @@ AioEventHandler >> close [
 	"When the FileStream or Socket handled by this aio handler is closed,
 	it should send #close to this handler."
 
+	handlerProc ifNotNilDo: [:proc | proc terminate].
+	handlerProc _ nil.
 	self aioDisable: self descriptor.
 	Smalltalk unregisterExternalObject: semaphore.
 	semaphore _ nil.
-	semaIndex _ nil.
-	handlerProc ifNotNilDo: [:proc | proc terminate].
-	handlerProc _ nil
+	semaIndex _ nil
 
 ]
 
@@ -178,7 +178,7 @@ AioEventHandler >> descriptor: aLowLevelIODescriptor [
 	descriptor _ aLowLevelIODescriptor
 ]
 
-{ #category : #'initialize-release' }
+{ #category : #finalization }
 AioEventHandler >> finalize [
 	"Note: An aio handler will not be garbage collected until the semaphore
 	is unregistered. When the FileStream or Socket handled by this aio

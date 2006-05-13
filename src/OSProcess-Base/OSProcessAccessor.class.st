@@ -303,6 +303,13 @@ OSProcessAccessor >> handleFromFileStream: aFileStream [
 
 ]
 
+{ #category : #testing }
+OSProcessAccessor >> handlesOsSignals [
+	"True if OS signals can be handled and forwarded to the image"
+
+	^ false
+]
+
 { #category : #'initialize - release' }
 OSProcessAccessor >> initialize [
 

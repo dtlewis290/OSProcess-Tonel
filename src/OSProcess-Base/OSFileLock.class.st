@@ -84,6 +84,15 @@ OSFileLock >> length [
 
 { #category : #'system locking' }
 OSFileLock >> lock [
+	"Answer true on success"
+
+	^ self lockIfFail: [false]
+
+]
+
+{ #category : #'system locking' }
+OSFileLock >> lockIfFail: failBlock [
+
 	| handle result |
 	handle _ ThisOSProcess accessor handleFromFileStream: self fileStream.
 	result _ ThisOSProcess accessor
@@ -91,8 +100,10 @@ OSFileLock >> lock [
 		offset: self offset
 		length: self length
 		exclusive: self isExclusive.
-		
-	^ (result == -1 or: [result isNil]) not
+	result == 0
+		ifTrue: [^ true]
+		ifFalse: [^ failBlock value]
+
 ]
 
 { #category : #private }
@@ -122,6 +133,8 @@ OSFileLock >> overlapsRegion: aFileRegionLock [
 
 { #category : #'system locking' }
 OSFileLock >> test [
+	"Answer true if this is a lockable file or region"
+
 	| handle result |
 	handle _ ThisOSProcess accessor handleFromFileStream: self fileStream.
 	result _ ThisOSProcess accessor
@@ -130,18 +143,30 @@ OSFileLock >> test [
 		length: self length
 		exclusive: self isExclusive.
 		
-	^ (result == -1 or: [result isNil]) not ifTrue: [result first]
-
+	^ (result == -1 or: [result isNil])
+		ifTrue: [false]
+		ifFalse: [result first]
 ]
 
 { #category : #'system locking' }
 OSFileLock >> unlock [
+	"Answer true on success"
+
+	^ self unlockIfFail: [false]
+
+]
+
+{ #category : #'system locking' }
+OSFileLock >> unlockIfFail: failBlock [
+
 	| handle result |
 	handle _ ThisOSProcess accessor handleFromFileStream: self fileStream.
 	result _ ThisOSProcess accessor
 		primUnlockFileRegion: handle
 		offset: self offset
 		length: self length.
+	result == 0
+		ifTrue: [^ true]
+		ifFalse: [^ failBlock value]
 
-	^ (result == -1 or: [result isNil]) not
 ]

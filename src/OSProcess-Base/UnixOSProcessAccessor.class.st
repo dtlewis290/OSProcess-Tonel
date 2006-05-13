@@ -471,6 +471,13 @@ UnixOSProcessAccessor >> grimReaperProcess [
 
 ]
 
+{ #category : #testing }
+UnixOSProcessAccessor >> handlesOsSignals [
+	"True if OS signals can be handled and forwarded to the image"
+
+	^ true
+]
+
 { #category : #'initialize - release' }
 UnixOSProcessAccessor >> initialize [
 	"Call this method when an instance is first created, or to refresh after an image
@@ -488,6 +495,22 @@ UnixOSProcessAccessor >> initialize [
 			ThisProcessPid _ self primGetPid.
 			self changed: #startUp].
 	self changed
+
+]
+
+{ #category : #'file testing' }
+UnixOSProcessAccessor >> isAtEndOfFile: anIOHandle [
+	"Answer whether the file represented by anIOHandle is at end of file, as determined
+	by a call to feof(). This is different from StandardFileStream>>primAtEnd: which answers
+	true if the file pointer is at the end of the file, but which does not call feof() to
+	determine that an end of file condition has occurred. The difference is significant
+	if aSqFileStruct represents a pipe or a device file, which may not be positionable
+	in the sense of a conventional disk file."
+
+	| atEof |
+	atEof _ self primIsAtEndOfFile: (self handleFromAccessor: anIOHandle).
+	atEof ifNil: [self error: 'unsupported primitive, plugin may be out of date'].
+	^ atEof isNil or: [atEof]
 
 ]
 
@@ -756,10 +779,26 @@ UnixOSProcessAccessor >> lockFile: aFileStream exclusive: flag [
 	rely on the overlap checking, because the registry is local to this image and
 	cannot be shared across images in different OS process contexts."
 
+	^ self lockFile: aFileStream exclusive: flag ifFail: nil
+
+]
+
+{ #category : #'file locking' }
+UnixOSProcessAccessor >> lockFile: aFileStream exclusive: flag ifFail: failBlock [
+	"Request an exclusive lock on the entire file represented by aFileStream. The
+	exclusive lock (write lock) permits only one OS process to hold the lock. Answer
+	a descriptor for the locked file region, an Array of file handle and region interval;
+	or answer nil on error.
+
+	Warning: The registry permits compatibility with Win32 file locking semantics,
+	but only within a single Squeak image. Multiple cooperating images must not
+	rely on the overlap checking, because the registry is local to this image and
+	cannot be shared across images in different OS process contexts."
+
 	| fileLock |
-	aFileStream ifNil: [^ nil].
+	aFileStream ifNil: [^ failBlock value].
 	fileLock _ OSFileLock onFile: aFileStream exclusive: flag.
-	^ self lockFileRegion: fileLock
+	^ self lockFileRegion: fileLock ifFail: failBlock
 
 ]
 
@@ -805,6 +844,22 @@ UnixOSProcessAccessor >> lockFile: aFileStream from: start to: end exclusive: fl
 	aFileStream ifNil: [^ nil].
 	fileRegion _ OSFileRegionLock onFile: aFileStream from: start to: end exclusive: flag.
 	^ self lockFileRegion: fileRegion
+
+]
+
+{ #category : #'file locking' }
+UnixOSProcessAccessor >> lockFile: aFileStream ifFail: failBlock [
+	"Request an exclusive lock on the entire file represented by aFileStream. The
+	exclusive lock (write lock) permits only one OS process to hold the lock. Answer
+	a descriptor for the locked file region, an Array of file handle and region interval;
+	or answer nil on error.
+
+	Warning: The registry permits compatibility with Win32 file locking semantics,
+	but only within a single Squeak image. Multiple cooperating images must not
+	rely on the overlap checking, because the registry is local to this image and
+	cannot be shared across images in different OS process contexts."
+
+	^ self lockFile: aFileStream exclusive: true ifFail: failBlock
 
 ]
 
@@ -869,15 +924,51 @@ UnixOSProcessAccessor >> lockFileRegion: aFileLock [
 	rely on the overlap checking, because the registry is local to this image and
 	cannot be shared across images in different OS process contexts."
 
-	aFileLock ifNil: [^ nil].
+	^ self lockFileRegion: aFileLock ifFail: [nil]
+
+]
+
+{ #category : #'file locking' }
+UnixOSProcessAccessor >> lockFileRegion: fileStream from: start to: end exclusive: writeLockFlag ifFail: failBlock [
+
+	| lock |
+	lock _ OSFileRegionLock onFile: fileStream from: start to: end exclusive: writeLockFlag.
+	^ self lockFileRegion: lock ifFail: [failBlock value]
+]
+
+{ #category : #'file locking' }
+UnixOSProcessAccessor >> lockFileRegion: fileStream from: start to: end ifFail: failBlock [
+
+	^ self lockFileRegion: fileStream from: start to: end exclusive: true ifFail: failBlock
+
+]
+
+{ #category : #'file locking' }
+UnixOSProcessAccessor >> lockFileRegion: aFileLock ifFail: failBlock [
+	"Pass a struct SQFile on the stack, and request a lock on the specified region.
+	If the exclusive flag is true, then request an exclusive (F_WRLCK) lock on the
+     file. Otherwise, request a shared (F_RDLCK) lock. Any number of Unix processes
+     may hold a read lock (shared lock) on a file region, but only one process may
+     hold a write lock (exclusive lock). Answer a descriptor for the locked file region,
+	an Array of file handle and region interval; or answer nil on error.
+
+	If length is zero, then the request is for the entire file to be locked, including
+	region extents that have not yet been allocated for the file.
+
+	Warning: The registry permits compatibility with Win32 file locking semantics,
+	but only within a single Squeak image. Multiple cooperating images must not
+	rely on the overlap checking, because the registry is local to this image and
+	cannot be shared across images in different OS process contexts."
+
+	aFileLock ifNil: [^ failBlock value].
 	"Check region lock overlap for Win32 compatibility"
-	(self canAcquireLock: aFileLock) ifFalse: [^ nil].
+	(self canAcquireLock: aFileLock) ifFalse: [^ failBlock value].
 	
-	^ aFileLock lock
-		ifFalse: [nil]
+	aFileLock lock
+		ifFalse: [^ failBlock value]
 		ifTrue:
 			[self register: aFileLock.
-			aFileLock]
+			^ aFileLock]
 
 ]
 
@@ -1527,6 +1618,19 @@ UnixOSProcessAccessor >> primGetXDisplayName [
 	^ self oldPrimGetXDisplayName
 
 
+]
+
+{ #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primIsAtEndOfFile: aSqFileStruct [
+	"Answer whether the file represented by aSqFileStruct is at end of file, as determined
+	by a call to feof(). This is different from StandardFileStream>>primAtEnd: which answers
+	true if the file pointer is at the end of the file, but which does not call feof() to
+	determine that an end of file condition has occurred. The difference is significant
+	if aSqFileStruct represents a pipe or a device file, which may not be positionable
+	in the sense of a conventional disk file."
+
+	<primitive: 'primitiveIsAtEndOfFile' module: 'UnixOSProcessPlugin'>
+	^ nil
 ]
 
 { #category : #'display handling' }
@@ -2385,6 +2489,25 @@ UnixOSProcessAccessor >> unlockFile: aFileStream exclusive: flag [
 ]
 
 { #category : #'file locking' }
+UnixOSProcessAccessor >> unlockFile: aFileStream exclusive: flag ifFail: failBlock [
+	"Unlock the file represented by aFileStream.  Answer a descriptor for the unlocked
+	file region, an Array of file handle and region interval; or answer nil on error
+	or if the region did not appear in the cache.
+
+	Warning: The registry permits compatibility with Win32 file locking semantics,
+	but only within a single Squeak image. Multiple cooperating images must not
+	rely on the overlap checking, because the registry is local to this image and
+	cannot be shared across images in different OS process contexts."
+
+	| fileLock |
+	aFileStream ifNil: [^ failBlock value].
+	fileLock _ OSFileLock onFile: aFileStream exclusive: flag.
+	^ self unlockFileRegion: fileLock ifFail: failBlock
+
+
+]
+
+{ #category : #'file locking' }
 UnixOSProcessAccessor >> unlockFile: aFileStream from: start to: end [
 	"Pass a struct SQFile on the stack, and unlock the specified region.
 	Answer the result of the call to fcntl(). If the region is in the file lock cache,
@@ -2427,6 +2550,21 @@ UnixOSProcessAccessor >> unlockFile: aFileStream from: start to: end exclusive: 
 
 ]
 
+{ #category : #'file locking' }
+UnixOSProcessAccessor >> unlockFile: aFileStream ifFail: failBlock [
+	"Unlock the file represented by aFileStream.  Answer a descriptor for the unlocked
+	file region, an Array of file handle and region interval; or answer nil on error
+	or if the region did not appear in the cache.
+
+	Warning: The registry permits compatibility with Win32 file locking semantics,
+	but only within a single Squeak image. Multiple cooperating images must not
+	rely on the overlap checking, because the registry is local to this image and
+	cannot be shared across images in different OS process contexts."
+
+	^ self unlockFile: aFileStream exclusive: true ifFail: failBlock
+
+]
+
 { #category : #deprecated }
 UnixOSProcessAccessor >> unlockFile: aFileStream region: anInterval [
 	"Pass a struct SQFile on the stack, and unlock the specified region.
@@ -2466,16 +2604,49 @@ UnixOSProcessAccessor >> unlockFileRegion: aFileLock [
 	rely on the overlap checking, because the registry is local to this image and
 	cannot be shared across images in different OS process contexts."
 
-	aFileLock ifNil: [^ nil].
+	^ self unlockFileRegion: aFileLock ifFail: [nil]
+
+]
+
+{ #category : #'file locking' }
+UnixOSProcessAccessor >> unlockFileRegion: fileStream from: start to: end exclusive: writeLockFlag ifFail: failBlock [
+
+	| lock |
+	lock _ OSFileRegionLock onFile: fileStream from: start to: end exclusive: writeLockFlag.
+	^ self unlockFileRegion: lock ifFail: [failBlock value]
+]
+
+{ #category : #'file locking' }
+UnixOSProcessAccessor >> unlockFileRegion: fileStream from: start to: end ifFail: failBlock [
+
+	^ self unlockFileRegion: fileStream from: start to: end exclusive: true ifFail: failBlock
+
+]
+
+{ #category : #'file locking' }
+UnixOSProcessAccessor >> unlockFileRegion: aFileLock ifFail: failBlock [
+	"Pass a struct SQFile on the stack, and unlock the specified region.
+	Answer the result of the call to fcntl(). If the region is in the file lock cache,
+	remove it, but otherwise ignore the cache. The cache supports Win32 semantics
+	within a single Squeak image, but not across separate images, therefore the
+	unlock should be attempted regardless of whether this image thinks that the
+	region has previously been locked. Answer a descriptor for the unlocked file
+	region, an Array of file handle and region interval; or answer nil on error
+	or if the region did not appear in the cache.
+
+	Warning: The registry permits compatibility with Win32 file locking semantics,
+	but only within a single Squeak image. Multiple cooperating images must not
+	rely on the overlap checking, because the registry is local to this image and
+	cannot be shared across images in different OS process contexts."
+
+	aFileLock ifNil: [^ failBlock value].
 	"Check region lock overlap for Win32 compatibility"
-
-	^ self emulateWin32FileLocking
-		ifTrue: [(self unregister: aFileLock) ifNotNilDo:
-					[:unregisteredLock | unregisteredLock unlock
-						ifFalse: [nil]
-						ifTrue: [unregisteredLock]]]
-		ifFalse: [aFileLock unlock. nil "answer nil for Win32 compatibility"]
-
+	self emulateWin32FileLocking
+		ifTrue: [ | unregisteredLock |
+				(unregisteredLock _ self unregister: aFileLock)
+					ifNil: [^ failBlock value]
+					ifNotNil: [^ unregisteredLock unlockIfFail: failBlock; yourself]]
+		ifFalse: [^ aFileLock unlockIfFail: failBlock; yourself]
 ]
 
 { #category : #'file lock registry' }

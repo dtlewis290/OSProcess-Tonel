@@ -190,8 +190,7 @@ ExternalUnixOSProcess >> forkChild [
 	currently executing OS process, so request it to do so on behalf of this
 	instance of ExternalUnixOSProcess."
 
-	| p |
-	p _ OSProcess thisOSProcess
+	^ OSProcess thisOSProcess
 		processProxy: self
 		forkAndExec: programName
 		arguments: arguments
@@ -199,9 +198,7 @@ ExternalUnixOSProcess >> forkChild [
 		descriptors: (Array
 				with: initialStdIn
 				with: initialStdOut
-				with: initialStdErr).
-	p ifNotNil: [p running].
-	^ p
+				with: initialStdErr)
 
 ]
 
@@ -261,7 +258,7 @@ ExternalUnixOSProcess >> printOn: aStream [
 			[^ super printOn: aStream]
 		ifFalse:
 			[aStream
-				nextPutAll: 'a ';
+				nextPutAll: 'an ';
 				nextPutAll: self class name, ' with pid ';
 				nextPutAll: self pid printString;
 				nextPutAll: ' on ';
@@ -428,11 +425,11 @@ ExternalUnixOSProcess >> update: aParameter [
 			"Has the process exited?"
 			statusArray _ self accessor primGetChildExitStatus: self pid.
 			statusArray notNil
-				ifTrue: [self complete exitStatus: (statusArray at: 2)]].
+				ifTrue: [^ self complete exitStatus: (statusArray at: 2)]].
 	aParameter == #accessibility
 		ifTrue: ["Does the process still exist, and is it reachable?"
 			((accessible _ self isAccessible) notNil and: [accessible])
-				ifFalse: [self isRunning ifTrue: [self unknownRunState]]].
+				ifFalse: [^ self isRunning ifTrue: [self unknownRunState]]].
 	super update: aParameter
 
 ]

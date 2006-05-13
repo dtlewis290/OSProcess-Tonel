@@ -4,6 +4,9 @@ I am a stream on an input or output channel provided by the underlying operating
 Class {
 	#name : #AttachableFileStream,
 	#superclass : #StandardFileStream,
+	#instVars : [
+		'autoClose'
+	],
 	#classVars : [
 		'UseIOHandle'
 	],
@@ -34,15 +37,18 @@ AttachableFileStream class >> isAFileNamed: fileName [
 ]
 
 { #category : #'instance creation' }
-AttachableFileStream class >> name: aSymbolOrString attachTo: anIOHandle writable: readWriteFlag [
-	"Create a new instance attached to anIOHandle, where anIOHandle represents
-	an open IO channel. For write streams, this represents two Smalltalk streams
-	which write to the same OS file or output stream, presumably with interleaved
-	output. The purpose of this method is to permit a FileStream to be attached to
-	an existing IOHandle, such as the IOHandle for standard input, standard output,
-	and standard error."
+AttachableFileStream class >> name: aSymbolOrString attachTo: anIOHandle writable: readWriteFlag [ 
+	"Create a new instance attached to anIOHandle, where anIOHandle
+	represents an open IO channel. For write streams, this represents two
+	Smalltalk streams which write to the same OS file or output stream,
+	presumably with interleaved output. The purpose of this method is to
+	permit a FileStream to be attached to an existing IOHandle, such as
+	the IOHandle for standard input, standard output, and standard error."
 
-	^ super new name: aSymbolOrString attachTo: anIOHandle writable: readWriteFlag
+	^ (super basicNew
+		name: aSymbolOrString
+		attachTo: anIOHandle
+		writable: readWriteFlag) initialize
 ]
 
 { #category : #'file creation' }
@@ -66,6 +72,57 @@ AttachableFileStream class >> readOnlyFileNamed: fileName [
 
 ]
 
+{ #category : #examples }
+AttachableFileStream class >> stdIn [
+
+	"self stdIn"
+
+	^ self name: 'stdIn' attachTo: OSProcess thisOSProcess stdIn ioHandle writable: false
+
+]
+
+{ #category : #converting }
+AttachableFileStream >> asAsyncFileReadStream [
+	"Answer a replacement for this object, with asynchronous event handling.
+	Do not close the ioHandle when this object is finalized."
+
+	self keepOpen.
+	^ AsyncFileReadStream
+		name: self name
+		attachTo: self ioHandle
+		writable: self isReadOnly not
+
+]
+
+{ #category : #converting }
+AttachableFileStream >> asAttachableFileStream [
+
+	^ self
+
+]
+
+{ #category : #converting }
+AttachableFileStream >> asBufferedAsyncFileReadStream [
+	"Answer a replacement for this object, with asynchronous event handling
+	and buffered output. Do not close the ioHandle when this object is finalized."
+
+	self keepOpen.
+	^ BufferedAsyncFileReadStream
+		name: self name
+		attachTo: self ioHandle
+		writable: self isReadOnly not
+
+]
+
+{ #category : #finalization }
+AttachableFileStream >> autoClose [
+	"Private. Answer true if the file should be automatically closed when 
+	this object is finalized."
+
+	^ autoClose
+		ifNil: [autoClose _ true]
+]
+
 { #category : #'open/close' }
 AttachableFileStream >> close [
 	"Close this file."
@@ -76,10 +133,17 @@ AttachableFileStream >> close [
 				[handle close.
 				self ioHandle: nil]
 			ifFalse:
-				[self primClose: handle.
+				[[self primClose: handle]
+					on: Error
+					do: ["ignore failure"].
 				self unregister.
 				fileID _ nil]]
 
+]
+
+{ #category : #'initialize-release' }
+AttachableFileStream >> disableEventHandling [
+	"Subclasses may disable event handling"
 ]
 
 { #category : #'open/close' }
@@ -87,6 +151,13 @@ AttachableFileStream >> ensureOpen [
 
 	self shouldNotImplement
 
+]
+
+{ #category : #finalization }
+AttachableFileStream >> finalize [
+
+	self autoClose
+		ifTrue: [self primCloseNoError: fileID]
 ]
 
 { #category : #'read, write, position' }
@@ -102,6 +173,21 @@ AttachableFileStream >> ioHandle [
 	UseIOHandle
 		ifTrue: [^ super ioHandle]
 		ifFalse: [^ fileID]
+]
+
+{ #category : #testing }
+AttachableFileStream >> isPipe [
+
+	^ false
+
+]
+
+{ #category : #finalization }
+AttachableFileStream >> keepOpen [
+	"Do not allow the file to be closed when this object is finalized."
+
+	autoClose _ false
+
 ]
 
 { #category : #'private - IOHandle' }

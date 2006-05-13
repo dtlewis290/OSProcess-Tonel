@@ -1,0 +1,315 @@
+"
+BufferedAsyncFileReadStream adds output buffering behavior to an event driven file stream, permitting blocking reads without risk of blocking the Squeak VM. This is useful for OS pipes, for which Squeak may wish to read and write the pipe without concern for VM deadlocks.
+
+A BufferedAsyncFileReadStream may be set for either blocking or nonblocking reads. When in blocking mode, a Smalltalk Process that requests a read will be blocked until data is available, but the VM will not be blocked and other Smalltalk Processes can proceed normally.
+
+Whenever data becomes available, a dataAvailableSemaphore is signalled and a #changed event is generated.
+"
+Class {
+	#name : #BufferedAsyncFileReadStream,
+	#superclass : #AsyncFileReadStream,
+	#instVars : [
+		'nonBlockingMode',
+		'readBuffer',
+		'readSyncSemaphore',
+		'dataAvailableSemaphore'
+	],
+	#category : #'OSProcess-Base'
+}
+
+{ #category : #examples }
+BufferedAsyncFileReadStream class >> stdIn [
+
+	"self stdIn"
+
+	^ super stdIn
+
+]
+
+{ #category : #'read ahead buffer' }
+BufferedAsyncFileReadStream >> appendAllToBuffer: chars [
+	"Append all chars to readBuffer, then signal dataAvailableSemaphore to inform
+	any blocked reader that the read can proceed. Also generate a #changed event
+	to inform any interested objects that new data has become available."
+
+	| pos |
+	self readSyncSemaphore critical:
+		[(self readBuffer position > self maxReadBufferSize) ifTrue:
+			["Read buffer is getting too large. Replace it."
+			self readBuffer: (ReadWriteStream on: readBuffer upToEnd)].
+		pos _ readBuffer position.
+		readBuffer setToEnd.
+		readBuffer nextPutAll: chars.
+		readBuffer position: pos.
+		self dataAvailableSemaphore signal.
+		self changed]
+]
+
+{ #category : #'read ahead buffer' }
+BufferedAsyncFileReadStream >> appendToBuffer: aCharacter [
+	"Append aCharacter to readBuffer, then signal dataAvailableSemaphore to inform
+	any blocked reader that the read can proceed, and trigger a #dataReady event to
+	inform any interested objects that new data has become available."
+
+	| pos |
+	self readSyncSemaphore critical:
+		[pos _ self readBuffer position.
+		readBuffer setToEnd.
+		readBuffer nextPut: aCharacter.
+		readBuffer position: pos.
+		self dataAvailableSemaphore signal.
+		self changed]
+]
+
+{ #category : #converting }
+BufferedAsyncFileReadStream >> asAsyncFileReadStream [
+	"Answer a replacement for this object, with asynchronous event handling but
+	no buffering."
+
+	^ AsyncFileReadStream
+		name: self name
+		attachTo: self ioHandle
+		writable: self isReadOnly not
+
+]
+
+{ #category : #converting }
+BufferedAsyncFileReadStream >> asBufferedAsyncFileReadStream [
+
+	^ self
+]
+
+{ #category : #testing }
+BufferedAsyncFileReadStream >> atEnd [
+	"Answer whether the receiver can access any more objects.
+
+	Warning: If this instance represents the reader end of an OS pipe, it
+	is possible for the #atEnd test to give a false negative. In particular, after
+	closing the writer end of an empty OSPipe, the reader may not appear to
+	be atEnd until some time has elapsed, or until an explicit read on the pipe
+	causes the status to be updated. To illustrate the problem:
+
+		(OSPipe new setBufferedReader; yourself) closeWriter; atEnd>>false
+		(OSPipe new ) closeWriter; next; yourself; atEnd>>true
+		(OSPipe new setBufferedReader; yourself) closeWriter; next; yourself; atEnd>>true"
+
+	^ self readBuffer atEnd and: [super atEnd]
+]
+
+{ #category : #'read, write, position' }
+BufferedAsyncFileReadStream >> basicNext [
+	"Answer the next byte from this file, or nil if at the end of the file."
+
+	(self readBuffer atEnd and: [self isBlocking]) ifTrue: [self waitForDataReady].
+	^ readBuffer next
+
+]
+
+{ #category : #accessing }
+BufferedAsyncFileReadStream >> dataAvailableSemaphore [
+	"Signalled one or more times when data becomes available. Only one Process
+	is permitted to wait on this Semaphore."
+
+	^ dataAvailableSemaphore ifNil: [dataAvailableSemaphore _ Semaphore new]
+
+]
+
+{ #category : #testing }
+BufferedAsyncFileReadStream >> isBlocking [
+	"Answer true if set to blocking mode."
+
+	^ self nonBlockingMode not
+]
+
+{ #category : #defaults }
+BufferedAsyncFileReadStream >> maxReadBufferSize [
+	"Replace readBuffer when position exceeds this."
+
+	^ 40000
+
+]
+
+{ #category : #'read ahead buffer' }
+BufferedAsyncFileReadStream >> moveAvailableDataFrom: sqFile [
+
+	| count bufferSize buffer |
+	bufferSize _ self readAheadChunkSize.
+	buffer _ String new: bufferSize.
+	[count _ self primRead: sqFile
+				into: buffer
+				startingAt: 1
+				count: bufferSize]
+		on: Error	"Could fail if closed"
+		do: [count _ 0].
+	(count notNil and: [count > 0])
+		ifTrue:
+			[count == bufferSize
+				ifTrue:
+					[self appendAllToBuffer: buffer]
+				ifFalse:
+					[count > 0
+						ifTrue:
+							[self appendAllToBuffer: (buffer copyFrom: 1 to: count)]]]
+		ifFalse:
+			[(self closed or: [OSProcess accessor isAtEndOfFile: self ioHandle])
+				ifTrue:
+					[self disableEventHandling]]
+
+]
+
+{ #category : #'read ahead buffer' }
+BufferedAsyncFileReadStream >> moveAvailableDataToBuffer [
+
+	^ self moveAvailableDataFrom: (OSProcess accessor handleFromAccessor: self ioHandle).
+
+]
+
+{ #category : #'read, write, position' }
+BufferedAsyncFileReadStream >> next [
+
+	(self readBuffer atEnd and: [self isBlocking]) ifTrue: [self waitForDataReady].
+	^ readBuffer next
+
+]
+
+{ #category : #'read, write, position' }
+BufferedAsyncFileReadStream >> next: n into: aString startingAt: startIndex [
+	"Read n bytes into the given string.
+	Return aString or a partial copy if less than n elements have been read."
+
+	| count |
+	count _ self readInto: aString startingAt: startIndex count: n.
+	count = n
+		ifTrue: [^ aString]
+		ifFalse: [^ aString copyFrom: 1 to: startIndex+count-1]
+]
+
+{ #category : #accessing }
+BufferedAsyncFileReadStream >> nonBlockingMode [
+	"True if nonblocking read behavior should be implemented"
+
+	^ nonBlockingMode ifNil: [nonBlockingMode _ true]
+
+]
+
+{ #category : #accessing }
+BufferedAsyncFileReadStream >> nonBlockingMode: trueOrFalse [
+	"True if nonblocking read behavior should be implemented"
+
+	nonBlockingMode _ trueOrFalse
+
+]
+
+{ #category : #'read, write, position' }
+BufferedAsyncFileReadStream >> peek [
+	"Answer what would be returned if the message next were sent to the receiver. If the receiver is at the end, answer nil.  "
+
+	(self readBuffer atEnd and: [self isBlocking]) ifTrue: [self waitForDataReady].
+	^ readBuffer peek
+
+]
+
+{ #category : #defaults }
+BufferedAsyncFileReadStream >> readAheadChunkSize [
+	"The async read ahead process will read at most this many characters.
+	Notes: On my system (dtl), a chunk size of 2000 leads to ExternalCommandShell
+	overdriving the stdout stream when doing (for example) a long directory listing.
+	I have added error handling to accommodate this, but I do know know how
+	reliable it is, so I would prefer to avoid generating the condition. A chunk
+	size of 200 is small enough that performance is noticably impacted in a
+	CommandShell window. A chunk size of 1000 seems to produce good overall
+	behavior."
+
+	^ 1000
+]
+
+{ #category : #accessing }
+BufferedAsyncFileReadStream >> readBuffer [
+	"Read ahead buffer, filled asynchronously as data becomes available on the IO channel"
+
+	^ readBuffer ifNil: [readBuffer _ ReadWriteStream on: '']
+
+]
+
+{ #category : #accessing }
+BufferedAsyncFileReadStream >> readBuffer: aStream [
+
+	readBuffer _ aStream
+]
+
+{ #category : #'read, write, position' }
+BufferedAsyncFileReadStream >> readInto: byteArray startingAt: startIndex count: count [
+	"Read into the given array as specified, and return the count actually transferred."
+
+	| s size |
+	self isBlocking
+		ifTrue:
+			[self waitForDataReady: count.
+			self readSyncSemaphore critical:
+				[s _ self readBuffer next: count].
+			size _ count]
+		ifFalse:
+			[self readSyncSemaphore critical:
+				[size _ (self readBuffer size - readBuffer position) min: count.
+				s _ self readBuffer next: size]].
+	byteArray replaceFrom: startIndex to: (startIndex + size - 1) with: s. 
+	^ size
+
+]
+
+{ #category : #accessing }
+BufferedAsyncFileReadStream >> readSyncSemaphore [
+	"A semaphore for synchronizing access to readBuffer"
+
+	^ readSyncSemaphore ifNil: [readSyncSemaphore _ Semaphore forMutualExclusion]
+]
+
+{ #category : #'initialize-release' }
+BufferedAsyncFileReadStream >> setBlocking [
+	"Set for blocking reads. Default is nonblocking mode."
+
+	self nonBlockingMode: false
+
+]
+
+{ #category : #'initialize-release' }
+BufferedAsyncFileReadStream >> setNonBlocking [
+	"Set for nonblocking reads. This is the default mode."
+
+	self nonBlockingMode: true
+
+]
+
+{ #category : #updating }
+BufferedAsyncFileReadStream >> update: aParameter [
+	"A #changed event is generated as a side effect of this method"
+
+	(aParameter == self eventHandler)
+		ifTrue: [self moveAvailableDataToBuffer]
+
+]
+
+{ #category : #'read ahead buffer' }
+BufferedAsyncFileReadStream >> waitForBufferAvailable [
+	"Block if the readBuffer has grown too large. No-op for now, but add
+	this later if large pipes prove to be a problem."
+]
+
+{ #category : #'read ahead buffer' }
+BufferedAsyncFileReadStream >> waitForDataReady [
+	"Block until at least one character is available in the readBuffer. This is not
+	thread safe, and only one Process is permitted to send this message."
+
+	self dataAvailableSemaphore wait
+
+]
+
+{ #category : #'read ahead buffer' }
+BufferedAsyncFileReadStream >> waitForDataReady: count [
+	"Block until at least count characters are available in the readBuffer"
+
+	[(self readBuffer size - readBuffer position) < count]
+		whileTrue:
+			[self waitForDataReady]
+
+]
