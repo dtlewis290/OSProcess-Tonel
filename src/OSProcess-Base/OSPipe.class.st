@@ -57,13 +57,12 @@ OSPipe >> peek [
 OSPipe >> upToEnd [
 	"Answer the remaining elements in the string"
 
-	| strm d c |
+	| strm d s |
 	strm _ WriteStream on: ''.
 	d _ Delay forMilliseconds: 200.
-	[(c _ self next) isNil and: [writer closed]]
-		whileFalse:
-			[c isNil
-				ifTrue: [d wait]
-				ifFalse: [strm nextPut: c]].
+	[self atEnd] whileFalse:
+		[(s _ self next: 2000) isEmpty
+			ifTrue: [d wait]
+			ifFalse: [strm nextPutAll: s]].
 	^ strm contents
 ]
