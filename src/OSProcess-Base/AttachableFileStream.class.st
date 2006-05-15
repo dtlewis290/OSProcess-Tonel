@@ -119,7 +119,8 @@ AttachableFileStream >> atEnd [
 	"Answer whether the receiver is at its end.
 	Use the OSPP test, which works properly for pipes as well as for files."
 
-	^ OSProcess accessor isAtEndOfFile: fileID
+	^ fileID isNil or: [OSProcess accessor isAtEndOfFile: fileID]
+
 ]
 
 { #category : #finalization }
