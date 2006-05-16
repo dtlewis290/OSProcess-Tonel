@@ -81,7 +81,7 @@ ExternalPipe class >> testPipe [
 ExternalPipe >> atEnd [
 	"Answer whether the receiver can access any more objects."
 
-	^ reader atEnd
+	^ writer closed and: [self peek == nil]
 
 ]
 
@@ -297,6 +297,17 @@ ExternalPipe >> setNonBlocking [
 
 	reader ifNotNil: [OSProcess accessor setNonBlocking: reader ioHandle].
 	self blocking: false
+
+]
+
+{ #category : #testing }
+ExternalPipe >> testEndOfFile [
+	"Answer whether the receiver is at its end based on the result of
+	the last read operation. This uses feof() to test the underlying file
+	stream status, and can be used as an alternative to #atEnd, which
+	does not properly report end of file status for an OSPipe."
+
+	^ reader atEnd
 
 ]
 

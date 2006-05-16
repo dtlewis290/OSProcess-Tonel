@@ -114,15 +114,6 @@ AttachableFileStream >> asBufferedAsyncFileReadStream [
 
 ]
 
-{ #category : #testing }
-AttachableFileStream >> atEnd [
-	"Answer whether the receiver is at its end.
-	Use the OSPP test, which works properly for pipes as well as for files."
-
-	^ fileID isNil or: [OSProcess accessor isAtEndOfFile: fileID]
-
-]
-
 { #category : #finalization }
 AttachableFileStream >> autoClose [
 	"Private. Answer true if the file should be automatically closed when 
@@ -238,6 +229,17 @@ AttachableFileStream >> openReadOnly [
 AttachableFileStream >> reopen [
 
 	self shouldNotImplement
+
+]
+
+{ #category : #testing }
+AttachableFileStream >> testEndOfFile [
+	"Answer whether the receiver is at its end based on the result of
+	the last read operation. This uses feof() to test the underlying file
+	stream status, and can be used as an alternative to #atEnd, which
+	does not properly report end of file status for an OSPipe."
+
+	^ fileID isNil or: [OSProcess accessor isAtEndOfFile: fileID]
 
 ]
 

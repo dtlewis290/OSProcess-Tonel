@@ -49,18 +49,38 @@ OSPipe >> next: anInteger [
 OSPipe >> peek [
 
 	^ nextChar isNil
-		ifTrue: [nextChar _ reader next]
+		ifTrue: [reader closed
+				ifFalse: [nextChar _ reader next]]
 		ifFalse: [nextChar]
 ]
 
 { #category : #accessing }
 OSPipe >> upToEnd [
-	"Answer the remaining elements in the string"
+	"Answer the remaining elements in the string. Use #upToEndOfFile
+	for a more reliable method. This method is retained for backward
+	compatibility (e.g. older versions of CommandShell)."
 
 	| strm d s |
 	strm _ WriteStream on: ''.
 	d _ Delay forMilliseconds: 200.
 	[self atEnd] whileFalse:
+		[(s _ self next: 2000) isEmpty
+			ifTrue: [d wait]
+			ifFalse: [strm nextPutAll: s]].
+	^ strm contents
+]
+
+{ #category : #accessing }
+OSPipe >> upToEndOfFile [
+	"Answer the remaining elements in the string. Use #testEndOfFile to
+	determine end of file status with feof(), required for reliable end of
+	file test on OS pipes. Compare #upToEnd, which uses the generic end
+	of file test in FilePlugin."
+
+	| strm d s |
+	strm _ WriteStream on: ''.
+	d _ Delay forMilliseconds: 200.
+	[self testEndOfFile] whileFalse:
 		[(s _ self next: 2000) isEmpty
 			ifTrue: [d wait]
 			ifFalse: [strm nextPutAll: s]].
