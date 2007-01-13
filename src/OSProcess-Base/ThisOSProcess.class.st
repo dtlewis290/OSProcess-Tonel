@@ -57,11 +57,11 @@ ThisOSProcess class >> initializeThisOSProcess [
 
 	ThisInstance isNil
 		ifTrue:
-			[ThisInstance := self concreteClass basicNew initialize]
+			[ThisInstance _ self concreteClass basicNew initialize]
 		ifFalse:
 			[ThisInstance isResponsibleForThisPlatform
 				ifFalse: 
-					[ThisInstance := self concreteClass basicNew initialize]]
+					[ThisInstance _ self concreteClass basicNew initialize]]
 
 ]
 
@@ -113,7 +113,7 @@ ThisOSProcess >> activeChildren [
 { #category : #'child process management' }
 ThisOSProcess >> allMyChildren [
 
-	allMyChildren ifNil: [ allMyChildren := Dictionary new ].
+	allMyChildren ifNil: [ allMyChildren _ Dictionary new ].
 	^ allMyChildren
 ]
 
@@ -147,7 +147,7 @@ ThisOSProcess >> closeXDisplay [
 	"self thisOSProcess closeXDisplay"
 
 	| proc |
-	proc := self processAccessor primKillDisplay.
+	proc _ self processAccessor primKillDisplay.
 	proc ifNil: [self noAccessorAvailable].
 	^ proc
 
@@ -187,7 +187,7 @@ ThisOSProcess >> discardExitedChildren [
 	"Remove entries for completed child processed from dictionary."
 
 	self updateAllMyChildren.
-	^ allMyChildren := self allMyChildren select: [ :p | p isComplete not ]
+	^ allMyChildren _ self allMyChildren select: [ :p | p isComplete not ]
 
 ]
 
@@ -199,7 +199,7 @@ ThisOSProcess >> disconnectXDisplay [
 	"self thisOSProcess disconnectXDisplay"
 
 	| proc |
-	proc := self processAccessor primDisconnectDisplay.
+	proc _ self processAccessor primDisconnectDisplay.
 	proc ifNil: [self noAccessorAvailable].
 	^ proc
 
@@ -223,7 +223,7 @@ ThisOSProcess >> displayOnXServer: xDisplayName [
 	| previousDisplayName |
 	(xDisplayName isKindOf: String)
 		ifFalse: [^ 'expected display name string'].
-	previousDisplayName := self currentXDisplayName.
+	previousDisplayName _ self currentXDisplayName.
 	(self canConnectToXDisplay: xDisplayName)
 		ifTrue:
 			[self decapitate.
@@ -252,7 +252,7 @@ ThisOSProcess >> finalize [
 		ifNotNil: 
 			[processAccessor removeDependent: self.
 			processAccessor finalize].
-	processAccessor := nil
+	processAccessor _ nil
 ]
 
 { #category : #'display management' }
@@ -308,7 +308,7 @@ ThisOSProcess >> initialize [
 
 	processAccessor ifNotNil:
 		[processAccessor removeDependent: self.
-		processAccessor := nil].
+		processAccessor _ nil].
 	((self processAccessor notNil
 		and: [processAccessor canAccessSystem])
 			and: [pid ~= processAccessor primGetPid])
@@ -342,7 +342,7 @@ ThisOSProcess >> isStdErr: anIOHandle [
 
 	| realHandle |
 	anIOHandle ifNil: [^ false].
-	realHandle := self processAccessor getStdErrHandle.
+	realHandle _ self processAccessor getStdErrHandle.
 	realHandle ifNil: [^ false].
 	UseIOHandle
 		ifTrue: [^ anIOHandle handle = realHandle handle]
@@ -356,7 +356,7 @@ ThisOSProcess >> isStdIn: anIOHandle [
 
 	| realHandle |
 	anIOHandle ifNil: [^ false].
-	realHandle := self processAccessor getStdInHandle.
+	realHandle _ self processAccessor getStdInHandle.
 	realHandle ifNil: [^ false].
 	UseIOHandle
 		ifTrue: [^ anIOHandle handle = realHandle handle]
@@ -370,7 +370,7 @@ ThisOSProcess >> isStdOut: anIOHandle [
 
 	| realHandle |
 	anIOHandle ifNil: [^ false].
-	realHandle := self processAccessor getStdOutHandle.
+	realHandle _ self processAccessor getStdOutHandle.
 	realHandle ifNil: [^ false].
 	UseIOHandle
 		ifTrue: [^ anIOHandle handle = realHandle handle]
@@ -393,7 +393,7 @@ ThisOSProcess >> openXDisplay [
 	"self thisOSProcess closeXDisplay. (Delay forSeconds: 5) wait. self thisOSProcess openXDisplay."
 
 	| proc |
-	proc := self processAccessor primOpenXDisplay.
+	proc _ self processAccessor primOpenXDisplay.
 	proc ifNil: [self noAccessorAvailable].
 	^ proc
 
@@ -405,9 +405,9 @@ ThisOSProcess >> processAccessor [
 	| a |
 	processAccessor
 		ifNil: 
-			[a := OSProcessAccessor forThisOSProcess.
+			[a _ OSProcessAccessor forThisOSProcess.
 			a isResponsibleForThisPlatform ifTrue:
-				[processAccessor := a.
+				[processAccessor _ a.
 				processAccessor addDependent: self]].
 	^ processAccessor
 ]
@@ -445,7 +445,7 @@ ThisOSProcess >> resetChildProcessDictionary [
 	probably no longer of any interest."
 
 	self updateAllMyChildren. "Ensure contents are up to date before releasing them."
-	allMyChildren := nil.
+	allMyChildren _ nil.
 	self allMyChildren
 
 ]
@@ -468,9 +468,9 @@ ThisOSProcess >> setStdErr [
 	| stdErrHandle |
 	stdErr ifNotNil:
 			[(self isStdErr: stdErr ioHandle) ifTrue: [^ stdErr]].
-	stdErrHandle := self processAccessor getStdErrHandle.
+	stdErrHandle _ self processAccessor getStdErrHandle.
 	stdErrHandle ifNotNil:
-			[stdErr := AttachableFileStream name: 'stderr' attachTo: stdErrHandle writable: true].
+			[stdErr _ AttachableFileStream name: 'stderr' attachTo: stdErrHandle writable: true].
 	^ stdErr
 
 ]
@@ -487,9 +487,9 @@ ThisOSProcess >> setStdIn [
 	| stdInHandle |
 	stdIn ifNotNil:
 			[(self isStdIn: stdIn ioHandle) ifTrue: [^ stdIn]].
-	stdInHandle := self processAccessor getStdInHandle.
+	stdInHandle _ self processAccessor getStdInHandle.
 	stdInHandle ifNotNil:
-			[stdIn := AttachableFileStream name: 'stdin' attachTo: stdInHandle writable: false].
+			[stdIn _ AttachableFileStream name: 'stdin' attachTo: stdInHandle writable: false].
 	^ stdIn
 
 
@@ -507,9 +507,9 @@ ThisOSProcess >> setStdOut [
 	| stdOutHandle |
 	stdOut ifNotNil:
 			[(self isStdOut: stdOut ioHandle) ifTrue: [^ stdOut]].
-	stdOutHandle := self processAccessor getStdOutHandle.
+	stdOutHandle _ self processAccessor getStdOutHandle.
 	stdOutHandle ifNotNil:
-			[stdOut := AttachableFileStream name: 'stdout' attachTo: stdOutHandle writable: true].
+			[stdOut _ AttachableFileStream name: 'stdout' attachTo: stdOutHandle writable: true].
 	^ stdOut
 
 ]
@@ -547,7 +547,7 @@ ThisOSProcess >> stdOut [
 { #category : #updating }
 ThisOSProcess >> update: aParameter [
 
-	aParameter == #invalidProcessAccessor ifTrue: [processAccessor := nil].
+	aParameter == #invalidProcessAccessor ifTrue: [processAccessor _ nil].
 	^ super update: aParameter
 ]
 

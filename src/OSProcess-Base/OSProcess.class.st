@@ -34,15 +34,15 @@ OSProcess class >> allTestResults [
 	Smalltalk listLoadedModules
 		detect: [:e | '*OSProcessPlugin*' match: e]
 		ifNone: [self notify: 'no OSProcessPlugin loaded'].
-	wordSize := (Smalltalk respondsTo: #wordSize)
+	wordSize _ (Smalltalk respondsTo: #wordSize)
 		ifTrue: [Smalltalk wordSize]
 		ifFalse: [4].
-	resultsFileName := 'OSProcessTestResults-' , OSProcess platformName , '-' ,
+	resultsFileName _ 'OSProcessTestResults-' , OSProcess platformName , '-' ,
 		(wordSize * 8) asString , 'bitImage-' ,
 		(OSProcess accessor sizeOfPointer * 8) asString , 'bitHw.txt'.
-	[fs := FileStream newFileNamed: resultsFileName.
-	problems := false.
-	writeStream := WriteStream on: ''.
+	[fs _ FileStream newFileNamed: resultsFileName.
+	problems _ false.
+	writeStream _ WriteStream on: ''.
 	writeStream nextPutAll: Utilities authorInitials , ' running OSProcess unit tests ' , TimeStamp now asString;
 		 cr.
 	writeStream nextPutAll: 'OSProcess platformName => ' , OSProcess platformName;
@@ -73,14 +73,14 @@ OSProcess class >> allTestResults [
 				do: [:testSelector |
 					OSProcess thisOSProcess stdOut nextPutAll:
 						testCase name, '>>',testSelector, String lf; flush.
-					resultString := (testSelector
-								-> ([result := (testCase selector: testSelector) run.
+					resultString _ (testSelector
+								-> ([result _ (testCase selector: testSelector) run.
 									result hasPassed
-										ifFalse: [problems := true].
+										ifFalse: [problems _ true].
 									result]
 										on: Error
 										do: [:ex | 
-											problems := true.
+											problems _ true.
 											'caught exception ' , ex printString])) printString.
 					writeStream nextPutAll: resultString;
 						 cr.
@@ -95,7 +95,7 @@ OSProcess class >> allTestResults [
 				 cr.
 			Transcript show: 'all tests completed without problems';
 				 cr].
-	results := writeStream contents copyReplaceAll: String cr with: String lf.
+	results _ writeStream contents copyReplaceAll: String cr with: String lf.
 	fs nextPutAll: results]
 		ensure: [fs close].
 	Transcript show: 'tests results have been saved in a file named ''' , resultsFileName , '''';
@@ -166,7 +166,7 @@ OSProcess class >> helloStdErr [
 	"OSProcess helloStdErr"
 
 	| this |
-	this := self thisOSProcess.
+	this _ self thisOSProcess.
 	this stdErr ifNil: [self noAccessorAvailable. ^ nil].
 	^ this stdErr nextPutAll: 'Hello stderr'; nextPut: (Character lf); yourself
 ]
@@ -181,7 +181,7 @@ OSProcess class >> helloWorld [
 	"OSProcess helloWorld"
 
 	| this |
-	this := self thisOSProcess.
+	this _ self thisOSProcess.
 	this stdOut ifNil: [self noAccessorAvailable. ^ nil].
 	^ this stdOut nextPutAll: 'Hello world'; nextPut: Character lf; yourself
 ]
@@ -191,7 +191,7 @@ OSProcess class >> initialize [
 
 	"OSProcess initialize"
 
-	UseIOHandle := (Smalltalk hasClassNamed: #IOHandle)
+	UseIOHandle _ (Smalltalk hasClassNamed: #IOHandle)
 
 ]
 
@@ -202,7 +202,7 @@ OSProcess class >> isNonUnixMac [
 	"OSProcess isNonUnixMac"
 
 	| numericOsVersion |
-	numericOsVersion := self osVersion asInteger ifNil: [0].
+	numericOsVersion _ self osVersion asInteger ifNil: [0].
 	^ (self platformName = 'Mac OS') and: [numericOsVersion < 1000]
 
 ]
@@ -245,7 +245,7 @@ OSProcess class >> isUnix [
 	| numericOsVersion |
 
 	^ (self platformName = 'unix') or:
-		[numericOsVersion := self osVersion asInteger ifNil: [0].
+		[numericOsVersion _ self osVersion asInteger ifNil: [0].
 		(self platformName = 'Mac OS') and: [numericOsVersion >= 1000]]
 
 ]
@@ -257,9 +257,9 @@ OSProcess class >> isUnixMac [
 	"OSProcess isUnixMac"
 
 	| osVersion numericOsVersion |
-	osVersion := self osVersion.
+	osVersion _ self osVersion.
 	^ ('darwin*' match: osVersion "Ian's VM")
-		or: [numericOsVersion := osVersion asInteger ifNil: [0].
+		or: [numericOsVersion _ osVersion asInteger ifNil: [0].
 			(self platformName = 'Mac OS') and: [numericOsVersion >= 1000] "John's VM"]
 
 ]
@@ -348,13 +348,13 @@ OSProcess class >> quitAndRestart [
 	"OSProcess quitAndRestart"
 
 	| firstPid this |
-	firstPid := OSProcess thisOSProcess pid.
+	firstPid _ OSProcess thisOSProcess pid.
 	firstPid ifNil: 
 			[self noAccessorAvailable.
 			^ nil].
 	Smalltalk saveSession.
 	"Value of firstPid gets saved in the image"
-	this := OSProcess thisOSProcess.
+	this _ OSProcess thisOSProcess.
 	this pid = firstPid ifTrue: [self squeak ifNotNil: [Smalltalk quitPrimitive]].
 	^ this
 ]
@@ -373,11 +373,11 @@ OSProcess class >> readFromStdIn [
 	"OSProcess readFromStdIn inspect"
 
 	| input ioHandle resultString |
-	input := self thisOSProcess stdIn.
+	input _ self thisOSProcess stdIn.
 	input ifNil: [self noAccessorAvailable. ^ nil].
-	ioHandle := input ioHandle.
+	ioHandle _ input ioHandle.
 	self accessor setNonBlocking: ioHandle.
-	resultString := self thisOSProcess stdIn next: 10000.
+	resultString _ self thisOSProcess stdIn next: 10000.
 	self accessor setBlocking: ioHandle.
 	^ resultString
 
@@ -432,29 +432,29 @@ OSProcess class >> systemAttributes [
 	"OSProcess systemAttributes"
 
 	| args idx a |
-	args := Dictionary new.
+	args _ Dictionary new.
 
-	idx := -1.
-	[a := self getSystemAttribute: idx.
+	idx _ -1.
+	[a _ self getSystemAttribute: idx.
 	a notNil and: [a size > 0]]
-		whileTrue: [args at: idx put: a. idx := idx - 1].
+		whileTrue: [args at: idx put: a. idx _ idx - 1].
 
-	a := self getSystemAttribute: 0.
-	(a notNil and: [a size > 0]) ifTrue: [args at: 0 put: a. idx := idx - 1].
-	a := self getSystemAttribute: 1.
-	(a notNil and: [a size > 0]) ifTrue: [args at: 1 put: a. idx := idx - 1].
-	a := self getSystemAttribute: 2.
-	(a notNil and: [a size > 0]) ifTrue: [args at: 2 put: a. idx := idx - 1].
+	a _ self getSystemAttribute: 0.
+	(a notNil and: [a size > 0]) ifTrue: [args at: 0 put: a. idx _ idx - 1].
+	a _ self getSystemAttribute: 1.
+	(a notNil and: [a size > 0]) ifTrue: [args at: 1 put: a. idx _ idx - 1].
+	a _ self getSystemAttribute: 2.
+	(a notNil and: [a size > 0]) ifTrue: [args at: 2 put: a. idx _ idx - 1].
 
-	idx := 2.
-	[a := self getSystemAttribute: idx.
+	idx _ 2.
+	[a _ self getSystemAttribute: idx.
 	a notNil and: [a size > 0]]
-		whileTrue: [args at: idx put: a. idx := idx + 1].
+		whileTrue: [args at: idx put: a. idx _ idx + 1].
 
-	idx := 1001.
-	[a := self getSystemAttribute: idx.
+	idx _ 1001.
+	[a _ self getSystemAttribute: idx.
 	a notNil and: [a size > 0]]
-		whileTrue: [args at: idx put: a. idx := idx + 1].
+		whileTrue: [args at: idx put: a. idx _ idx + 1].
 
 	^ args.
 
@@ -516,7 +516,7 @@ OSProcess class >> versionInformation [
 	"OSProcess versionInformation"
 
 	| osppVersion |
-	osppVersion := (Smalltalk hasClassNamed: #OSProcessPlugin)
+	osppVersion _ (Smalltalk hasClassNamed: #OSProcessPlugin)
 		ifTrue:
 			[(Smalltalk at: #OSProcessPlugin) versionInformation]
 		ifFalse:
@@ -592,7 +592,7 @@ OSProcess >> pid [
 { #category : #accessing }
 OSProcess >> pid: processIdentifier [
 
-	pid := processIdentifier
+	pid _ processIdentifier
 
 ]
 

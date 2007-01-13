@@ -97,7 +97,7 @@ ExternalOSProcess >> initialStdErr [
 { #category : #accessing }
 ExternalOSProcess >> initialStdErr: anExternalStream [
 
-	initialStdErr := anExternalStream
+	initialStdErr _ anExternalStream
 ]
 
 { #category : #accessing }
@@ -114,7 +114,7 @@ ExternalOSProcess >> initialStdIn [
 { #category : #accessing }
 ExternalOSProcess >> initialStdIn: anExternalStream [
 
-	initialStdIn := anExternalStream
+	initialStdIn _ anExternalStream
 ]
 
 { #category : #accessing }
@@ -131,7 +131,7 @@ ExternalOSProcess >> initialStdOut [
 { #category : #accessing }
 ExternalOSProcess >> initialStdOut: anExternalStream [
 
-	initialStdOut := anExternalStream
+	initialStdOut _ anExternalStream
 ]
 
 { #category : #'initialize - release' }
@@ -190,7 +190,7 @@ ExternalOSProcess >> runState [
 { #category : #accessing }
 ExternalOSProcess >> runState: aSymbol [
 
-	runState := aSymbol.
+	runState _ aSymbol.
 	self changed: #runState
 
 ]

@@ -38,14 +38,14 @@ OSFileLock >> exclusive [
 	"Answer the value of exclusive. Default is true, indicating a read-write lock
 	as opposed to a shared read lock."
 
-	^ exclusive ifNil: [exclusive := true].
+	^ exclusive ifNil: [exclusive _ true].
 ]
 
 { #category : #accessing }
 OSFileLock >> exclusive: anObject [
 	"Set the value of exclusive"
 
-	exclusive := anObject
+	exclusive _ anObject
 ]
 
 { #category : #accessing }
@@ -59,7 +59,7 @@ OSFileLock >> fileStream [
 OSFileLock >> fileStream: anObject [
 	"Set the value of fileStream"
 
-	fileStream := anObject
+	fileStream _ anObject
 ]
 
 { #category : #comparing }
@@ -94,8 +94,8 @@ OSFileLock >> lock [
 OSFileLock >> lockIfFail: failBlock [
 
 	| handle result |
-	handle := ThisOSProcess accessor handleFromFileStream: self fileStream.
-	result := ThisOSProcess accessor
+	handle _ ThisOSProcess accessor handleFromFileStream: self fileStream.
+	result _ ThisOSProcess accessor
 		primLockFileRegion: handle
 		offset: self offset
 		length: self length
@@ -136,8 +136,8 @@ OSFileLock >> test [
 	"Answer true if this is a lockable file or region"
 
 	| handle result |
-	handle := ThisOSProcess accessor handleFromFileStream: self fileStream.
-	result := ThisOSProcess accessor
+	handle _ ThisOSProcess accessor handleFromFileStream: self fileStream.
+	result _ ThisOSProcess accessor
 		primTestLockableFileRegion: handle
 		offset: self offset
 		length: self length
@@ -160,8 +160,8 @@ OSFileLock >> unlock [
 OSFileLock >> unlockIfFail: failBlock [
 
 	| handle result |
-	handle := ThisOSProcess accessor handleFromFileStream: self fileStream.
-	result := ThisOSProcess accessor
+	handle _ ThisOSProcess accessor handleFromFileStream: self fileStream.
+	result _ ThisOSProcess accessor
 		primUnlockFileRegion: handle
 		offset: self offset
 		length: self length.

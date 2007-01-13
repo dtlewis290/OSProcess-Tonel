@@ -68,10 +68,10 @@ ExternalPipe class >> testPipe [
 	"OSPipe testPipe inspect"
 
 	| pipe result |
-	pipe := self new.
+	pipe _ self new.
 	pipe nextPutAll: 'string to send through an OSPipe'.
 	pipe writer close.
-	result := pipe upToEnd.
+	result _ pipe upToEnd.
 	pipe close.
 	^ result
 
@@ -100,14 +100,14 @@ ExternalPipe >> atEndOfFile [
 ExternalPipe >> blocking [
 	"True if reader end is set to blocking mode."
 
-	^ blocking ifNil: [blocking := true]
+	^ blocking ifNil: [blocking _ true]
 ]
 
 { #category : #accessing }
 ExternalPipe >> blocking: trueOrFalse [
 	"True if reader end is set to blocking mode."
 
-	blocking := trueOrFalse
+	blocking _ trueOrFalse
 ]
 
 { #category : #finalization }
@@ -147,7 +147,7 @@ ExternalPipe >> contents [
 	self closed ifTrue:
 		[self notify: self printString, ' ', self reader printString, ' closed'.
 		^ nil].
-	s := self reader upToEnd.
+	s _ self reader upToEnd.
 	s isEmpty ifFalse:
 		[self writer closed
 			ifTrue: [self notify: self printString, ' ', self writer printString,
@@ -182,7 +182,7 @@ ExternalPipe >> makePipe [
 	"Create an OS pipe and attach it to my input and output streams."
 
 	| handleArray |
-	handleArray := OSProcess accessor makePipeHandles.
+	handleArray _ OSProcess accessor makePipeHandles.
 	handleArray isNil
 		ifTrue:
 			[self error: 'cannot create OS pipe']
@@ -241,7 +241,7 @@ ExternalPipe >> printOn: aStream [
 	for OSPipe. This implementation is copied from Object."
 
 	| title |
-	title := self class name.
+	title _ self class name.
 	aStream
 		nextPutAll: (title first isVowel ifTrue: ['an '] ifFalse: ['a ']);
 		nextPutAll: title
@@ -257,7 +257,7 @@ ExternalPipe >> reader [
 { #category : #accessing }
 ExternalPipe >> reader: aReadStream [
 
-	reader := aReadStream
+	reader _ aReadStream
 ]
 
 { #category : #'initialize-release' }
@@ -343,5 +343,5 @@ ExternalPipe >> writer [
 { #category : #accessing }
 ExternalPipe >> writer: aWriteStream [
 
-	writer := aWriteStream
+	writer _ aWriteStream
 ]

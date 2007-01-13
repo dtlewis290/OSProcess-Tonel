@@ -53,7 +53,7 @@ ExternalWindowsOSProcess class >> programName: executableFile arguments: arrayOf
 	a command line string and ignore the environment argument."
 
 	| commandLine |
-	commandLine := WriteStream on: String new.
+	commandLine _ WriteStream on: String new.
 	commandLine nextPutAll: executableFile.
 	arrayOfStrings ifNotNil:
 		[arrayOfStrings do: [:arg | commandLine nextPut: Character space; nextPutAll: arg]].
@@ -68,7 +68,7 @@ ExternalWindowsOSProcess >> closeHandles [
 	self threads do: [:thread | thread closeHandle].
 	handle ifNotNil:
 		[OSProcess accessor primCloseHandle: handle.
-		handle := nil]
+		handle _ nil]
 
 ]
 
@@ -81,7 +81,7 @@ ExternalWindowsOSProcess >> commandLine [
 { #category : #accessing }
 ExternalWindowsOSProcess >> commandLine: aCommandLineString [
 
-	commandLine := aCommandLineString
+	commandLine _ aCommandLineString
 ]
 
 { #category : #'setting run state' }
@@ -103,7 +103,7 @@ ExternalWindowsOSProcess >> exitStatus [
 { #category : #accessing }
 ExternalWindowsOSProcess >> exitStatus: status [
 
-	exitStatus := status
+	exitStatus _ status
 
 ]
 
@@ -120,7 +120,7 @@ ExternalWindowsOSProcess >> handle: aHandleObject [
 	"A Windows HANDLE for this OS process, represented as a ByteArray. The
 	handle should be closed when the process exits."
 
-	handle := aHandleObject
+	handle _ aHandleObject
 ]
 
 { #category : #accessing }
@@ -133,7 +133,7 @@ ExternalWindowsOSProcess >> ppid [
 { #category : #accessing }
 ExternalWindowsOSProcess >> ppid: aProcessID [
 
-	ppid := aProcessID
+	ppid _ aProcessID
 ]
 
 { #category : #printing }
@@ -176,14 +176,14 @@ ExternalWindowsOSProcess >> pwd [
 ExternalWindowsOSProcess >> pwd: pathString [
 	"The current working directory string."
 
-	pwd := pathString
+	pwd _ pathString
 ]
 
 { #category : #accessing }
 ExternalWindowsOSProcess >> threads [
 	"One or more threads of execution within the OS process"
 
-	^ threads ifNil: [threads := OrderedCollection new]
+	^ threads ifNil: [threads _ OrderedCollection new]
 
 ]
 
@@ -194,11 +194,11 @@ ExternalWindowsOSProcess >> update: aParameter [
 	aParameter == #runState
 		ifTrue:
 			["Has the process exited?"
-	 		stat := self accessor primGetExitStatusForHandle: self handle.
+	 		stat _ self accessor primGetExitStatusForHandle: self handle.
 			stat ifNotNil: [self complete closeHandles exitStatus: stat]].
 	aParameter == #accessibility
 		ifTrue: ["Does the process still exist, and is it reachable?"
-			((accessible := self isAccessible) notNil and: [accessible])
+			((accessible _ self isAccessible) notNil and: [accessible])
 				ifFalse: [self isRunning ifTrue: [self unknownRunState]]].
 	super update: aParameter
 
@@ -210,7 +210,7 @@ ExternalWindowsOSProcess >> value [
 
 	| procInfo mainThread |
 	self isNotYetRunning ifTrue:
-		[procInfo := OSProcess accessor primCommand: self commandLine.
+		[procInfo _ OSProcess accessor primCommand: self commandLine.
 		procInfo isNil
 			ifTrue:
 				[self initialStdErr nextPutAll: 'cannot execute ', self commandLine; cr.
@@ -221,7 +221,7 @@ ExternalWindowsOSProcess >> value [
 			ifFalse:
 				[self pid: (procInfo at: 3).
 				self handle: (procInfo at: 1).
-				mainThread := WindowsThread
+				mainThread _ WindowsThread
 						threadID: (procInfo at: 4)
 						handle: (procInfo at: 2)
 						running: true.

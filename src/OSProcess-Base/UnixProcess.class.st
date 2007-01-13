@@ -48,11 +48,11 @@ UnixProcess class >> backgroundProcessInHeadlessSqueak [
 	"UnixProcess backgroundProcessInHeadlessSqueak"
 
 	^ [[| pipe backgroundJob ws | 
-	pipe := OSPipe new.
-	backgroundJob := OSProcess thisOSProcess
+	pipe _ OSPipe new.
+	backgroundJob _ OSProcess thisOSProcess
 	forkHeadlessSqueakAndDoThenQuit: [| beers | 
 		OSProcess accessor nice: 1. "lower priority of background OS process"
-		beers := [:i | (i < 1 ifTrue: ['no more'] ifFalse: [i asString])
+		beers _ [:i | (i < 1 ifTrue: ['no more'] ifFalse: [i asString])
 					, ' bottle' , (i = 1 ifTrue: [''] ifFalse: ['s'])].
 		(99 to: 1 by: -1) do: [:count | pipe nextPutAll:
 			(beers value: count) , ' of beer on the wall, '
@@ -64,7 +64,7 @@ UnixProcess class >> backgroundProcessInHeadlessSqueak [
 		[Transcript show: backgroundJob asString , ' started'; cr].
 	pipe closeWriter. "don't need writer end, close it before the #upToEnd"
 	"pipe writer blocks when pipe full, so we need to loop while reading to end "
-	ws := WriteStream on: ''.
+	ws _ WriteStream on: ''.
 	[backgroundJob isComplete] whileFalse:
 		[(Delay forMilliseconds: 200) wait.
 		pipe upToEnd ifNotNilDo: [:s | ws nextPutAll: s]].
@@ -97,8 +97,8 @@ UnixProcess class >> catAFile [
 	"UnixProcess catAFile"
 
 	| in proc |
-	in := FileStream readOnlyFileNamed: '/etc/hosts'.
-	proc := self forkJob: '/bin/cat'
+	in _ FileStream readOnlyFileNamed: '/etc/hosts'.
+	proc _ self forkJob: '/bin/cat'
 			arguments: nil
 			environment: nil
 			descriptors: (Array with: in with: nil with: nil).
@@ -115,10 +115,10 @@ UnixProcess class >> catFromFileToFiles [
 	"UnixProcess catFromFileToFiles"
 
 	| in out err proc |
-	in := FileStream readOnlyFileNamed: '/etc/hosts'.
-	out := FileStream newFileNamed: '/tmp/deleteMe.out'.
-	err := FileStream newFileNamed: '/tmp/deleteMe.err'.
-	proc := UnixProcess
+	in _ FileStream readOnlyFileNamed: '/etc/hosts'.
+	out _ FileStream newFileNamed: '/tmp/deleteMe.out'.
+	err _ FileStream newFileNamed: '/tmp/deleteMe.err'.
+	proc _ UnixProcess
 				forkJob: '/bin/cat'
 				arguments: nil
 				environment: nil
@@ -145,7 +145,7 @@ UnixProcess class >> clientServerDemo [
 	"UnixProcess clientServerDemo"
 
 	| proc |
-	proc := self forkHeadlessSqueakAndDoThenQuit: [Socket remoteTestServerTCP].
+	proc _ self forkHeadlessSqueakAndDoThenQuit: [Socket remoteTestServerTCP].
 	proc ifNotNil: [Socket remoteTestClientTCP].
 	^ proc
 
@@ -164,19 +164,19 @@ UnixProcess class >> clientServerDemo2 [
 	| remotePort remoteHost serverBlock socket buffer n bytesToSend sendBuf
 	receiveBuf done bytesSent bytesReceived packetsSent packetsReceived t |
 
-	remotePort := 54321.
-	remoteHost := 'localhost'.
-	serverBlock := 
+	remotePort _ 54321.
+	remoteHost _ 'localhost'.
+	serverBlock _ 
 			[Transcript clear; cr; show: 'This is the server Squeak session'; cr.
 			Socket initializeNetworkIfFail: [^ nil].
-			socket := Socket newTCP.
+			socket _ Socket newTCP.
 			socket listenOn: remotePort.
-			buffer := String new: 4000.
+			buffer _ String new: 4000.
 			socket waitForConnectionUntil: Socket standardDeadline.
 			[socket isConnected]
 				whileTrue: [socket dataAvailable
 						ifTrue: 
-							[n := socket receiveDataInto: buffer.
+							[n _ socket receiveDataInto: buffer.
 							socket sendData: buffer count: n]].
 			socket closeAndDestroy].
 
@@ -187,33 +187,33 @@ UnixProcess class >> clientServerDemo2 [
 	Transcript show: 'initializing network ... '.
 	Socket initializeNetworkIfFail: [^ Transcript show: 'failed'].
 	Transcript show: 'ok'; cr.
-	socket := Socket newTCP.
+	socket _ Socket newTCP.
 	socket connectTo: (NetNameResolver addressForName: remoteHost) port: remotePort.
 	socket waitForConnectionUntil: Socket standardDeadline.
 	Transcript show: 'client endpoint created'; cr.
-	bytesToSend := 1000000.
-	sendBuf := String new: 4000 withAll: $x.
-	receiveBuf := String new: 50000.
-	done := false.
-	bytesSent := bytesReceived := packetsSent := packetsReceived := 0.
-	t := Time
+	bytesToSend _ 1000000.
+	sendBuf _ String new: 4000 withAll: $x.
+	receiveBuf _ String new: 50000.
+	done _ false.
+	bytesSent _ bytesReceived _ packetsSent _ packetsReceived _ 0.
+	t _ Time
 				millisecondsToRun: 
 					[[done]
 						whileFalse: 
 							[(socket sendDone and: [bytesSent < bytesToSend])
 								ifTrue: 
-									[packetsSent := packetsSent + 1.
-									bytesSent := bytesSent + (socket sendData: sendBuf)].
+									[packetsSent _ packetsSent + 1.
+									bytesSent _ bytesSent + (socket sendData: sendBuf)].
 							socket dataAvailable
 								ifTrue: 
-									[packetsReceived := packetsReceived + 1.
-									bytesReceived := bytesReceived + (socket receiveDataInto: receiveBuf)].
-							done := bytesSent >= bytesToSend].
+									[packetsReceived _ packetsReceived + 1.
+									bytesReceived _ bytesReceived + (socket receiveDataInto: receiveBuf)].
+							done _ bytesSent >= bytesToSend].
 					[bytesReceived < bytesToSend]
 						whileTrue: [socket dataAvailable
 								ifTrue: 
-									[packetsReceived := packetsReceived + 1.
-									bytesReceived := bytesReceived + (socket receiveDataInto: receiveBuf)]]].
+									[packetsReceived _ packetsReceived + 1.
+									bytesReceived _ bytesReceived + (socket receiveDataInto: receiveBuf)]]].
 	socket closeAndDestroy.
 	Transcript show: 'remoteClient TCP test done; time = ' , t printString; cr.
 	Transcript show: packetsSent printString , ' packets, ' , bytesSent printString ,
@@ -232,7 +232,7 @@ UnixProcess class >> cloneSqueak [
 	"UnixProcess cloneSqueak"
 
 	| proc |
-	proc := self forkSqueak.
+	proc _ self forkSqueak.
 	proc ifNil: [self noAccessorAvailable].
 	^ proc
 
@@ -290,15 +290,15 @@ UnixProcess class >> eightLeafSqueakTree [
 	"UnixProcess eightLeafSqueakTree inspect"
 
 	| depth this pidArray debugString |
-	depth := 3.
-	this := OSProcess thisOSProcess.
+	depth _ 3.
+	this _ OSProcess thisOSProcess.
 	this stdOut ifNil: [self noAccessorAvailable. ^ nil].
-	pidArray := Array new: depth.
+	pidArray _ Array new: depth.
 	(1 to: depth) do: [ :e | | p pid |
-		p := this forkSqueak.
-		pid := (p == this) ifTrue: [0] ifFalse: [p pid].	"Use Unix fork(2) convention"
+		p _ this forkSqueak.
+		pid _ (p == this) ifTrue: [0] ifFalse: [p pid].	"Use Unix fork(2) convention"
 		pidArray at: e put: pid].
-	debugString := 'pid ', (this pid printString), ' ppid ', (this ppid printString), ' ',
+	debugString _ 'pid ', (this pid printString), ' ppid ', (this ppid printString), ' ',
 		(pidArray printString), (Character lf asString).
 	this stdOut nextPutAll: debugString.
 	^ pidArray
@@ -424,8 +424,8 @@ UnixProcess class >> headlessChild [
 	"UnixProcess headlessChild"
 
 	| this childBlock |
-	this := OSProcess thisOSProcess.
-	childBlock :=
+	this _ OSProcess thisOSProcess.
+	childBlock _
 		[this stdOut nextPutAll: 'hello world from child process '.
 		this pid printOn: OSProcess thisOSProcess stdOut.
 		this stdOut nextPut: Character lf ].
@@ -450,7 +450,7 @@ UnixProcess class >> listDirectory [
 	"UnixProcess listDirectory"
 
 	| proc |
-	proc := self
+	proc _ self
 			forkJob: '/bin/ls'
 			arguments: nil
 			environment: nil
@@ -485,9 +485,9 @@ UnixProcess class >> makeVmIn: buildDirectoryPathName interactive: aBoolean [
 	"UnixProcess makeVmIn: '/usr/local/squeak/Squeak-2.8/build' interactive: true"
 
 	| commandString result |
-	commandString := 'cd ', buildDirectoryPathName, '; make'.
+	commandString _ 'cd ', buildDirectoryPathName, '; make'.
 	Transcript cr; show: 'running external command "', commandString, '"'; cr.
-	result := self waitForCommandOutputArray: commandString.
+	result _ self waitForCommandOutputArray: commandString.
 	((result at: 3) == 0 and: [(result at: 2) isEmpty])
 		ifTrue:
 			[Transcript show: 'make completed successfully, restarting VM'; cr.
@@ -539,7 +539,7 @@ UnixProcess class >> restartVirtualMachine [
 	"UnixProcess restartVirtualMachine"
 
 	| proc |
-	proc := self forkSqueak.
+	proc _ self forkSqueak.
 	proc isNil
 		ifTrue: 
 			[self noAccessorAvailable.
@@ -577,69 +577,69 @@ UnixProcess class >> runTests [
 	"UnixProcess runTests"
 
 	| this s p failures result a |
-	failures := 0.
+	failures _ 0.
 	Transcript show: 'Begin OSProcess tests'; cr.
 	Transcript show: 'Test for working ProcessAccessor ... '.
-	this := OSProcess thisOSProcess.
+	this _ OSProcess thisOSProcess.
 	(this pid isKindOf: Integer)
 		ifTrue: [Transcript show: 'OK'; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'Echo one line of text previously entered from stdin ... '.
-	s := OSProcess readFromStdIn.
+	s _ OSProcess readFromStdIn.
 	s size > 0
 		ifTrue: [Transcript show: 'OK'; cr; show: s; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'Message to stdout ... '.
 	(OSProcess helloWorld isKindOf: AttachableFileStream)
 		ifTrue: [Transcript show: 'OK'; cr; show: s; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'Message to stderr ... '.
 	(OSProcess helloStdErr isKindOf: AttachableFileStream)
 		ifTrue: [Transcript show: 'OK'; cr; show: s; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'UnixProcess cataFile ... '.
-	p := UnixProcess catAFile.
+	p _ UnixProcess catAFile.
 	(Delay forSeconds: 1) wait.
 	p exitStatus == 0
 		ifTrue: [Transcript show: 'OK'; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'UnixProcess testEnvSet ... '.
-	p := UnixProcess testEnvSet.
+	p _ UnixProcess testEnvSet.
 	(Delay forSeconds: 1) wait.
 	p exitStatus == 0
 		ifTrue: [Transcript show: 'OK'; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'UnixProcess catFromFileToFiles ... '.
 	OSProcess command: 'rm /tmp/deleteMe.out'.
 	OSProcess command: 'rm /tmp/deleteMe.err'.
-	p := UnixProcess catFromFileToFiles.
+	p _ UnixProcess catFromFileToFiles.
 	(Delay forSeconds: 1) wait.
 	p exitStatus == 0
 		ifTrue: [Transcript show: 'OK'; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'UnixProcess testRunCommand ... '.
 	OSProcess command: 'rm /tmp/deleteMe.out'.
 	OSProcess command: 'rm /tmp/deleteMe.err'.
-	p := UnixProcess testRunCommand.
+	p _ UnixProcess testRunCommand.
 	(Delay forSeconds: 1) wait.
 	p exitStatus == 256
 		ifTrue: [Transcript show: 'OK'; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'UnixProcess testPipe ... '.
 	UnixProcess testPipe = 'this is some text to write into the pipe'
 		ifTrue: [Transcript show: 'OK'; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'UnixProcess testPipeLine ... '.
 	UnixProcess testPipeLine = 'This is the text to write out through one pipe, copy through an external cat command, and then read back in through another pipe.'
 		ifTrue: [Transcript show: 'OK'; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'UnixProcess spawnTenHeadlessChildren ... '.
-	p := UnixProcess spawnTenHeadlessChildren.
+	p _ UnixProcess spawnTenHeadlessChildren.
 	(p size == 10 and: [(p select: [:e | (e runState == #running) | (e exitStatus == 0)]) size == 10])
 		ifTrue: [Transcript show: 'OK'; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'UnixProcess cloneSqueak ... '.
-	p := UnixProcess cloneSqueak.
+	p _ UnixProcess cloneSqueak.
 	(p isKindOf: UnixProcess)
 		ifTrue: 
 			[(Delay forSeconds: 1) wait.
@@ -647,43 +647,43 @@ UnixProcess class >> runTests [
 	(Delay forSeconds: 5) wait.
 	p exitStatus == 0
 		ifTrue: [Transcript show: 'OK'; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'UnixProcess squeakSqueak ... '.
-	p := UnixProcess squeakSqueak.
+	p _ UnixProcess squeakSqueak.
 	(Delay forSeconds: 5) wait.
 	OSProcess thisOSProcess sigkill: p.
 	(Delay forSeconds: 1) wait.
 	p exitStatus == 9
 		ifTrue: [Transcript show: 'OK'; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'UnixProcess restartVirtualMachine ... '.
-	p := UnixProcess restartVirtualMachine.
+	p _ UnixProcess restartVirtualMachine.
 	p pid == OSProcess thisOSProcess pid
 		ifTrue: [Transcript show: 'OK'; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'UnixProcess command: ''cat'' input: ''this is some test data'' ... '.
-	p := (OSProcess thisOSProcess
+	p _ (OSProcess thisOSProcess
 		command: 'cat'
 		input: 'this is some test data').
 	(Delay forSeconds: 1) wait.
 	p upToEnd = 'this is some test data'
 		ifTrue: [Transcript show: 'OK'; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'UnixProcess waitForCommandOutput: ''echo sleeping...; sleep 1; echo I just slept for one second'' ... '.
 	('*I just slept for one second*' match:
 		(OSProcess thisOSProcess
 			waitForCommandOutput: 'echo sleeping...; sleep 1; echo I just slept for one second'))
 		ifTrue: [Transcript show: 'OK'; cr]
-		ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1].
+		ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1].
 	Transcript show: 'Unix command pipeline with output and error returned in an array ... '.
 	(Smalltalk hasClassNamed: #PipeableOSProcess)
 		ifTrue:
-			[a := (((Smalltalk at: #PipeableOSProcess) command: 'echo this is a test; BOGUS') | 'cut -c11-14') outputAndError.
+			[a _ (((Smalltalk at: #PipeableOSProcess) command: 'echo this is a test; BOGUS') | 'cut -c11-14') outputAndError.
 			(((a isKindOf: Array)
 				and: ['test*' match: (a at: 1)])
 					and: ['*BOGUS*' match: (a at: 2)])
 						ifTrue: [Transcript show: 'OK'; cr]
-						ifFalse: [Transcript show: 'NFG'; cr. failures := failures + 1]]
+						ifFalse: [Transcript show: 'NFG'; cr. failures _ failures + 1]]
 		ifFalse:
 			[Transcript show: 'skipping PipeableOSProcess test (requires CommandShell)'; cr].
 
@@ -693,8 +693,8 @@ UnixProcess class >> runTests [
 		UnixProcess recapitate].
 
 	failures == 1
-		ifTrue: [result := 'OSProcess tests completed with ', failures printString, ' failure']
-		ifFalse: [result := 'OSProcess tests completed with ', failures printString, ' failures'].
+		ifTrue: [result _ 'OSProcess tests completed with ', failures printString, ' failure']
+		ifFalse: [result _ 'OSProcess tests completed with ', failures printString, ' failures'].
 	Transcript show: result; cr.
 
 	^ result
@@ -730,7 +730,7 @@ UnixProcess class >> saveImageInBackground: savedImageName nice: niceFlag [
 		(niceFlag notNil and: [niceFlag]) ifTrue:
 			["lower priority of background OS process"
 			OSProcess accessor nice: 1].
-		st := SmalltalkImage current.
+		st _ SmalltalkImage current.
 		(SourceFiles at: 2) ifNotNil:
 			["ensure that copying the changes file will always work"
 			st closeSourceFiles.
@@ -783,11 +783,11 @@ UnixProcess class >> spawnTenHeadlessChildren [
 	"UnixProcess spawnTenHeadlessChildren"
 
 	| childBlock count children this |
-	this := OSProcess thisOSProcess.
+	this _ OSProcess thisOSProcess.
 	this stdOut ifNil: [self noAccessorAvailable. ^ nil].
-	count := 10.
-	children := Array new: count.
-	childBlock := 
+	count _ 10.
+	children _ Array new: count.
+	childBlock _ 
 			[this stdOut nextPutAll: 'hello world from child process '.
 			this pid printOn: this stdOut.
 			this stdOut nextPut: Character lf.
@@ -810,7 +810,7 @@ UnixProcess class >> squeakSqueak [
 	"UnixProcess squeakSqueak"
 
 	| proc |
-	proc := self squeak.
+	proc _ self squeak.
 	proc ifNil: [self noAccessorAvailable].
 	^ proc
 
@@ -825,7 +825,7 @@ UnixProcess class >> startSwiki: aSwiki onPort: num loggingTo: aFileName [
 	| proc |
 	(Smalltalk hasClassNamed: #SwikiAction)
 		ifTrue:
-			[proc := self forkSqueakAndDo:
+			[proc _ self forkSqueakAndDo:
 				[(Smalltalk at: #SwikiAction) new restore: 'myswiki'.
 				(Smalltalk at: #PWS) serveOnPort: num loggingTo: aFileName.
 				UnixProcess decapitate].
@@ -870,11 +870,11 @@ UnixProcess class >> testEnvSet [
 	"UnixProcess testEnvSet"
 
 	| e proc |
-	e := Dictionary new.
+	e _ Dictionary new.
 	e at: #KEY1 put: 'value1';
 	 at: #KEY2 put: 'value2';
 	 at: #KEY3 put: 'value3'.
-	proc := self
+	proc _ self
 			forkJob: '/bin/sh'
 			arguments: #('-c' 'env' )
 			environment: e
@@ -891,14 +891,14 @@ UnixProcess class >> testPipe [
 	"UnixProcess testPipe inspect"
 
 	| s p r |
-	s := 'this is some text to write into the pipe'.
-	p := OSPipe new.
+	s _ 'this is some text to write into the pipe'.
+	p _ OSPipe new.
 	p ifNil: 
 		[self noAccessorAvailable.
 		^ p].
 	p writer nextPutAll: s.
 	p writer close.
-	r := p reader next: s size.
+	r _ p reader next: s size.
 	p reader close.
 	^ r
 ]
@@ -919,18 +919,18 @@ UnixProcess class >> testPipeLine [
 
 	| testString pipe1 pipe2 input output src dest desc result child |
 	OSProcess accessor canAccessSystem ifFalse: [^ nil].
-	testString := 'This is the text to write out through one pipe, copy through an external cat command, and then read back in through another pipe.'.
-	pipe1 := OSPipe blockingPipe.
-	pipe2 := OSPipe nonBlockingPipe.
-	input := pipe1 reader.
-	output := pipe2 writer.
-	src := pipe1 writer.
-	dest := pipe2 reader.
-	desc := Array
+	testString _ 'This is the text to write out through one pipe, copy through an external cat command, and then read back in through another pipe.'.
+	pipe1 _ OSPipe blockingPipe.
+	pipe2 _ OSPipe nonBlockingPipe.
+	input _ pipe1 reader.
+	output _ pipe2 writer.
+	src _ pipe1 writer.
+	dest _ pipe2 reader.
+	desc _ Array
 				with: input
 				with: output
 				with: nil.
-	child := self
+	child _ self
 				forkJob: '/bin/cat'
 				arguments: nil
 				environment: nil
@@ -940,7 +940,7 @@ UnixProcess class >> testPipeLine [
 	src nextPutAll: testString.
 	src close.
 	(Delay forSeconds: 1) wait.
-	result := dest next: testString size.
+	result _ dest next: testString size.
 	dest close.
 	child sigterm. "Tell the child to exit"
 	^ result
@@ -956,18 +956,18 @@ UnixProcess class >> testRunCommand [
 	"UnixProcess testRunCommand"
 
 	| out err desc args proc |
-	out := FileStream newFileNamed: '/tmp/deleteMe.out'.
-	err := FileStream newFileNamed: '/tmp/deleteMe.err'.
-	desc := Array
+	out _ FileStream newFileNamed: '/tmp/deleteMe.out'.
+	err _ FileStream newFileNamed: '/tmp/deleteMe.err'.
+	desc _ Array
 				with: nil
 				with: out
 				with: err.
-	args := Array
+	args _ Array
 				with: '-l'
 				with: '/etc'
 				with: '/etc/noSuchFile'
 				with: '/etc/anotherNonexistentFile'.
-	proc := self
+	proc _ self
 				forkJob: '/bin/ls'
 				arguments: args
 				environment: nil
@@ -985,12 +985,12 @@ UnixProcess class >> uniqueNameForSavedImage [
 	"UnixProcess uniqueNameForSavedImage"
 
 	| now month day hour minute second |
-	now := DateAndTime now.
-	month := now month asString.
-	day := now dayOfMonth asString.
-	hour := now hour24 asString.
-	minute := now minute asString.
-	second := now second asString.
+	now _ DateAndTime now.
+	month _ now month asString.
+	day _ now dayOfMonth asString.
+	hour _ now hour24 asString.
+	minute _ now minute asString.
+	second _ now second asString.
 	^ 'squeak-',
 		now year asString,
 		(month size < 2 ifTrue: ['0', month] ifFalse: [month]),
@@ -1039,21 +1039,21 @@ UnixProcess >> argsAsFlatArrayAndOffsets: anArrayOfNullTerminatedStrings [
 
 	| offset arraySize flatStringArray ws addresses |
 	"Preserve offset space to hold address pointers."
-	offset := (anArrayOfNullTerminatedStrings size + 1) * self processAccessor sizeOfPointer.
+	offset _ (anArrayOfNullTerminatedStrings size + 1) * self processAccessor sizeOfPointer.
 	"Allocate flat strings buffer"
-	arraySize := (anArrayOfNullTerminatedStrings collect: [:e | e size]) sum
+	arraySize _ (anArrayOfNullTerminatedStrings collect: [:e | e size]) sum
 		+ ((anArrayOfNullTerminatedStrings size + 1) * self processAccessor sizeOfPointer).
 	"Flatten the strings out into a buffer, leaving room at the
 	beginning of the buffer for an array of addresses."
-	flatStringArray := String new: arraySize.
-	ws := WriteStream on: flatStringArray.
+	flatStringArray _ String new: arraySize.
+	ws _ WriteStream on: flatStringArray.
 	offset timesRepeat: [ws nextPut: (Character value: 0)].
 	anArrayOfNullTerminatedStrings do: [:e | ws nextPutAll: e].
 	"Find address offsets to be used in creating the addresses for the strings."
-	ws := WriteStream on: (Array new: anArrayOfNullTerminatedStrings size).
+	ws _ WriteStream on: (Array new: anArrayOfNullTerminatedStrings size).
 	(anArrayOfNullTerminatedStrings collect: [:e | e size])
-		inject: offset into: [:p :e | ws nextPut: p. p := p + e].
-	addresses := ws contents.
+		inject: offset into: [:p :e | ws nextPut: p. p _ p + e].
+	addresses _ ws contents.
 	"Results"
 	^ Array with: flatStringArray with: addresses
 
@@ -1076,9 +1076,9 @@ UnixProcess >> chDir: pathString [
 	"OSProcess thisOSProcess chDir: FileDirectory default pathName"
 
 	| realPath result |
-	realPath := self processAccessor realpath: pathString.
-	realPath ifNil: [realPath := pathString].
-	result := self processAccessor chDir: realPath.
+	realPath _ self processAccessor realpath: pathString.
+	realPath ifNil: [realPath _ pathString].
+	result _ self processAccessor chDir: realPath.
 	result isNil
 		ifTrue:
 			[(self environmentAt: #PWD)
@@ -1103,7 +1103,7 @@ UnixProcess >> command: aCommandString [
 		ifTrue:
 			[self class noAccessorAvailable. ^nil]
 		ifFalse:
-			[proc := self
+			[proc _ self
 					forkJob: ExternalUnixOSProcess defaultShellPath
 					arguments: (Array with: '-c' with: aCommandString)
 					environment: nil
@@ -1129,7 +1129,7 @@ UnixProcess >> command: aCommandString input: aStreamOrString [
 	| proc |
 	(Smalltalk hasClassNamed: #PipeableOSProcess)
 		ifTrue:
-			[proc := (Smalltalk at: #PipeableOSProcess) command: aCommandString.
+			[proc _ (Smalltalk at: #PipeableOSProcess) command: aCommandString.
 			proc ifNil: [^ nil].
 			proc nextPutAll: aStreamOrString contents.
 			proc pipeToInput close.
@@ -1154,23 +1154,23 @@ UnixProcess >> envAsFlatArrayAndOffsets: anEnvironmentDictionary [
 
 	| offset envArray arraySize flatStringArray ws addresses |
 	"Preserve offset space to hold address pointers."
-	offset := (anEnvironmentDictionary size + 1) * self processAccessor sizeOfPointer.
+	offset _ (anEnvironmentDictionary size + 1) * self processAccessor sizeOfPointer.
 	"Build collection of environment strings"
-	envArray := OrderedCollection new.
+	envArray _ OrderedCollection new.
 	anEnvironmentDictionary keysAndValuesDo: [:k :v | envArray add: (k, '=', v)].
 	"Allocate flat strings buffer"
-	arraySize := ((envArray collect: [:e | e size + 1]) sum) + offset.
+	arraySize _ ((envArray collect: [:e | e size + 1]) sum) + offset.
 	"Flatten the strings out into a buffer, leaving room at the beginning of
 	the buffer for an array of addresses."
-	flatStringArray := String new: arraySize.
-	ws := WriteStream on: flatStringArray.
+	flatStringArray _ String new: arraySize.
+	ws _ WriteStream on: flatStringArray.
 	offset timesRepeat: [ws nextPut: (Character value: 0)].
 	envArray do: [:e | ws nextPutAll: e; nextPut: (Character value: 0)].
 	"Find address offsets to be used in creating the addresses for the strings."
-	ws := WriteStream on: (Array new: anEnvironmentDictionary size).
+	ws _ WriteStream on: (Array new: anEnvironmentDictionary size).
 	(envArray collect: [:e | e size + 1])
-		inject: offset into: [:p :e | ws nextPut: p. p := p + e].
-	addresses := ws contents.
+		inject: offset into: [:p :e | ws nextPut: p. p _ p + e].
+	addresses _ ws contents.
 	"Results"
 	^ Array with: flatStringArray with: addresses
 
@@ -1199,7 +1199,7 @@ UnixProcess >> environmentAt: aSymbol put: aString [
 
 	| s |
 	self initialize.
-	s := self processAccessor environmentAt: aSymbol put: aString.
+	s _ self processAccessor environmentAt: aSymbol put: aString.
 	s ifNotNil: [ self environment at: aSymbol asSymbol put: aString ].
 	^ s
 
@@ -1211,27 +1211,27 @@ UnixProcess >> finalize [
 	"Use this to release any external resources prior to reinitializing."
 
 	super finalize.
-	stdIn := stdIn ifNotNil:
+	stdIn _ stdIn ifNotNil:
 		[[stdIn close; release] on: Error do: [:ex | ].
 		nil].
-	stdIn := stdOut ifNotNil:
+	stdIn _ stdOut ifNotNil:
 		[[stdOut close; release] on: Error do: [:ex | ].
 		nil].
-	stdIn := stdErr ifNotNil:
+	stdIn _ stdErr ifNotNil:
 		[[stdErr close; release] on: Error do: [:ex | ].
 		nil].
-	sessionID := nil.
-	ppid := nil.
-	programName := nil.
-	arguments := nil.
-	path := nil.
-	environment := nil.
+	sessionID _ nil.
+	ppid _ nil.
+	programName _ nil.
+	arguments _ nil.
+	path _ nil.
+	environment _ nil.
 	self updateAllMyChildren.
-	allMyChildren := nil.
+	allMyChildren _ nil.
 	processAccessor
 		ifNotNil: 
 			[processAccessor removeDependent: self.
-			processAccessor := nil]
+			processAccessor _ nil]
 
 ]
 
@@ -1256,17 +1256,17 @@ UnixProcess >> forkHeadlessSqueak [
 	stdOut ifNil: [^ nil].
 	self stdOut flush.
 	self stdErr flush.
-	thisPid := self pid.
-	connected := self processAccessor canControlXDisplay
+	thisPid _ self pid.
+	connected _ self processAccessor canControlXDisplay
 					and: [self flushXDisplay notNil].
-	childPid := self processAccessor forkSqueak.
+	childPid _ self processAccessor forkSqueak.
 	childPid == 0
 		ifTrue:
 			[connected ifTrue: [self disconnectXDisplay].
 			OSProcess thisOSProcess processAccessor changed: #pid.
 			^ self]
 		ifFalse:
-			[child := ExternalUnixOSProcess new.
+			[child _ ExternalUnixOSProcess new.
 			child pid: childPid.
 			child ppid: thisPid.
 			child programName: self programName.
@@ -1295,7 +1295,7 @@ UnixProcess >> forkHeadlessSqueakAndDo: aBlock [
 	stdout, and stderr after its parent exits."
 
 	| childOrThisProc |
-	childOrThisProc := self forkHeadlessSqueak.
+	childOrThisProc _ self forkHeadlessSqueak.
 	childOrThisProc
 		ifNil: 
 			[self class noAccessorAvailable.
@@ -1325,7 +1325,7 @@ UnixProcess >> forkHeadlessSqueakAndDoThenQuit: aBlock [
 	"self thisOSProcess forkHeadlessSqueakAndDoThenQuit: [OSProcess thisOSProcess command: 'xeyes']"
 
 	| childOrThisProc |
-	childOrThisProc := self forkHeadlessSqueak.
+	childOrThisProc _ self forkHeadlessSqueak.
 	childOrThisProc
 		ifNil: 
 			[self class noAccessorAvailable.
@@ -1372,17 +1372,17 @@ UnixProcess >> forkSqueak [
 	stdOut ifNil: [^ nil].
 	self stdOut flush.
 	self stdErr flush.
-	thisPid := self pid.
-	connected := self processAccessor canControlXDisplay
+	thisPid _ self pid.
+	connected _ self processAccessor canControlXDisplay
 					and: [self flushXDisplay notNil].
-	childPid := self processAccessor forkSqueak.
+	childPid _ self processAccessor forkSqueak.
 	childPid == 0
 		ifTrue:
 			[connected ifTrue: [self disconnectXDisplay; recapitate].
 			OSProcess thisOSProcess processAccessor changed: #pid.
 			^ self]
 		ifFalse:
-			[child := ExternalUnixOSProcess new.
+			[child _ ExternalUnixOSProcess new.
 			child pid: childPid.
 			child ppid: thisPid.
 			child programName: self programName.
@@ -1412,7 +1412,7 @@ UnixProcess >> forkSqueakAndDo: aBlock [
 		[Object inform: 'Hi, I am the child Squeak process.']"
 
 	| childOrThisProc |
-	childOrThisProc := self forkSqueak.
+	childOrThisProc _ self forkSqueak.
 	(childOrThisProc == self) ifTrue: [aBlock value]. "Child process"
 	^ childOrThisProc
 ]
@@ -1431,7 +1431,7 @@ UnixProcess >> forkSqueakAndDoThenQuit: aBlock [
 		[Object inform: 'Hi, I am the child Squeak process.']"
 
 	| childOrThisProc |
-	childOrThisProc := self forkSqueak.
+	childOrThisProc _ self forkSqueak.
 	(childOrThisProc == self)
 		ifTrue:
 			[ aBlock value.
@@ -1446,11 +1446,11 @@ UnixProcess >> getArgumentList [
 	stored as the programName instance variable."
 
 	| index val list |
-	list := OrderedCollection new.
-	index := 2.
-	[(val := processAccessor primArgumentAt: index) notNil] whileTrue: [
+	list _ OrderedCollection new.
+	index _ 2.
+	[(val _ processAccessor primArgumentAt: index) notNil] whileTrue: [
 		list add: val.
-		index := index + 1].
+		index _ index + 1].
 	^ list asArray
 
 
@@ -1474,13 +1474,13 @@ UnixProcess >> getEnvironmentDictionary [
 	"Answer an environment dictionary using an OSProcessAccessor."
 
 	| index str key val env |
-	env := Dictionary new.
-	index := 1.
-	[(str := processAccessor primEnvironmentAt: index) notNil] whileTrue: [
-		key := (str copyUpTo: $=) asSymbol.
-		val := (str copyFrom: ((str indexOf: $=) + 1) to: (str size)).
+	env _ Dictionary new.
+	index _ 1.
+	[(str _ processAccessor primEnvironmentAt: index) notNil] whileTrue: [
+		key _ (str copyUpTo: $=) asSymbol.
+		val _ (str copyFrom: ((str indexOf: $=) + 1) to: (str size)).
 		env at: key put: val.
-		index := index + 1].
+		index _ index + 1].
 	^ env
 
 
@@ -1492,7 +1492,7 @@ UnixProcess >> getProgramName [
 	"Answer the name of the program which is being run by this OS process. Assume the
 	Unix convention where the first element of (char **)argv is the program name."
 
-	^ programName := processAccessor primArgumentAt: 1
+	^ programName _ processAccessor primArgumentAt: 1
 
 ]
 
@@ -1506,9 +1506,9 @@ UnixProcess >> initialize [
 		ifTrue: 
 			[self refreshFromProcessAccessor]
 		ifFalse: 
-			[stdIn := nil.
-			stdOut := nil.
-			stdErr := nil]
+			[stdIn _ nil.
+			stdOut _ nil.
+			stdErr _ nil]
 
 ]
 
@@ -1533,7 +1533,7 @@ UnixProcess >> needsRefresh [
 { #category : #accessing }
 UnixProcess >> path [
 
-	^ path := self pathString
+	^ path _ self pathString
 
 ]
 
@@ -1541,7 +1541,7 @@ UnixProcess >> path [
 UnixProcess >> path: aPathString [
 
 	self environmentAt: #PATH put: aPathString.
-	path := self pathString
+	path _ self pathString
 ]
 
 { #category : #private }
@@ -1555,7 +1555,7 @@ UnixProcess >> pathString [
 { #category : #accessing }
 UnixProcess >> pid [
 
-	^ pid := self processAccessor primGetPid
+	^ pid _ self processAccessor primGetPid
 
 ]
 
@@ -1565,7 +1565,7 @@ UnixProcess >> ppid [
 	to be reparented when the parent exits. The child does not know about this, so
 	we refresh ppid on every access."
 
-	^ ppid := processAccessor primGetPPid
+	^ ppid _ processAccessor primGetPPid
 
 ]
 
@@ -1594,51 +1594,51 @@ UnixProcess >> processProxy: anExternalProcess forkAndExec: executableFile argum
 	| nullString progName args argVecAndOffsets argVec argOffsets
 	envVecAndOffsets envVec envOffsets in out err childPid pwd |
 	stdOut ifNil: [^ nil].
-	nullString := (Character value: 0) asString.
-	progName := executableFile, nullString.		"Null terminated string"
+	nullString _ (Character value: 0) asString.
+	progName _ executableFile, nullString.		"Null terminated string"
 	arrayOfStrings isNil							"Should be a (possibly empty) array"
 		ifTrue:
-			[args := Array with: progName]		"First argument is the program name (Unix convention)"
+			[args _ Array with: progName]		"First argument is the program name (Unix convention)"
 		ifFalse:
-			[args := (OrderedCollection new: arrayOfStrings size + 2)
+			[args _ (OrderedCollection new: arrayOfStrings size + 2)
 						add: progName;
 						addAll: (arrayOfStrings collect: [:e | e, nullString ]);	"Null terminate each string"
 						yourself;
 						asArray].
-	argVecAndOffsets := self argsAsFlatArrayAndOffsets: args.
-	argVec := argVecAndOffsets at: 1.
-	argOffsets := argVecAndOffsets at: 2.
+	argVecAndOffsets _ self argsAsFlatArrayAndOffsets: args.
+	argVec _ argVecAndOffsets at: 1.
+	argOffsets _ argVecAndOffsets at: 2.
 	(stringDictionary notNil and: [stringDictionary ~= (self environment)])
 		ifTrue:
-			[envVecAndOffsets := self envAsFlatArrayAndOffsets: stringDictionary.
-			envVec := envVecAndOffsets at: 1.
-			envOffsets := envVecAndOffsets at: 2]
+			[envVecAndOffsets _ self envAsFlatArrayAndOffsets: stringDictionary.
+			envVec _ envVecAndOffsets at: 1.
+			envOffsets _ envVecAndOffsets at: 2]
 		ifFalse:
-			[envVec := nil.
-			envOffsets := nil].	"Same as current environment, so just pass nil."
+			[envVec _ nil.
+			envOffsets _ nil].	"Same as current environment, so just pass nil."
 	arrayOf3Streams isNil
 		ifTrue:
-			[in := self handleFromAccessor: (self stdIn ioHandle).
-			out := self handleFromAccessor: (self stdOut ioHandle).
-			err := self handleFromAccessor: (self stdIn ioHandle)]
+			[in _ self handleFromAccessor: (self stdIn ioHandle).
+			out _ self handleFromAccessor: (self stdOut ioHandle).
+			err _ self handleFromAccessor: (self stdIn ioHandle)]
 		ifFalse:
 			[(arrayOf3Streams at: 1)
 				isNil
-					ifTrue: [in := self handleFromAccessor: (self stdIn ioHandle)]
-					ifFalse: [in := self handleFromFileStream: (arrayOf3Streams at: 1)].			
+					ifTrue: [in _ self handleFromAccessor: (self stdIn ioHandle)]
+					ifFalse: [in _ self handleFromFileStream: (arrayOf3Streams at: 1)].			
 			(arrayOf3Streams at: 2)
 				isNil
-					ifTrue: [ out := self handleFromAccessor: (self stdOut ioHandle)]
-					ifFalse: [ out := self handleFromFileStream: (arrayOf3Streams at: 2)].
+					ifTrue: [ out _ self handleFromAccessor: (self stdOut ioHandle)]
+					ifFalse: [ out _ self handleFromFileStream: (arrayOf3Streams at: 2)].
 			(arrayOf3Streams at: 3)
 				isNil
-					ifTrue: [ err := self handleFromAccessor: (self stdErr ioHandle)]
-					ifFalse: [ err := self handleFromFileStream: (arrayOf3Streams at: 3)]].
-	pwd := anExternalProcess pwd.
+					ifTrue: [ err _ self handleFromAccessor: (self stdErr ioHandle)]
+					ifFalse: [ err _ self handleFromFileStream: (arrayOf3Streams at: 3)]].
+	pwd _ anExternalProcess pwd.
 	(pwd = self getCwd)
-		ifTrue: [pwd := nil]
-		ifFalse: [pwd := pwd, nullString].
-	childPid := self processAccessor
+		ifTrue: [pwd _ nil]
+		ifFalse: [pwd _ pwd, nullString].
+	childPid _ self processAccessor
 				forkAndExec: progName
 				stdIn: in
 				stdOut: out
@@ -1674,7 +1674,7 @@ UnixProcess >> pthread [
 	to be reparented when the parent exits. The child does not know about this, so
 	we refresh pthread on every access."
 
-	^ pthread := processAccessor primGetThreadID
+	^ pthread _ processAccessor primGetThreadID
 
 ]
 
@@ -1684,17 +1684,17 @@ UnixProcess >> refreshFromProcessAccessor [
 	virtual machine is executing."
 
 	self needsRefresh ifTrue: [
-		sessionID := self processAccessor getSessionIdentifier.
-		pid := processAccessor primGetPid.
-		ppid := processAccessor primGetPPid.
-		pthread := processAccessor primGetThreadID.
+		sessionID _ self processAccessor getSessionIdentifier.
+		pid _ processAccessor primGetPid.
+		ppid _ processAccessor primGetPPid.
+		pthread _ processAccessor primGetThreadID.
 		self setStdIn.
 		self setStdOut.
 		self setStdErr.
-		programName := self getProgramName.
-		arguments := self getArgumentList.
-		environment := self getEnvironmentDictionary.
-		path := self pathString.
+		programName _ self getProgramName.
+		arguments _ self getArgumentList.
+		environment _ self getEnvironmentDictionary.
+		path _ self pathString.
 		self allMyChildren]
 
 ]
@@ -1828,7 +1828,7 @@ UnixProcess >> update: aParameter [
 	(aParameter == #startUp) ifTrue:
 		[^ self update: #pid].
 	aParameter == #invalidProcessAccessor ifTrue:
-		[processAccessor := processAccessor ifNotNil: [processAccessor removeDependent: self. nil].
+		[processAccessor _ processAccessor ifNotNil: [processAccessor removeDependent: self. nil].
 		^ self].
 	self error: 'Unexpected update parameter'
 ]
@@ -1842,8 +1842,8 @@ UnixProcess >> waitForCommand: aCommandString [
 	"OSProcess thisOSProcess waitForCommand: 'echo sleeping...; sleep 3; echo I just slept for three seconds'"
 
 	| proc d |
-	d := Delay forMilliseconds: 50.
-	proc := self
+	d _ Delay forMilliseconds: 50.
+	proc _ self
 		forkJob: ExternalUnixOSProcess defaultShellPath
 		arguments: (Array with: '-c' with: aCommandString)
 		environment: nil
@@ -1884,7 +1884,7 @@ UnixProcess >> waitForCommandOutputArray: aCommandString [
 	| proc |
 	(Smalltalk hasClassNamed: #PipeableOSProcess)
 		ifTrue:
-			[proc := (Smalltalk at: #PipeableOSProcess) command: aCommandString.
+			[proc _ (Smalltalk at: #PipeableOSProcess) command: aCommandString.
 			^ Array
 				with: proc output
 				with: proc errorUpToEnd

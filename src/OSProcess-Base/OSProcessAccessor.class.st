@@ -9,9 +9,9 @@ Class {
 		'canObtainSessionIdentifierFromPlugin'
 	],
 	#classVars : [
-		'UseIOHandle',
-		'ThisOSProcessAccessor',
 		'EmulateWin32FileLocking',
+		'ThisOSProcessAccessor',
+		'UseIOHandle',
 		'FileLockRegistry'
 	],
 	#category : #'OSProcess-Base'
@@ -47,7 +47,7 @@ OSProcessAccessor class >> emulateWin32FileLocking: trueOrFalse [
 	"self emulateWin32FileLocking: true"
 	"self emulateWin32FileLocking: false"
 
-	EmulateWin32FileLocking := trueOrFalse
+	EmulateWin32FileLocking _ trueOrFalse
 
 ]
 
@@ -64,10 +64,10 @@ OSProcessAccessor class >> forThisOSProcess [
 			[^ ThisOSProcessAccessor]
 		ifFalse:
 			["We are running on a different platform, so start a new accessor"
-			oldAccessor := ThisOSProcessAccessor.
+			oldAccessor _ ThisOSProcessAccessor.
 			oldAccessor changed: #invalidProcessAccessor.
 			oldAccessor release; finalize.
-			^ ThisOSProcessAccessor := self concreteClass basicNew initialize]
+			^ ThisOSProcessAccessor _ self concreteClass basicNew initialize]
 
 ]
 
@@ -76,8 +76,8 @@ OSProcessAccessor class >> initialize [
 
 	"OSProcessAccessor initialize"
 
-	UseIOHandle := (Smalltalk hasClassNamed: #IOHandle).
-	ThisOSProcessAccessor := nil.
+	UseIOHandle _ (Smalltalk hasClassNamed: #IOHandle).
+	ThisOSProcessAccessor _ nil.
 	self emulateWin32FileLocking: false.
 	self allSubInstances do: [:e | e finalize; release]
 
@@ -113,11 +113,11 @@ OSProcessAccessor class >> startUp: resuming [
 	This method is called by ThisOSProcess>>startUp. OSProcessAccessor does
 	not need to be registered in the system startup list."
 
-	resuming ifTrue: [FileLockRegistry := nil].
+	resuming ifTrue: [FileLockRegistry _ nil].
 	ThisOSProcessAccessor
 		ifNotNil:
 			[ThisOSProcessAccessor changed: #invalidProcessAccessor; release; finalize.
-			ThisOSProcessAccessor := nil].
+			ThisOSProcessAccessor _ nil].
 	self forThisOSProcess initialize
 
 ]
@@ -170,7 +170,7 @@ OSProcessAccessor >> canForwardExternalSignals [
 OSProcessAccessor >> canObtainSessionIdentifierFromPlugin [
 
 	^ canObtainSessionIdentifierFromPlugin ifNil:
-		[canObtainSessionIdentifierFromPlugin := self primGetSession notNil]
+		[canObtainSessionIdentifierFromPlugin _ self primGetSession notNil]
 
 ]
 
@@ -184,7 +184,7 @@ OSProcessAccessor >> emulateWin32FileLocking [
 { #category : #'file lock registry' }
 OSProcessAccessor >> fileLockRegistry [
 
-	^ FileLockRegistry ifNil: [FileLockRegistry := WeakSet new]
+	^ FileLockRegistry ifNil: [FileLockRegistry _ WeakSet new]
 
 ]
 
@@ -199,9 +199,9 @@ OSProcessAccessor >> getSessionIdentifier [
 	"OSProcess accessor getSessionIdentifier"
 
 	| session |
-	session := self primGetSession.
-	session ifNil: [session :=  self getSessionIdentifierFromSourcesFile].
-	session ifNil: [session :=  self getSessionIdentifierFromFileInSqueakDirectory].
+	session _ self primGetSession.
+	session ifNil: [session _  self getSessionIdentifierFromSourcesFile].
+	session ifNil: [session _  self getSessionIdentifierFromFileInSqueakDirectory].
 	^ session
 
 ]
@@ -225,8 +225,8 @@ OSProcessAccessor >> getSessionIdentifierFromFileInSqueakDirectory [
 	FileDirectory default fileNames do:
 		[:n | (FileStream readOnlyFileNamed: n) ifNotNilDo:
 			[:s | (Smalltalk hasClassNamed: #IOHandle)
-				ifTrue: [id := s ioHandle getHandle copyFrom: 5 to: 8]
-				ifFalse: [id := (id := s fileID) ifNotNil: [id copyFrom: 5 to: 8]].
+				ifTrue: [id _ s ioHandle getHandle copyFrom: 5 to: 8]
+				ifFalse: [id _ (id _ s fileID) ifNotNil: [id copyFrom: 5 to: 8]].
 			s close.
 			^ id]].
 	^ nil
@@ -249,11 +249,11 @@ OSProcessAccessor >> getSessionIdentifierFromSourcesFile [
 	"OSProcess accessor getSessionIdentifierFromSourcesFile"
 
 	| s id |
-	s := SourceFiles first.
+	s _ SourceFiles first.
 	s ifNil: [^ nil].
 	^ (Smalltalk hasClassNamed: #IOHandle)
 		ifTrue: [s ioHandle getHandle copyFrom: 5 to: 8]
-		ifFalse: [(id := s fileID) ifNotNil: [id copyFrom: 5 to: 8]]
+		ifFalse: [(id _ s fileID) ifNotNil: [id copyFrom: 5 to: 8]]
 
 ]
 
@@ -313,9 +313,9 @@ OSProcessAccessor >> handlesOsSignals [
 { #category : #'initialize - release' }
 OSProcessAccessor >> initialize [
 
-	canObtainSessionIdentifierFromPlugin := nil.
+	canObtainSessionIdentifierFromPlugin _ nil.
 	self canObtainSessionIdentifierFromPlugin.
-	sessionIdentifier := nil.
+	sessionIdentifier _ nil.
 	self sessionIdentifier.
 
 ]
@@ -348,8 +348,8 @@ OSProcessAccessor >> makePipeHandles [
 
 	| p |
 	self canObtainSessionIdentifierFromPlugin
-		ifTrue: [p := self primCreatePipe]
-		ifFalse: [p := self primCreatePipeWithSessionIdentifier: self sessionIdentifier].
+		ifTrue: [p _ self primCreatePipe]
+		ifFalse: [p _ self primCreatePipeWithSessionIdentifier: self sessionIdentifier].
 	p isNil
 		ifTrue: [^ nil]
 		ifFalse: [^ p collect: [:e | self ioAccessorFromSQFile: e]]
@@ -409,7 +409,7 @@ OSProcessAccessor >> removeInactiveLocks [
 { #category : #accessing }
 OSProcessAccessor >> sessionIdentifier [
 
-	^ sessionIdentifier ifNil: [sessionIdentifier := self getSessionIdentifier]
+	^ sessionIdentifier ifNil: [sessionIdentifier _ self getSessionIdentifier]
 
 ]
 

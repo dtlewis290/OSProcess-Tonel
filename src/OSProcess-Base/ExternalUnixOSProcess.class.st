@@ -88,7 +88,7 @@ ExternalUnixOSProcess class >> forkAndExec: executableFile arguments: arrayOfStr
 		descriptors: nil"
 
 	| proc |
-	proc := super new
+	proc _ super new
 		programName: executableFile;
 		arguments: arrayOfStrings;
 		initialEnvironment: stringDictionary.
@@ -108,7 +108,7 @@ ExternalUnixOSProcess class >> forkAndExec: executableFile arguments: arrayOfStr
 	"ExternalUnixOSProcess forkAndExec: '/bin/ls' arguments: nil environment: nil descriptors: nil workingDir: '/etc'"
 
 	| proc |
-	proc := super new
+	proc _ super new
 		programName: executableFile;
 		arguments: arrayOfStrings;
 		initialEnvironment: stringDictionary.
@@ -165,7 +165,7 @@ ExternalUnixOSProcess >> arguments [
 { #category : #accessing }
 ExternalUnixOSProcess >> arguments: arrayOfArgumentStrings [
 
-	arguments := arrayOfArgumentStrings
+	arguments _ arrayOfArgumentStrings
 ]
 
 { #category : #accessing }
@@ -178,7 +178,7 @@ ExternalUnixOSProcess >> exitStatus [
 { #category : #accessing }
 ExternalUnixOSProcess >> exitStatus: anInteger [
 
-	exitStatus := anInteger
+	exitStatus _ anInteger
 
 ]
 
@@ -211,7 +211,7 @@ ExternalUnixOSProcess >> initialEnvironment [
 { #category : #accessing }
 ExternalUnixOSProcess >> initialEnvironment: aDictionary [
 
-	initialEnvironment := aDictionary
+	initialEnvironment _ aDictionary
 ]
 
 { #category : #'initialize - release' }
@@ -232,7 +232,7 @@ ExternalUnixOSProcess >> pid [
 { #category : #accessing }
 ExternalUnixOSProcess >> pid: aPid [
 
-	pid := aPid
+	pid _ aPid
 
 ]
 
@@ -246,7 +246,7 @@ ExternalUnixOSProcess >> ppid [
 { #category : #accessing }
 ExternalUnixOSProcess >> ppid: aPid [
 
-	ppid := aPid
+	ppid _ aPid
 
 ]
 
@@ -279,27 +279,27 @@ ExternalUnixOSProcess >> programName [
 { #category : #accessing }
 ExternalUnixOSProcess >> programName: fileName [
 
-	programName := fileName
+	programName _ fileName
 ]
 
 { #category : #accessing }
 ExternalUnixOSProcess >> pwd [
 
-	pwd ifNil: [pwd := self accessor primGetCurrentWorkingDirectory].
+	pwd ifNil: [pwd _ self accessor primGetCurrentWorkingDirectory].
 	^ pwd
 ]
 
 { #category : #accessing }
 ExternalUnixOSProcess >> pwd: pathString [
 
-	pwd := pathString
+	pwd _ pathString
 ]
 
 { #category : #'initialize - release' }
 ExternalUnixOSProcess >> setDefaults [
 
 	| this |
-	this := OSProcess thisOSProcess.
+	this _ OSProcess thisOSProcess.
 	initialEnvironment ifNil: [self initialEnvironment: this environment].
 	initialStdIn ifNil: [self initialStdIn: this stdIn].
 	initialStdOut ifNil: [self initialStdOut: this stdOut].
@@ -423,13 +423,13 @@ ExternalUnixOSProcess >> update: aParameter [
 	aParameter == #runState
 		ifTrue: [| statusArray | 
 			"Has the process exited?"
-			statusArray := self accessor primGetChildExitStatus: self pid.
+			statusArray _ self accessor primGetChildExitStatus: self pid.
 			statusArray notNil
 				ifTrue: [self exitStatus: (statusArray at: 2).
 						^ self complete]].
 	aParameter == #accessibility
 		ifTrue: ["Does the process still exist, and is it reachable?"
-			((accessible := self isAccessible) notNil and: [accessible])
+			((accessible _ self isAccessible) notNil and: [accessible])
 				ifFalse: [^ self isRunning ifTrue: [self unknownRunState]]].
 	super update: aParameter
 

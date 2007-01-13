@@ -25,7 +25,7 @@ AsyncFileReadStream class >> stdIn [
 AsyncFileReadStream >> actAsExecutor [
 
 	super actAsExecutor.
-	eventHandler := nil
+	eventHandler _ nil
 ]
 
 { #category : #converting }
@@ -98,7 +98,7 @@ AsyncFileReadStream >> eventHandler [
 AsyncFileReadStream >> eventHandler: anAioEventHandler [
 	"The aio event handler. Provides notification whenever external data is available."
 
-	eventHandler := anAioEventHandler
+	eventHandler _ anAioEventHandler
 ]
 
 { #category : #finalization }
@@ -143,7 +143,7 @@ AsyncFileReadStream >> upToEndOfFile [
 	OS pipes. Close the file when end of file is detected."
 
 	| b |
-	b := super upToEndOfFile.
+	b _ super upToEndOfFile.
 	self isReadOnly
 		ifTrue: [self close].
 	^ b

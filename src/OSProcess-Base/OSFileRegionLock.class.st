@@ -52,7 +52,7 @@ OSFileRegionLock >> interval [
 OSFileRegionLock >> interval: anObject [
 	"Set the value of interval"
 
-	interval := anObject
+	interval _ anObject
 ]
 
 { #category : #private }
