@@ -85,6 +85,17 @@ ExternalPipe >> atEnd [
 
 ]
 
+{ #category : #testing }
+ExternalPipe >> atEndOfFile [
+	"Answer whether the receiver is at its end based on the result of
+	the last read operation. This uses feof() to test the underlying file
+	stream status, and can be used as an alternative to #atEnd, which
+	does not properly report end of file status for an OSPipe."
+
+	^ reader atEndOfFile
+
+]
+
 { #category : #accessing }
 ExternalPipe >> blocking [
 	"True if reader end is set to blocking mode."
@@ -150,14 +161,6 @@ ExternalPipe >> cr [
 	"Append a return character to the receiver."
 
 	self writer cr
-]
-
-{ #category : #finalization }
-ExternalPipe >> finalize [
-
-	self close.
-	^ super finalize
-
 ]
 
 { #category : #'initialize-release' }
@@ -257,14 +260,6 @@ ExternalPipe >> reader: aReadStream [
 	reader _ aReadStream
 ]
 
-{ #category : #finalization }
-ExternalPipe >> registerFinalization [
-	"Arrange for finalization at garbage collection time"
-
-	self finalizationRegistry add: self
-
-]
-
 { #category : #'initialize-release' }
 ExternalPipe >> setBlocking [
 	"Set the reader side of the pipe for blocking reads."
@@ -300,17 +295,6 @@ ExternalPipe >> setNonBlocking [
 
 ]
 
-{ #category : #testing }
-ExternalPipe >> testEndOfFile [
-	"Answer whether the receiver is at its end based on the result of
-	the last read operation. This uses feof() to test the underlying file
-	stream status, and can be used as an alternative to #atEnd, which
-	does not properly report end of file status for an OSPipe."
-
-	^ reader atEnd
-
-]
-
 { #category : #updating }
 ExternalPipe >> triggerDataReady [
 	"Notify any object waiting for data ready on the pipe."
@@ -326,6 +310,17 @@ ExternalPipe >> upToEnd [
 	reader closed
 		ifTrue: [^ '']
 		ifFalse: [^ reader upToEnd]
+]
+
+{ #category : #accessing }
+ExternalPipe >> upToEndOfFile [
+	"Answer the remaining elements in the pipe.  Use #testEndOfFile to
+	determine end of file status with feof(), required for reliable end of
+	file test on OS pipes."
+
+	reader closed
+		ifTrue: [^ '']
+		ifFalse: [^ reader upToEndOfFile]
 ]
 
 { #category : #updating }

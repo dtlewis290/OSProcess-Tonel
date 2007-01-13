@@ -90,7 +90,7 @@ ExternalWindowsOSProcess >> complete [
 
 	(threads notNil and: [threads size > 0]) ifTrue: [threads do: [:t | t complete]].
 	self closeHandles.
-	self runState: #complete
+	super complete
 
 ]
 
@@ -216,7 +216,7 @@ ExternalWindowsOSProcess >> value [
 				[self initialStdErr nextPutAll: 'cannot execute ', self commandLine; cr.
 				self exitStatus: #cannotExecuteCommandLine.
 				"FIXME: Close the OSPipes now, otherwise the image will block on a read"
-				self closeInitialStdIn; closeInitialStdOut; closeInitialStdErr.
+				self closeStreams.
 				[self complete] fork "defer execution so OSPipes stay in place for now"]
 			ifFalse:
 				[self pid: (procInfo at: 3).
@@ -232,6 +232,6 @@ ExternalWindowsOSProcess >> value [
 				passing these to the child, and there is no support yet for nonblocking
 				Windows OS pipes. Once those are available, this method needs to change
 				to support."
-				self closeInitialStdIn; closeInitialStdOut; closeInitialStdErr]].
+				self closeStreams]].
 
 ]

@@ -425,7 +425,8 @@ ExternalUnixOSProcess >> update: aParameter [
 			"Has the process exited?"
 			statusArray _ self accessor primGetChildExitStatus: self pid.
 			statusArray notNil
-				ifTrue: [^ self complete exitStatus: (statusArray at: 2)]].
+				ifTrue: [self exitStatus: (statusArray at: 2).
+						^ self complete]].
 	aParameter == #accessibility
 		ifTrue: ["Does the process still exist, and is it reachable?"
 			((accessible _ self isAccessible) notNil and: [accessible])
@@ -438,6 +439,6 @@ ExternalUnixOSProcess >> update: aParameter [
 ExternalUnixOSProcess >> value [
 	"Start the external process"
 
-	self isNotYetRunning ifTrue: [self forkChild]
+	self isNotYetRunning ifTrue: [self forkChild; closeStreams]
 
 ]

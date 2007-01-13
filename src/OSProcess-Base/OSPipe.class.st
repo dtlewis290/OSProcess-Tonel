@@ -56,23 +56,20 @@ OSPipe >> peek [
 
 { #category : #accessing }
 OSPipe >> upToEnd [
-	"Answer the remaining elements in the string. Use #upToEndOfFile
-	for a more reliable method. This method is retained for backward
-	compatibility (e.g. older versions of CommandShell)."
+	"Answer the remaining elements in the string. This method is retained for backward
+	compatibility with older versions of CommandShell."
 
-	| strm d s |
+	| strm s |
 	strm _ WriteStream on: ''.
-	d _ Delay forMilliseconds: 200.
-	[self atEnd] whileFalse:
-		[(s _ self next: 2000) isEmpty
-			ifTrue: [d wait]
-			ifFalse: [strm nextPutAll: s]].
-	^ strm contents
+	[(s _ self next: 2000) isEmpty
+		ifTrue: [^ strm contents]
+		ifFalse: [strm nextPutAll: s]] repeat
+
 ]
 
 { #category : #accessing }
 OSPipe >> upToEndOfFile [
-	"Answer the remaining elements in the string. Use #testEndOfFile to
+	"Answer the remaining elements in the pipe. Use #atEndOfFile to
 	determine end of file status with feof(), required for reliable end of
 	file test on OS pipes. Compare #upToEnd, which uses the generic end
 	of file test in FilePlugin."
@@ -80,9 +77,10 @@ OSPipe >> upToEndOfFile [
 	| strm d s |
 	strm _ WriteStream on: ''.
 	d _ Delay forMilliseconds: 200.
-	[self testEndOfFile] whileFalse:
-		[(s _ self next: 2000) isEmpty
-			ifTrue: [d wait]
-			ifFalse: [strm nextPutAll: s]].
-	^ strm contents
+	[(s _ self next: 2000) isEmpty
+		ifTrue: [self atEndOfFile
+			ifTrue: [^ strm contents]
+			ifFalse: [d wait]]
+		ifFalse: [strm nextPutAll: s]] repeat
+
 ]

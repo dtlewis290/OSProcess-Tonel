@@ -42,12 +42,26 @@ ThisOSProcess class >> initialize [
 	OSProcess initialize. "required to ensure the change sets file in smoothly"
 	AttachableFileStream initialize.
 	OSProcessAccessor initialize.
-	ThisInstance _ nil.
-	self allSubInstances do: [:e | e finalize; release].
-	self thisOSProcess initialize.
+	self initializeThisOSProcess.
 	"Some images may have a bug in startup list processing. Add this class to a known
 	place in the middle of the list to avoid getting bitten by the bug."
 	Smalltalk addToStartUpList: ThisOSProcess after: ImageSegment.
+
+]
+
+{ #category : #'initialize-release' }
+ThisOSProcess class >> initializeThisOSProcess [
+	"Initialize the singleton instance, creating a new instance only if the
+	platform type has changed since shutdown (running on a different
+	type of computer)."
+
+	ThisInstance isNil
+		ifTrue:
+			[ThisInstance _ self concreteClass basicNew initialize]
+		ifFalse:
+			[ThisInstance isResponsibleForThisPlatform
+				ifFalse: 
+					[ThisInstance _ self concreteClass basicNew initialize]]
 
 ]
 
@@ -72,6 +86,7 @@ ThisOSProcess class >> startUp: resuming [
 	notification is done in the initialization of my OSProcessAccessor."
 
 	OSProcessAccessor startUp: resuming.
+	AioEventHandler startUp: resuming.
 	self thisOSProcess initialize
 ]
 
@@ -82,13 +97,6 @@ ThisOSProcess class >> thisOSProcess [
 
 	"ThisOSProcess thisOSProcess"
 
-	ThisInstance isNil
-		ifTrue:
-			[ThisInstance _ self concreteClass basicNew initialize]
-		ifFalse:
-			[ThisInstance isResponsibleForThisPlatform
-				ifFalse: 
-					[ThisInstance _ self concreteClass basicNew initialize]].
 	^ ThisInstance
 ]
 

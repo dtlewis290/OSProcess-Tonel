@@ -69,6 +69,12 @@ ExternalOSProcess >> closeInitialStdOut [
 
 ]
 
+{ #category : #'initialize - release' }
+ExternalOSProcess >> closeStreams [
+
+	self closeInitialStdIn; closeInitialStdOut; closeInitialStdErr
+]
+
 { #category : #'setting run state' }
 ExternalOSProcess >> complete [
 	"Process has exited and has been reaped. It no longer exists in the external operating system."

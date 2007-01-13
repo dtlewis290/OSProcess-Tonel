@@ -1,19 +1,34 @@
 "
-AioEventHandler responds to external IO events, such as data available on a
-file descriptor. When an external IO event is received, an instance of AioEventHandler
-sends #changed to itself to notify its dependents that the event has occurred.
+AioEventHandler responds to external IO events, such as data available on a file descriptor. When an external IO event is received, an instance of AioEventHandler sends #changed to itself to notify its dependents that the event has occurred.
 "
 Class {
 	#name : #AioEventHandler,
-	#superclass : #Object,
+	#superclass : #Model,
 	#instVars : [
 		'semaphore',
 		'semaIndex',
 		'handlerProc',
 		'descriptor'
 	],
+	#classVars : [
+		'AioPluginPresent'
+	],
 	#category : #'OSProcess-AIO'
 }
+
+{ #category : #testing }
+AioEventHandler class >> aioPluginPresent [
+	"Answer true if an AIO plugin is available. The value of AioPluginPresent
+	is cleared at startup time, and is reestablished once for each Squeak session."
+
+	"AioEventHandler aioPluginPresent"
+
+	^ AioPluginPresent
+		ifNil: [AioPluginPresent _ self basicNew primAioModuleVersionString notNil.
+			AioPluginPresent ifFalse:
+				[self inform: 'AioPlugin not present, AioEventHandler will use polling input'].
+			^ AioPluginPresent]
+]
 
 { #category : #'instance creation' }
 AioEventHandler class >> for: aSocketOrFileStream [
@@ -78,6 +93,18 @@ AioEventHandler class >> forSocket: aSocket exceptions: exceptionEventFlag readE
 			exceptions: exceptionEventFlag
 			readEvents: readEventFlag
 			writeEvents: writeEventFlag
+
+]
+
+{ #category : #'system startup' }
+AioEventHandler class >> startUp: resuming [
+	"Clear the value of AioPluginPresent. The value will be set once when
+	#aioPluginPresent is first sent, and will remain set to that value for the
+	duration of this Squeak session.
+	This method is called by ThisOSProcess>>startUp. AioEventHandler does
+	not need to be registered in the system startup list."
+
+	resuming ifTrue: [AioPluginPresent _ nil]
 
 ]
 
@@ -150,12 +177,15 @@ AioEventHandler >> close [
 	"When the FileStream or Socket handled by this aio handler is closed,
 	it should send #close to this handler."
 
-	handlerProc ifNotNilDo: [:proc | proc terminate].
-	handlerProc _ nil.
-	self aioDisable: self descriptor.
+	| p |
+	self breakDependents.
 	Smalltalk unregisterExternalObject: semaphore.
+	self aioDisable: self descriptor.
 	semaphore _ nil.
-	semaIndex _ nil
+	semaIndex _ nil.
+	p _ handlerProc.
+	handlerProc _ nil.
+	p ifNotNil: [p terminate] "p may be the active process, do this last"
 
 ]
 

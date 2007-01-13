@@ -72,6 +72,15 @@ AttachableFileStream class >> readOnlyFileNamed: fileName [
 
 ]
 
+{ #category : #registry }
+AttachableFileStream class >> register: anObject [
+	"An attachable file stream is generally either a second reference to an
+	existing file stream, or a reference to a transient object such as a pipe
+	endpoint. There is no need to register it for finalization."
+
+	^ anObject
+]
+
 { #category : #examples }
 AttachableFileStream class >> stdIn [
 
@@ -79,6 +88,15 @@ AttachableFileStream class >> stdIn [
 
 	^ self name: 'stdIn' attachTo: OSProcess thisOSProcess stdIn ioHandle writable: false
 
+]
+
+{ #category : #registry }
+AttachableFileStream class >> unregister: anObject [
+	"An attachable file stream is generally either a second reference to an
+	existing file stream, or a reference to a transient object such as a pipe
+	endpoint. There is no need to register it for finalization."
+
+	^ anObject
 ]
 
 { #category : #converting }
@@ -133,9 +151,7 @@ AttachableFileStream >> close [
 				[handle close.
 				self ioHandle: nil]
 			ifFalse:
-				[[self primClose: handle]
-					on: Error
-					do: ["ignore failure"].
+				[self primCloseNoError: handle.
 				self unregister.
 				fileID _ nil]]
 
@@ -157,7 +173,7 @@ AttachableFileStream >> ensureOpen [
 AttachableFileStream >> finalize [
 
 	self autoClose
-		ifTrue: [self primCloseNoError: fileID]
+		ifTrue: [[self primCloseNoError: fileID] on: Error do: []]
 ]
 
 { #category : #'read, write, position' }
@@ -190,7 +206,7 @@ AttachableFileStream >> keepOpen [
 
 ]
 
-{ #category : #'private - IOHandle' }
+{ #category : #attaching }
 AttachableFileStream >> name: aSymbolOrString attachTo: anIOHandle writable: readWriteFlag [
 	"Attach to an existing file handle, assumed to have been previously opened by the underlying operating system."
 
@@ -232,25 +248,32 @@ AttachableFileStream >> reopen [
 
 ]
 
-{ #category : #testing }
-AttachableFileStream >> testEndOfFile [
-	"Answer whether the receiver is at its end based on the result of
-	the last read operation. This uses feof() to test the underlying file
-	stream status, and can be used as an alternative to #atEnd, which
-	does not properly report end of file status for an OSPipe."
-
-	^ fileID isNil or: [OSProcess accessor isAtEndOfFile: fileID]
-
-]
-
 { #category : #'read, write, position' }
 AttachableFileStream >> upToEnd [
 	"Answer a subcollection from the current access position through the last element
 	of the receiver. This is slower than the method in StandardFileStream, but it
-	works with pipes which always answer true to #atEnd."
+	works with pipes which answer false to #atEnd when no further input is
+	currently available, but the pipe is not yet closed."
 
-	| newStream c |
+	| newStream buffer nextBytes |
+	buffer _ buffer1 species new: 1000.
 	newStream _ WriteStream on: (buffer1 species new: 100).
-	[self atEnd not and: [(c _ self next) notNil]] whileTrue: [newStream nextPut: c].
+	[self atEnd or: [(nextBytes _ self nextInto: buffer) isEmpty]]
+		whileFalse: [newStream nextPutAll: nextBytes].
+	^ newStream contents
+
+]
+
+{ #category : #'read, write, position' }
+AttachableFileStream >> upToEndOfFile [
+	"Answer a subcollection from the current access position through
+	the last element of the receiver.  Use #atEndOfFile to determine end
+	of file status with feof(), required for reliable end of file test on
+	OS pipes."
+
+	| newStream buffer |
+	buffer _ buffer1 species new: 1000.
+	newStream _ WriteStream on: (buffer1 species new: 100).
+	[self atEndOfFile] whileFalse: [newStream nextPutAll: (self nextInto: buffer)].
 	^ newStream contents
 ]

@@ -1,6 +1,6 @@
 Extension { #name : #StandardFileStream }
 
-{ #category : #'*oSProcess-base' }
+{ #category : #'*OSProcess-base' }
 StandardFileStream >> fileID [
 	"Access method added to support OSProcess -dtl.
 	Note that the contents of fileID can and will change after calling this

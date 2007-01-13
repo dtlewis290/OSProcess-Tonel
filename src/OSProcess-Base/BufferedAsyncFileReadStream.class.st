@@ -26,6 +26,17 @@ BufferedAsyncFileReadStream class >> stdIn [
 
 ]
 
+{ #category : #finalization }
+BufferedAsyncFileReadStream >> actAsExecutor [
+
+	super actAsExecutor.
+	nonBlockingMode _ nil.
+	readBuffer _ nil.
+	readSyncSemaphore _ nil.
+	dataAvailableSemaphore _ nil
+
+]
+
 { #category : #'read ahead buffer' }
 BufferedAsyncFileReadStream >> appendAllToBuffer: chars [
 	"Append all chars to readBuffer, then signal dataAvailableSemaphore to inform
@@ -40,9 +51,9 @@ BufferedAsyncFileReadStream >> appendAllToBuffer: chars [
 		pos _ readBuffer position.
 		readBuffer setToEnd.
 		readBuffer nextPutAll: chars.
-		readBuffer position: pos.
-		self dataAvailableSemaphore signal.
-		self changed]
+		readBuffer position: pos].
+	self dataAvailableSemaphore signal.
+	self changed
 ]
 
 { #category : #'read ahead buffer' }
@@ -56,9 +67,9 @@ BufferedAsyncFileReadStream >> appendToBuffer: aCharacter [
 		[pos _ self readBuffer position.
 		readBuffer setToEnd.
 		readBuffer nextPut: aCharacter.
-		readBuffer position: pos.
-		self dataAvailableSemaphore signal.
-		self changed]
+		readBuffer position: pos].
+	self dataAvailableSemaphore signal.
+	self changed
 ]
 
 { #category : #converting }
@@ -96,12 +107,29 @@ BufferedAsyncFileReadStream >> atEnd [
 	^ self readBuffer atEnd and: [super atEnd]
 ]
 
+{ #category : #testing }
+BufferedAsyncFileReadStream >> atEndOfFile [
+	"Answer whether the receiver is at its end based on the result of
+	the last read operation. This uses feof() to test the underlying file
+	stream status, and can be used as an alternative to #atEnd, which
+	does not properly report end of file status for an OSPipe."
+
+	^ self readBuffer atEnd
+		and: [fileID isNil or: [OSProcess accessor isAtEndOfFile: fileID]]
+]
+
 { #category : #'read, write, position' }
 BufferedAsyncFileReadStream >> basicNext [
-	"Answer the next byte from this file, or nil if at the end of the file."
+	"Answer the next byte from this file, or nil if at the end of the file.
+	If the readBuffer is empty, force a basicNext in order to ensure that
+	the end of file flag is updated (in stdio stream)."
 
-	(self readBuffer atEnd and: [self isBlocking]) ifTrue: [self waitForDataReady].
-	^ readBuffer next
+	self readBuffer atEnd
+		ifTrue:
+			[^ super basicNext]
+		ifFalse:
+			[[self isBlocking] ifTrue: [self waitForDataReady].
+			^ readBuffer next]
 
 ]
 
@@ -245,13 +273,11 @@ BufferedAsyncFileReadStream >> readInto: byteArray startingAt: startIndex count:
 	self isBlocking
 		ifTrue:
 			[self waitForDataReady: count.
-			self readSyncSemaphore critical:
-				[s _ self readBuffer next: count].
+			s _ self readBuffer next: count.
 			size _ count]
 		ifFalse:
-			[self readSyncSemaphore critical:
-				[size _ (self readBuffer size - readBuffer position) min: count.
-				s _ self readBuffer next: size]].
+			[size _ (self readBuffer size - readBuffer position) min: count.
+			s _ self readBuffer next: size].
 	byteArray replaceFrom: startIndex to: (startIndex + size - 1) with: s. 
 	^ size
 
@@ -277,6 +303,18 @@ BufferedAsyncFileReadStream >> setNonBlocking [
 	"Set for nonblocking reads. This is the default mode."
 
 	self nonBlockingMode: true
+
+]
+
+{ #category : #'read, write, position' }
+BufferedAsyncFileReadStream >> upToEndOfFile [
+	"Answer a subcollection from the current access position through
+	the last element of the receiver.  Use #atEndOfFile to determine end
+	of file status with feof(), required for reliable end of file test on
+	OS pipes. Close the file when end of file is detected."
+
+	self moveAvailableDataToBuffer.
+	^ super upToEndOfFile.
 
 ]
 

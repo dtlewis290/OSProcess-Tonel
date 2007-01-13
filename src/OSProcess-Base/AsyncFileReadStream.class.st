@@ -21,6 +21,13 @@ AsyncFileReadStream class >> stdIn [
 
 ]
 
+{ #category : #finalization }
+AsyncFileReadStream >> actAsExecutor [
+
+	super actAsExecutor.
+	eventHandler _ nil
+]
+
 { #category : #converting }
 AsyncFileReadStream >> asAsyncFileReadStream [
 
@@ -62,21 +69,21 @@ AsyncFileReadStream >> close [
 { #category : #'read event handling' }
 AsyncFileReadStream >> disableEventHandling [
 
-	eventHandler ifNotNilDo: [:h | 
-		h close.
-		h removeDependent: self].
+	eventHandler
+		ifNotNilDo: [:h | h removeDependent: self; close].
 	self eventHandler: nil
-
 ]
 
 { #category : #'read event handling' }
 AsyncFileReadStream >> enableEventHandling [
 
-	self eventHandler: (AioEventHandler
+	self eventHandler: (AioEventHandler aioPluginPresent
+		ifTrue: [AioEventHandler
 				forFileStream: self
 				exceptions: true
 				readEvents: true
-				writeEvents: false).
+				writeEvents: false]
+		ifFalse: [PseudoAioEventHandler new]).
 	self eventHandler addDependent: self
 ]
 
@@ -94,10 +101,12 @@ AsyncFileReadStream >> eventHandler: anAioEventHandler [
 	eventHandler _ anAioEventHandler
 ]
 
-{ #category : #'initialize-release' }
+{ #category : #finalization }
 AsyncFileReadStream >> finalize [
+	"Shut the the event handler before closing the file, otherwise aio
+	functions may reference a closed file handle."
 
-	self disableEventHandling.
+	eventHandler ifNotNilDo: [:e | e finalize].
 	super finalize
 
 ]
@@ -124,6 +133,20 @@ AsyncFileReadStream >> open [
 
 	^ super open initialize
 
+]
+
+{ #category : #'read, write, position' }
+AsyncFileReadStream >> upToEndOfFile [
+	"Answer a subcollection from the current access position through
+	the last element of the receiver.  Use #atEndOfFile to determine end
+	of file status with feof(), required for reliable end of file test on
+	OS pipes. Close the file when end of file is detected."
+
+	| b |
+	b _ super upToEndOfFile.
+	self isReadOnly
+		ifTrue: [self close].
+	^ b
 ]
 
 { #category : #updating }

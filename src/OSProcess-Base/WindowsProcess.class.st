@@ -240,7 +240,8 @@ WindowsProcess >> resetThreads [
 WindowsProcess >> restartChildWatcherThread [
 	"Set an exit handler thread to signal when the process exits."
 
-	^ childWatcherThread _ self processAccessor restartChildWatcherThread: self activeHandles
+
+	^ self processAccessor restartChildWatcherThread: self activeHandles
 
 ]
 

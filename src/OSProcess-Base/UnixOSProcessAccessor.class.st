@@ -107,6 +107,28 @@ UnixOSProcessAccessor >> chDir: pathString [
 
 ]
 
+{ #category : #debugging }
+UnixOSProcessAccessor >> currentSigHandlerAddress: signalNumber [
+	"Answer the current machine address of the signal handler for signalNumber,
+	expressed as a ByteArray.
+
+	Temporarily set a signal forwarded for signalNumber, and remember the
+	machine address of the prior signal handler. Restore the signal handler
+	to its previous value, and answer the machine address of the handler."
+
+	"OSProcess accessor currentSigHandlerAddress: OSProcess accessor primSigIntNumber"
+
+	| sema index previousHandlerAddress |
+	sema := Semaphore new.
+	index := Smalltalk registerExternalObject: sema.
+	(previousHandlerAddress := self primForwardSignal: signalNumber toSemaphore: index)
+		ifNil:
+			[Smalltalk unregisterExternalObject: sema.
+			^ self error: 'could not forward signal number ', signalNumber asString].
+	self restoreSignal: signalNumber.
+	^ previousHandlerAddress
+]
+
 { #category : #'external process access' }
 UnixOSProcessAccessor >> environmentAt: aSymbolOrString [
 	"Get an environment variable from the external OS process."
@@ -748,6 +770,33 @@ UnixOSProcessAccessor >> isWritable: aPathName forUser: uid inGroup: gid [
 		ifTrue: [^ true]. "Test writable by my user ID"
 	^ false
 
+
+]
+
+{ #category : #debugging }
+UnixOSProcessAccessor >> listSigHandlerAddressesOnConsole [
+
+	"OSProcess accessor listSigHandlerAddressesOnConsole"
+
+	(0 to: 67) do: [:sigNum | | prev |
+		[prev := OSProcess accessor currentSigHandlerAddress: sigNum.
+		OSProcess debugMessage: 'signal ', sigNum asString,' hander is ', prev printString]
+			on: Error
+			do: [:ex | OSProcess debugMessage: ex printString]]
+
+]
+
+{ #category : #debugging }
+UnixOSProcessAccessor >> listSigHandlerAddressesOnTranscript [
+
+	"OSProcess accessor listSigHandlerAddressesOnTranscript"
+
+	Transcript cr.
+	(0 to: 67) do: [:sigNum | | prev |
+		[prev := OSProcess accessor currentSigHandlerAddress: sigNum.
+		Transcript show: 'signal ', sigNum asString,' hander is ', prev printString; cr]
+			on: Error
+			do: [:ex | Transcript show: ex printString; cr]]
 
 ]
 
@@ -1539,7 +1588,7 @@ UnixOSProcessAccessor >> primGetStdErrHandle [
 	^ nil
 ]
 
-{ #category : #deprecated }
+{ #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primGetStdErrHandleWithSessionIdentifier: aByteArray [
 	"Answer the handle (a SQFile data structure in interp.c) for the standard error for the
 	OS process in which I am currently executing."
@@ -1557,7 +1606,7 @@ UnixOSProcessAccessor >> primGetStdInHandle [
 	^ nil
 ]
 
-{ #category : #deprecated }
+{ #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primGetStdInHandleWithSessionIdentifier: aByteArray [
 	"Answer the handle (a SQFile data structure in interp.c) for the standard input for
 	the OS process in which I am currently executing."
@@ -1575,7 +1624,7 @@ UnixOSProcessAccessor >> primGetStdOutHandle [
 	^ nil
 ]
 
-{ #category : #deprecated }
+{ #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primGetStdOutHandleWithSessionIdentifier: aByteArray [
 	"Answer the handle (a SQFile data structure in interp.c) for the standard output for the
 	OS process in which I am currently executing."
@@ -1783,7 +1832,7 @@ UnixOSProcessAccessor >> primSQFileFlush: aSQFileStruct [
 
 ]
 
-{ #category : #deprecated }
+{ #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primSQFileFlush: aSQFileStruct withSessionIdentifier: aByteArray [
 	"Pass a struct SQFile on the stack, flush the external file stream."
 
@@ -1801,7 +1850,7 @@ UnixOSProcessAccessor >> primSQFileSetBlocking: aSQFileStruct [
 
 ]
 
-{ #category : #deprecated }
+{ #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primSQFileSetBlocking: aSQFileStruct withSessionIdentifier: aByteArray [
 	"Pass a struct SQFile on the stack, and call fcntl() to set the file non-blocking."
 
@@ -1819,7 +1868,7 @@ UnixOSProcessAccessor >> primSQFileSetNonBlocking: aSQFileStruct [
 
 ]
 
-{ #category : #deprecated }
+{ #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primSQFileSetNonBlocking: aSQFileStruct withSessionIdentifier: aByteArray [
 	"Pass a struct SQFile on the stack, and call fcntl() to set the file non-blocking."
 
@@ -1837,7 +1886,7 @@ UnixOSProcessAccessor >> primSQFileSetUnbuffered: aSQFileStruct [
 
 ]
 
-{ #category : #deprecated }
+{ #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primSQFileSetUnbuffered: aSQFileStruct withSessionIdentifier: aByteArray [
 	"Pass a struct SQFile on the stack, set the file non-blocking."
 
@@ -2663,8 +2712,13 @@ UnixOSProcessAccessor >> unlockFileRegion: aFileLock ifFail: failBlock [
 		ifTrue: [ | unregisteredLock |
 				(unregisteredLock _ self unregister: aFileLock)
 					ifNil: [^ failBlock value]
-					ifNotNil: [^ unregisteredLock unlockIfFail: failBlock; yourself]]
-		ifFalse: [^ aFileLock unlockIfFail: failBlock; yourself]
+					ifNotNil: [unregisteredLock unlock
+						ifTrue: [^ unregisteredLock]
+						ifFalse: [^ failBlock value]]]
+		ifFalse: [aFileLock unlock
+					ifTrue: [^ aFileLock]
+					ifFalse: [^ failBlock value]]
+
 ]
 
 { #category : #'file lock registry' }
