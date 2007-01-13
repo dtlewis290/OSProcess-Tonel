@@ -25,7 +25,7 @@ WindowsThread class >> threadID: anInteger handle: aHandleObject [
 WindowsThread class >> threadID: anInteger handle: aHandleObject running: trueOrFalse [
 
 	| thread |
-	thread _ super new threadID: anInteger; handle: aHandleObject; initialize.
+	thread := super new threadID: anInteger; handle: aHandleObject; initialize.
 	trueOrFalse ifTrue: [thread running].
 	^ thread
 
@@ -36,7 +36,7 @@ WindowsThread >> closeHandle [
 	"Clean up after thread exits."
 
 	OSProcess accessor primCloseHandle: handle.
-	handle _ nil
+	handle := nil
 
 ]
 
@@ -59,7 +59,7 @@ WindowsThread >> handle [
 WindowsThread >> handle: aHandleObject [
 	"A Windows HANDLE represented as a ByteArray."
 
-	handle _ aHandleObject
+	handle := aHandleObject
 ]
 
 { #category : #'initialize - release' }
@@ -98,7 +98,7 @@ WindowsThread >> runState [
 { #category : #accessing }
 WindowsThread >> runState: aSymbol [
 
-	runState _ aSymbol
+	runState := aSymbol
 
 ]
 
@@ -133,7 +133,7 @@ WindowsThread >> threadID [
 WindowsThread >> threadID: anInteger [
 	"A unique identifier for the thread."
 
-	threadID _ anInteger
+	threadID := anInteger
 
 ]
 

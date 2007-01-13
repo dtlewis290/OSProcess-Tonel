@@ -22,7 +22,7 @@ PseudoAioEventHandler >> close [
 PseudoAioEventHandler >> eventGenerator [
 	"Answer the value of eventGenerator"
 
-	^ eventGenerator ifNil: [eventGenerator _ self eventGeneratorProcess]
+	^ eventGenerator ifNil: [eventGenerator := self eventGeneratorProcess]
 ]
 
 { #category : #'initialize-release' }
@@ -30,7 +30,7 @@ PseudoAioEventHandler >> eventGeneratorProcess [
 	"A process that generates periodic #changed events"
 
 	| d |
-	d _ Delay forMilliseconds: 125.
+	d := Delay forMilliseconds: 125.
 	^ [[self changed.
 	d wait] repeat] fork
 ]

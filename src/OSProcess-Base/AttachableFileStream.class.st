@@ -25,7 +25,7 @@ AttachableFileStream class >> initialize [
 
 	"AttachableFileStream initialize"
 
-	UseIOHandle _ (Smalltalk hasClassNamed: #IOHandle)
+	UseIOHandle := (Smalltalk hasClassNamed: #IOHandle)
 
 ]
 
@@ -138,7 +138,7 @@ AttachableFileStream >> autoClose [
 	this object is finalized."
 
 	^ autoClose
-		ifNil: [autoClose _ true]
+		ifNil: [autoClose := true]
 ]
 
 { #category : #'open/close' }
@@ -153,7 +153,7 @@ AttachableFileStream >> close [
 			ifFalse:
 				[self primCloseNoError: handle.
 				self unregister.
-				fileID _ nil]]
+				fileID := nil]]
 
 ]
 
@@ -202,7 +202,7 @@ AttachableFileStream >> isPipe [
 AttachableFileStream >> keepOpen [
 	"Do not allow the file to be closed when this object is finalized."
 
-	autoClose _ false
+	autoClose := false
 
 ]
 
@@ -210,10 +210,10 @@ AttachableFileStream >> keepOpen [
 AttachableFileStream >> name: aSymbolOrString attachTo: anIOHandle writable: readWriteFlag [
 	"Attach to an existing file handle, assumed to have been previously opened by the underlying operating system."
 
-	name _ aSymbolOrString.
+	name := aSymbolOrString.
 	UseIOHandle
 		ifTrue: [self ioHandle: anIOHandle]
-		ifFalse: [fileID _ anIOHandle].
+		ifFalse: [fileID := anIOHandle].
 	readWriteFlag ifTrue: [self readWrite] ifFalse: [self readOnly].
 	self ascii.
 	UseIOHandle ifFalse: [self register]
@@ -256,9 +256,9 @@ AttachableFileStream >> upToEnd [
 	currently available, but the pipe is not yet closed."
 
 	| newStream buffer nextBytes |
-	buffer _ buffer1 species new: 1000.
-	newStream _ WriteStream on: (buffer1 species new: 100).
-	[self atEnd or: [(nextBytes _ self nextInto: buffer) isEmpty]]
+	buffer := buffer1 species new: 1000.
+	newStream := WriteStream on: (buffer1 species new: 100).
+	[self atEnd or: [(nextBytes := self nextInto: buffer) isEmpty]]
 		whileFalse: [newStream nextPutAll: nextBytes].
 	^ newStream contents
 
@@ -272,8 +272,8 @@ AttachableFileStream >> upToEndOfFile [
 	OS pipes."
 
 	| newStream buffer |
-	buffer _ buffer1 species new: 1000.
-	newStream _ WriteStream on: (buffer1 species new: 100).
+	buffer := buffer1 species new: 1000.
+	newStream := WriteStream on: (buffer1 species new: 100).
 	[self atEndOfFile] whileFalse: [newStream nextPutAll: (self nextInto: buffer)].
 	^ newStream contents
 ]

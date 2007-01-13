@@ -23,8 +23,8 @@ AioEventHandlerExample class >> osPipeExample [
 		ifFalse:
 			[self notify: 'this example requires OSProcess']
 		ifTrue:
-			[pipe _ (Smalltalk at: #OSPipe) new.
-			aio _ super new handler: (AioEventHandler for: pipe reader); ioStream: pipe reader.
+			[pipe := (Smalltalk at: #OSPipe) new.
+			aio := super new handler: (AioEventHandler for: pipe reader); ioStream: pipe reader.
 			aio handler addDependent: aio.
 			(1 to: 10) do:
 				[:i |
@@ -48,12 +48,12 @@ AioEventHandlerExample class >> showTtyOnTranscript: ttyName [
 	"self showTtyOnTranscript: '/dev/tty'"
 
 	| inputStream handler example |
-	inputStream _ FileStream readOnlyFileNamed: '/dev/tty'.
-	handler _ AioEventHandler for: inputStream
+	inputStream := FileStream readOnlyFileNamed: '/dev/tty'.
+	handler := AioEventHandler for: inputStream
 				exceptions: true
 				readEvents: true
 				writeEvents: false.
-	example _ super new handler: handler; ioStream: inputStream.
+	example := super new handler: handler; ioStream: inputStream.
 	handler addDependent: example.
 	Transcript cr; show: ''.
 	self notify: 'Enter lines on ', ttyName, ', watch the Transcript, and select "Proceed" when done'.
@@ -73,8 +73,8 @@ AioEventHandlerExample class >> standardInputExample [
 			[self notify: 'this example requires OSProcess']
 		ifTrue:
 			[Transcript cr; show: ''.
-			stdin _ (Smalltalk at: #OSProcess) thisOSProcess stdIn.
-			aio _ super new handler: (AioEventHandler for: stdin); ioStream: stdin.
+			stdin := (Smalltalk at: #OSProcess) thisOSProcess stdIn.
+			aio := super new handler: (AioEventHandler for: stdin); ioStream: stdin.
 			aio handler addDependent: aio.
 			self notify: 'Enter lines on standard input, watch the Transcript, and select "Proceed" when done'.
 			^ aio handler close]
@@ -88,11 +88,11 @@ AioEventHandlerExample class >> tcpSocketExample [
 	"self tcpSocketExample"
 
 	| port serverTcpSocket serverName clientTcpSocket handler example useOldStyleSockets |
-	port _ 8086.
-	serverName _ '127.0.0.1'.
+	port := 8086.
+	serverName := '127.0.0.1'.
 
 	"The networking code was updated for Squeak 3.6. This checks for which version to use."
-	useOldStyleSockets _ Socket respondsTo: #initializeNetworkIfFail:.
+	useOldStyleSockets := Socket respondsTo: #initializeNetworkIfFail:.
 
 	Transcript show: 'initializing network ... '.
 
@@ -106,7 +106,7 @@ AioEventHandlerExample class >> tcpSocketExample [
 	Transcript show:'ok';cr.
 
 	"Create the server (reader) socket"
-	serverTcpSocket _ Socket newTCP.
+	serverTcpSocket := Socket newTCP.
 	serverTcpSocket listenOn: port.
 	[Transcript show: 'server endpoint created on port ', port asString; cr.
 	useOldStyleSockets
@@ -117,7 +117,7 @@ AioEventHandlerExample class >> tcpSocketExample [
 	(Delay forMilliseconds: 1000) wait.
 
 	"Create the client (writer) socket"
-	clientTcpSocket _ Socket newTCP.
+	clientTcpSocket := Socket newTCP.
 	clientTcpSocket connectTo: (NetNameResolver addressFromString: serverName) port: port.
 	useOldStyleSockets
 		ifTrue:
@@ -127,11 +127,11 @@ AioEventHandlerExample class >> tcpSocketExample [
 	Transcript show: 'client endpoint connected to ', serverName, ' port ', port asString; cr.
 
 	"Set up a read event handler on the server socket"
-	handler _ AioEventHandler for: serverTcpSocket
+	handler := AioEventHandler for: serverTcpSocket
 				exceptions: true
 				readEvents: true
 				writeEvents: false.
-	example _ super new handler: handler; ioStream: serverTcpSocket.
+	example := super new handler: handler; ioStream: serverTcpSocket.
 	handler addDependent: example.
 	Transcript show: 'event handler started'; cr.
 
@@ -173,11 +173,11 @@ AioEventHandlerExample >> getAvailableData [
 	set for nonblocking input."
 
 	| ws c buffer n |
-	buffer _ String new: 4000.
+	buffer := String new: 4000.
 	(self ioStream isKindOf: FileStream)
 		ifTrue:
-			[ws _ WriteStream on: ''.
-			[c _ ioStream next.
+			[ws := WriteStream on: ''.
+			[c := ioStream next.
 			(c == Character lf)
 				ifTrue: [ws nextPut: Character cr]
 				ifFalse: [ws nextPut: c].
@@ -186,7 +186,7 @@ AioEventHandlerExample >> getAvailableData [
 		ifFalse:
 			[ioStream dataAvailable
 				ifTrue:
-					[n _ ioStream receiveDataInto: buffer.
+					[n := ioStream receiveDataInto: buffer.
 					^ buffer copyFrom: 1 to: n]
 				ifFalse:
 					[^ '']]
@@ -202,7 +202,7 @@ AioEventHandlerExample >> handler [
 { #category : #accessing }
 AioEventHandlerExample >> handler: anAioHandler [
 
-	handler _ anAioHandler
+	handler := anAioHandler
 ]
 
 { #category : #accessing }
@@ -214,7 +214,7 @@ AioEventHandlerExample >> ioStream [
 { #category : #accessing }
 AioEventHandlerExample >> ioStream: aFileStream [
 
-	ioStream _ aFileStream
+	ioStream := aFileStream
 ]
 
 { #category : #updating }

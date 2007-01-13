@@ -24,7 +24,7 @@ AioEventHandler class >> aioPluginPresent [
 	"AioEventHandler aioPluginPresent"
 
 	^ AioPluginPresent
-		ifNil: [AioPluginPresent _ self basicNew primAioModuleVersionString notNil.
+		ifNil: [AioPluginPresent := self basicNew primAioModuleVersionString notNil.
 			AioPluginPresent ifFalse:
 				[self inform: 'AioPlugin not present, AioEventHandler will use polling input'].
 			^ AioPluginPresent]
@@ -104,7 +104,7 @@ AioEventHandler class >> startUp: resuming [
 	This method is called by ThisOSProcess>>startUp. AioEventHandler does
 	not need to be registered in the system startup list."
 
-	resuming ifTrue: [AioPluginPresent _ nil]
+	resuming ifTrue: [AioPluginPresent := nil]
 
 ]
 
@@ -181,10 +181,10 @@ AioEventHandler >> close [
 	self breakDependents.
 	Smalltalk unregisterExternalObject: semaphore.
 	self aioDisable: self descriptor.
-	semaphore _ nil.
-	semaIndex _ nil.
-	p _ handlerProc.
-	handlerProc _ nil.
+	semaphore := nil.
+	semaIndex := nil.
+	p := handlerProc.
+	handlerProc := nil.
 	p ifNotNil: [p terminate] "p may be the active process, do this last"
 
 ]
@@ -205,7 +205,7 @@ AioEventHandler >> descriptor [
 { #category : #accessing }
 AioEventHandler >> descriptor: aLowLevelIODescriptor [
 
-	descriptor _ aLowLevelIODescriptor
+	descriptor := aLowLevelIODescriptor
 ]
 
 { #category : #finalization }
@@ -310,7 +310,7 @@ AioEventHandler >> handleForFile: aFileStream [
 	"self new handleForFile: SourceFiles first"
 
 	| ioHandle |
-	ioHandle _ self useIOHandle
+	ioHandle := self useIOHandle
 		ifTrue: [aFileStream ioHandle]
 		ifFalse: [aFileStream fileID].
 	^ self primOSFileHandle: ioHandle
@@ -323,7 +323,7 @@ AioEventHandler >> handleForSocket: aSocket [
 	"self new handleForSocket: Socket newTCP"
 
 	| ioHandle |
-	ioHandle _ self useIOHandle
+	ioHandle := self useIOHandle
 		ifTrue: [aSocket ioHandle]
 		ifFalse: [aSocket socketHandle].
 	^ self primOSSocketHandle: ioHandle
@@ -365,15 +365,15 @@ AioEventHandler >> hasValidHandler [
 { #category : #'initialize-release' }
 AioEventHandler >> initializeForExceptions: exceptionEventFlag readEvents: readEventFlag writeEvents: writeEventFlag [
 
-	semaphore _ Semaphore new.
-	semaIndex _ Smalltalk registerExternalObject: semaphore.
+	semaphore := Semaphore new.
+	semaIndex := Smalltalk registerExternalObject: semaphore.
 	([self aioEnable: self descriptor forSemaphore: self semaIndex externalObject: true]
 		on: Warning
 		do: [:e |
 			self close. "unregister the semaphore"
 			self notify: e messageText. nil])
 		ifNotNilDo:
-			[:h | handlerProc _ self
+			[:h | handlerProc := self
 					handleExceptions: exceptionEventFlag
 					readEvents: readEventFlag
 					writeEvents: writeEventFlag]

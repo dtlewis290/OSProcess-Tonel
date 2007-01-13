@@ -97,12 +97,12 @@ UnixOSProcessAccessor >> chDir: pathString [
 	"OSProcess accessor chDir: FileDirectory default name"
 
 	| result message |
-	result _ self primChdir: pathString.
+	result := self primChdir: pathString.
 	result isNil
 		ifTrue:
 			[^ nil]
 		ifFalse:
-			[message _ self primErrorMessageAt: result.
+			[message := self primErrorMessageAt: result.
 			^ message]
 
 ]
@@ -168,7 +168,7 @@ UnixOSProcessAccessor >> environmentPut: aString [
 	"OSProcess thisOSProcess processAccessor environmentPut: 'SOMEKEY=somevalue'"
 
 	| cString |
-	cString _ aString, (Character value: 0) asString.
+	cString := aString, (Character value: 0) asString.
 	^ self primPutEnv: cString
 
 ]
@@ -185,7 +185,7 @@ UnixOSProcessAccessor >> fileProtectionMask: aPathString [
 
 	| mask |
 	(aPathString isKindOf: String) ifFalse: [self error: 'expected a path string'. ^ nil].
-	mask _ self primFileProtectionMask: aPathString.
+	mask := self primFileProtectionMask: aPathString.
 	(mask == nil) ifTrue: [^ nil].
 	(mask isKindOf: Integer)
 		ifTrue: [^ self primErrorMessageAt: mask].
@@ -205,7 +205,7 @@ UnixOSProcessAccessor >> fileStat: aPathString [
 
 	| mask |
 	(aPathString isKindOf: String) ifFalse: [self error: 'expected a path string'. ^ nil].
-	mask _ self primFileStat: aPathString.
+	mask := self primFileStat: aPathString.
 	(mask == nil) ifTrue: [^ nil].
 	(mask isKindOf: Integer)
 		ifTrue: [^ self primErrorMessageAt: mask].
@@ -219,7 +219,7 @@ UnixOSProcessAccessor >> finalize [
 
 	self grimReaper ifNotNil:
 			[grimReaper terminate.
-			grimReaper _ nil].
+			grimReaper := nil].
 	self sigChldSemaphore ifNotNil:
 			[self restoreSignal: self primSigChldNumber.
 			self sigChldSemaphore: nil]
@@ -405,8 +405,8 @@ UnixOSProcessAccessor >> forwardSignal: signalNumber [
 	"OSProcess accessor forwardSignal: OSProcess accessor primSigIntNumber"
 
 	| sema index |
-	sema _ Semaphore new.
-	index _ Smalltalk registerExternalObject: sema.
+	sema := Semaphore new.
+	index := Smalltalk registerExternalObject: sema.
 	(self primForwardSignal: signalNumber toSemaphore: index)
 		ifNil:
 			[Smalltalk unregisterExternalObject: sema.
@@ -420,9 +420,9 @@ UnixOSProcessAccessor >> getStdErrHandle [
 	OS process in which I am currently executing."
 
 	| handle |
-	handle _ self canObtainSessionIdentifierFromPlugin
-		ifTrue: [handle _ self primGetStdErrHandle]
-		ifFalse: [handle _ self primGetStdErrHandleWithSessionIdentifier: self sessionIdentifier].
+	handle := self canObtainSessionIdentifierFromPlugin
+		ifTrue: [handle := self primGetStdErrHandle]
+		ifFalse: [handle := self primGetStdErrHandleWithSessionIdentifier: self sessionIdentifier].
 	handle ifNil: [^ nil].
 	^ self ioAccessorFromSQFile: handle
 
@@ -434,9 +434,9 @@ UnixOSProcessAccessor >> getStdInHandle [
 	OS process in which I am currently executing."
 
 	| handle |
-	handle _ self canObtainSessionIdentifierFromPlugin
-		ifTrue: [handle _ self primGetStdInHandle]
-		ifFalse: [handle _ self primGetStdInHandleWithSessionIdentifier: self sessionIdentifier].
+	handle := self canObtainSessionIdentifierFromPlugin
+		ifTrue: [handle := self primGetStdInHandle]
+		ifFalse: [handle := self primGetStdInHandleWithSessionIdentifier: self sessionIdentifier].
 	handle ifNil: [^ nil].
 	^ self ioAccessorFromSQFile: handle
 
@@ -448,9 +448,9 @@ UnixOSProcessAccessor >> getStdOutHandle [
 	OS process in which I am currently executing."
 
 	| handle |
-	handle _ self canObtainSessionIdentifierFromPlugin
-		ifTrue: [handle _ self primGetStdOutHandle]
-		ifFalse: [handle _ self primGetStdOutHandleWithSessionIdentifier: self sessionIdentifier].
+	handle := self canObtainSessionIdentifierFromPlugin
+		ifTrue: [handle := self primGetStdOutHandle]
+		ifFalse: [handle := self primGetStdOutHandleWithSessionIdentifier: self sessionIdentifier].
 	handle ifNil: [^ nil].
 	^ self ioAccessorFromSQFile: handle
 
@@ -467,7 +467,7 @@ UnixOSProcessAccessor >> grimReaper [
 UnixOSProcessAccessor >> grimReaper: anObject [
 	"Set the value of grimReaper"
 
-	grimReaper _ anObject
+	grimReaper := anObject
 ]
 
 { #category : #'initialize - release' }
@@ -479,12 +479,12 @@ UnixOSProcessAccessor >> grimReaperProcess [
 	| event processSynchronizationDelay |
 	^ self canAccessSystem
 		ifTrue:
-			[event _ (self canAccessSystem and: [self canForwardExternalSignals])
+			[event := (self canAccessSystem and: [self canForwardExternalSignals])
 				ifTrue: [self sigChldSemaphore]
 				ifFalse: [Delay forMilliseconds: 200].
-			processSynchronizationDelay _ Delay forMilliseconds: 20.
+			processSynchronizationDelay := Delay forMilliseconds: 20.
 			grimReaper ifNil:
-				[grimReaper _
+				[grimReaper :=
 					[[event wait.
 					processSynchronizationDelay wait. "Avoids lost signals in heavy process switching"
 					self changed: #childProcessStatus] repeat] fork]]
@@ -514,7 +514,7 @@ UnixOSProcessAccessor >> initialize [
 	ThisProcessPid ~~ self primGetPid
 		ifTrue: 
 			["Image has been restarted and is now running in a different OS process"
-			ThisProcessPid _ self primGetPid.
+			ThisProcessPid := self primGetPid.
 			self changed: #startUp].
 	self changed
 
@@ -530,7 +530,7 @@ UnixOSProcessAccessor >> isAtEndOfFile: anIOHandle [
 	in the sense of a conventional disk file."
 
 	| atEof |
-	atEof _ self primTestEndOfFileFlag: (self handleFromAccessor: anIOHandle).
+	atEof := self primTestEndOfFileFlag: (self handleFromAccessor: anIOHandle).
 	atEof ifNil: [self error: 'unsupported primitive, plugin may be out of date'].
 	^ atEof isNil or: [atEof]
 
@@ -559,22 +559,22 @@ UnixOSProcessAccessor >> isExecutable: aPathName forUser: uid inGroup: gid [
 		inGroup: OSProcess accessor primGetGid"
 
 	| fStat suid sgid user group protectionMask |
-	fStat _ self fileStat: aPathName.
+	fStat := self fileStat: aPathName.
 	(fStat isKindOf: String)
 		ifTrue: [self inform: aPathName, ': ', fStat. ^ nil].
-	protectionMask _ fStat at: 3.
+	protectionMask := fStat at: 3.
 	((protectionMask at: 4) allMask: 1)
 		ifTrue: [^ true]. "Test executable by any user ID"
-	sgid _ (protectionMask at: 1) allMask: 2.
+	sgid := (protectionMask at: 1) allMask: 2.
 	sgid
-		ifTrue: [group _ gid]
-		ifFalse: [group _ fStat at: 2].
+		ifTrue: [group := gid]
+		ifFalse: [group := fStat at: 2].
 	((gid == group) and: [(protectionMask at: 3) allMask: 1])
 		ifTrue: [^ true]. "Test executable by my group ID"
-	suid _ (protectionMask at: 1) allMask: 4.
+	suid := (protectionMask at: 1) allMask: 4.
 	suid
-		ifTrue: [user _ uid]
-		ifFalse: [user _ fStat at: 1].
+		ifTrue: [user := uid]
+		ifFalse: [user := fStat at: 1].
 	((uid == user) and: [(protectionMask at: 2) allMask: 1])
 		ifTrue: [^ true]. "Test executable by my user ID"
 	^ false
@@ -600,7 +600,7 @@ UnixOSProcessAccessor >> isLockableFile: aFileStream exclusive: flag [
 
 	| fileLock |
 	aFileStream ifNil: [^ false].
-	fileLock _ OSFileLock onFile: aFileStream exclusive: flag.
+	fileLock := OSFileLock onFile: aFileStream exclusive: flag.
 	^ self isLockableFileRegion: fileLock
 
 ]
@@ -608,8 +608,8 @@ UnixOSProcessAccessor >> isLockableFile: aFileStream exclusive: flag [
 { #category : #'file locking' }
 UnixOSProcessAccessor >> isLockableFile: aFileStream from: start to: end [
 	"Pass a struct SQFile on the stack, and check for ability to lock the specified region.
-	If the exclusive flag is true, then specify an exclusive (F_WRLCK) lock on the
-     file. Otherwise, specify a shared (F_RDLCK) lock. Any number of Unix processes
+	If the exclusive flag is true, then specify an exclusive (F:=WRLCK) lock on the
+     file. Otherwise, specify a shared (F:=RDLCK) lock. Any number of Unix processes
      may hold  a read lock (shared lock) on a file region, but only one process may
      hold a write lock (exclusive lock).
 
@@ -625,8 +625,8 @@ UnixOSProcessAccessor >> isLockableFile: aFileStream from: start to: end [
 { #category : #'file locking' }
 UnixOSProcessAccessor >> isLockableFile: aFileStream from: start to: end exclusive: flag [
 	"Pass a struct SQFile on the stack, and check for ability to lock the specified region.
-	If the exclusive flag is true, then specify an exclusive (F_WRLCK) lock on the
-     file. Otherwise, specify a shared (F_RDLCK) lock. Any number of Unix processes
+	If the exclusive flag is true, then specify an exclusive (F:=WRLCK) lock on the
+     file. Otherwise, specify a shared (F:=RDLCK) lock. Any number of Unix processes
      may hold  a read lock (shared lock) on a file region, but only one process may
      hold a write lock (exclusive lock).
 
@@ -637,7 +637,7 @@ UnixOSProcessAccessor >> isLockableFile: aFileStream from: start to: end exclusi
 
 	| fileRegion |
 	aFileStream ifNil: [^ false].
-	fileRegion _ OSFileRegionLock onFile: aFileStream from: start to: end exclusive: flag.
+	fileRegion := OSFileRegionLock onFile: aFileStream from: start to: end exclusive: flag.
 	^ self isLockableFileRegion: fileRegion
 
 ]
@@ -658,8 +658,8 @@ UnixOSProcessAccessor >> isLockableFile: aFileStream region: anInterval [
 { #category : #deprecated }
 UnixOSProcessAccessor >> isLockableFile: aFileStream region: anInterval exclusive: flag [
 	"Pass a struct SQFile on the stack, and check for ability to lock the specified region.
-	If the exclusive flag is true, then specify an exclusive (F_WRLCK) lock on the
-     file. Otherwise, specify a shared (F_RDLCK) lock. Any number of Unix processes
+	If the exclusive flag is true, then specify an exclusive (F:=WRLCK) lock on the
+     file. Otherwise, specify a shared (F:=RDLCK) lock. Any number of Unix processes
      may hold  a read lock (shared lock) on a file region, but only one process may
      hold a write lock (exclusive lock).
 
@@ -670,7 +670,7 @@ UnixOSProcessAccessor >> isLockableFile: aFileStream region: anInterval exclusiv
 
 	| fileRegion |
 	aFileStream ifNil: [^ false].
-	fileRegion _ OSFileRegionLock onFile: aFileStream interval: anInterval exclusive: flag.
+	fileRegion := OSFileRegionLock onFile: aFileStream interval: anInterval exclusive: flag.
 	^ self isLockableFileRegion: fileRegion
 
 ]
@@ -678,8 +678,8 @@ UnixOSProcessAccessor >> isLockableFile: aFileStream region: anInterval exclusiv
 { #category : #'file locking' }
 UnixOSProcessAccessor >> isLockableFileRegion: aFileLock [
 	"Pass a struct SQFile on the stack, and check for ability to lock the specified region.
-	If the exclusive flag is true, then specify an exclusive (F_WRLCK) lock on the
-     file. Otherwise, specify a shared (F_RDLCK) lock. Any number of Unix processes
+	If the exclusive flag is true, then specify an exclusive (F:=WRLCK) lock on the
+     file. Otherwise, specify a shared (F:=RDLCK) lock. Any number of Unix processes
      may hold  a read lock (shared lock) on a file region, but only one process may
      hold a write lock (exclusive lock).
 
@@ -717,16 +717,16 @@ UnixOSProcessAccessor >> isReadable: aPathName forUser: uid inGroup: gid [
 		inGroup: OSProcess accessor primGetGid"
 
 	| fStat user group protectionMask |
-	fStat _ self fileStat: aPathName.
+	fStat := self fileStat: aPathName.
 	(fStat isKindOf: String)
 		ifTrue: [self inform: aPathName, ': ', fStat. ^ nil].
-	protectionMask _ fStat at: 3.
+	protectionMask := fStat at: 3.
 	((protectionMask at: 4) allMask: 4)
 		ifTrue: [^ true]. "Test readable by any user ID"
-	group _ fStat at: 2.
+	group := fStat at: 2.
 	((gid == group) and: [(protectionMask at: 3) allMask: 4])
 		ifTrue: [^ true]. "Test readable by my group ID"
-	user _ fStat at: 1.
+	user := fStat at: 1.
 	((uid == user) and: [(protectionMask at: 2) allMask: 4])
 		ifTrue: [^ true]. "Test readable by my user ID"
 	^ false
@@ -756,16 +756,16 @@ UnixOSProcessAccessor >> isWritable: aPathName forUser: uid inGroup: gid [
 		inGroup: OSProcess accessor primGetGid"
 
 	| fStat user group protectionMask |
-	fStat _ self fileStat: aPathName.
+	fStat := self fileStat: aPathName.
 	(fStat isKindOf: String)
 		ifTrue: [self inform: aPathName, ': ', fStat. ^ nil].
-	protectionMask _ fStat at: 3.
+	protectionMask := fStat at: 3.
 	((protectionMask at: 4) allMask: 2)
 		ifTrue: [^ true]. "Test writable by any user ID"
-	group _ fStat at: 2.
+	group := fStat at: 2.
 	((gid == group) and: [(protectionMask at: 3) allMask: 2])
 		ifTrue: [^ true]. "Test writable by my group ID"
-	user _ fStat at: 1.
+	user := fStat at: 1.
 	((uid == user) and: [(protectionMask at: 2) allMask: 2])
 		ifTrue: [^ true]. "Test writable by my user ID"
 	^ false
@@ -846,7 +846,7 @@ UnixOSProcessAccessor >> lockFile: aFileStream exclusive: flag ifFail: failBlock
 
 	| fileLock |
 	aFileStream ifNil: [^ failBlock value].
-	fileLock _ OSFileLock onFile: aFileStream exclusive: flag.
+	fileLock := OSFileLock onFile: aFileStream exclusive: flag.
 	^ self lockFileRegion: fileLock ifFail: failBlock
 
 ]
@@ -854,8 +854,8 @@ UnixOSProcessAccessor >> lockFile: aFileStream exclusive: flag ifFail: failBlock
 { #category : #'file locking' }
 UnixOSProcessAccessor >> lockFile: aFileStream from: start to: end [
 	"Pass a struct SQFile on the stack, and request a lock on the specified region.
-	If the exclusive flag is true, then request an exclusive (F_WRLCK) lock on the
-     file. Otherwise, request a shared (F_RDLCK) lock. Any number of Unix processes
+	If the exclusive flag is true, then request an exclusive (F:=WRLCK) lock on the
+     file. Otherwise, request a shared (F:=RDLCK) lock. Any number of Unix processes
      may hold a read lock (shared lock) on a file region, but only one process may
      hold a write lock (exclusive lock). Answer a descriptor for the locked file region,
 	an Array of file handle and region interval; or answer nil on error.
@@ -875,8 +875,8 @@ UnixOSProcessAccessor >> lockFile: aFileStream from: start to: end [
 { #category : #'file locking' }
 UnixOSProcessAccessor >> lockFile: aFileStream from: start to: end exclusive: flag [
 	"Pass a struct SQFile on the stack, and request a lock on the specified region.
-	If the exclusive flag is true, then request an exclusive (F_WRLCK) lock on the
-     file. Otherwise, request a shared (F_RDLCK) lock. Any number of Unix processes
+	If the exclusive flag is true, then request an exclusive (F:=WRLCK) lock on the
+     file. Otherwise, request a shared (F:=RDLCK) lock. Any number of Unix processes
      may hold a read lock (shared lock) on a file region, but only one process may
      hold a write lock (exclusive lock). Answer a descriptor for the locked file region,
 	an Array of file handle and region interval; or answer nil on error.
@@ -891,7 +891,7 @@ UnixOSProcessAccessor >> lockFile: aFileStream from: start to: end exclusive: fl
 
 	| fileRegion |
 	aFileStream ifNil: [^ nil].
-	fileRegion _ OSFileRegionLock onFile: aFileStream from: start to: end exclusive: flag.
+	fileRegion := OSFileRegionLock onFile: aFileStream from: start to: end exclusive: flag.
 	^ self lockFileRegion: fileRegion
 
 ]
@@ -935,8 +935,8 @@ UnixOSProcessAccessor >> lockFile: aFileStream region: anInterval [
 { #category : #deprecated }
 UnixOSProcessAccessor >> lockFile: aFileStream region: anInterval exclusive: flag [
 	"Pass a struct SQFile on the stack, and request a lock on the specified region.
-	If the exclusive flag is true, then request an exclusive (F_WRLCK) lock on the
-     file. Otherwise, request a shared (F_RDLCK) lock. Any number of Unix processes
+	If the exclusive flag is true, then request an exclusive (F:=WRLCK) lock on the
+     file. Otherwise, request a shared (F:=RDLCK) lock. Any number of Unix processes
      may hold a read lock (shared lock) on a file region, but only one process may
      hold a write lock (exclusive lock). Answer a descriptor for the locked file region,
 	an Array of file handle and region interval; or answer nil on error.
@@ -951,7 +951,7 @@ UnixOSProcessAccessor >> lockFile: aFileStream region: anInterval exclusive: fla
 
 	| fileRegion |
 	aFileStream ifNil: [^ nil].
-	fileRegion _ OSFileRegionLock onFile: aFileStream interval: anInterval exclusive: flag.
+	fileRegion := OSFileRegionLock onFile: aFileStream interval: anInterval exclusive: flag.
 	^ self lockFileRegion: fileRegion
 
 ]
@@ -959,8 +959,8 @@ UnixOSProcessAccessor >> lockFile: aFileStream region: anInterval exclusive: fla
 { #category : #'file locking' }
 UnixOSProcessAccessor >> lockFileRegion: aFileLock [
 	"Pass a struct SQFile on the stack, and request a lock on the specified region.
-	If the exclusive flag is true, then request an exclusive (F_WRLCK) lock on the
-     file. Otherwise, request a shared (F_RDLCK) lock. Any number of Unix processes
+	If the exclusive flag is true, then request an exclusive (F:=WRLCK) lock on the
+     file. Otherwise, request a shared (F:=RDLCK) lock. Any number of Unix processes
      may hold a read lock (shared lock) on a file region, but only one process may
      hold a write lock (exclusive lock). Answer a descriptor for the locked file region,
 	an Array of file handle and region interval; or answer nil on error.
@@ -981,7 +981,7 @@ UnixOSProcessAccessor >> lockFileRegion: aFileLock [
 UnixOSProcessAccessor >> lockFileRegion: fileStream from: start to: end exclusive: writeLockFlag ifFail: failBlock [
 
 	| lock |
-	lock _ OSFileRegionLock onFile: fileStream from: start to: end exclusive: writeLockFlag.
+	lock := OSFileRegionLock onFile: fileStream from: start to: end exclusive: writeLockFlag.
 	^ self lockFileRegion: lock ifFail: [failBlock value]
 ]
 
@@ -995,8 +995,8 @@ UnixOSProcessAccessor >> lockFileRegion: fileStream from: start to: end ifFail: 
 { #category : #'file locking' }
 UnixOSProcessAccessor >> lockFileRegion: aFileLock ifFail: failBlock [
 	"Pass a struct SQFile on the stack, and request a lock on the specified region.
-	If the exclusive flag is true, then request an exclusive (F_WRLCK) lock on the
-     file. Otherwise, request a shared (F_RDLCK) lock. Any number of Unix processes
+	If the exclusive flag is true, then request an exclusive (F:=WRLCK) lock on the
+     file. Otherwise, request a shared (F:=RDLCK) lock. Any number of Unix processes
      may hold a read lock (shared lock) on a file region, but only one process may
      hold a write lock (exclusive lock). Answer a descriptor for the locked file region,
 	an Array of file handle and region interval; or answer nil on error.
@@ -1097,7 +1097,7 @@ UnixOSProcessAccessor >> oldPrimIsConnectedToXServer [
 	"OSProcess accessor primIsConnectedToXServer inspect"
 	"| x |
 	OSProcess accessor primKillDisplay.
-	x _ OSProcess accessor primIsConnectedToXServer.
+	x := OSProcess accessor primIsConnectedToXServer.
 	OSProcess accessor primOpenXDisplay.
 	x inspect"
 
@@ -1299,7 +1299,7 @@ UnixOSProcessAccessor >> primEnvironmentAtSymbol: aSymbol [
 
 { #category : #'external process access' }
 UnixOSProcessAccessor >> primErrorMessageAt: anInteger [
-	"Answer an error message string from the sys_errlist array, indexed by anInteger."
+	"Answer an error message string from the sys:=errlist array, indexed by anInteger."
 
 	"OSProcess accessor primErrorMessageAt: 0"
 	"OSProcess accessor primErrorMessageAt: 100"
@@ -1693,7 +1693,7 @@ UnixOSProcessAccessor >> primIsConnectedToXServer [
 	"OSProcess accessor primIsConnectedToXServer inspect"
 	"| x |
 	OSProcess accessor primKillDisplay.
-	x _ OSProcess accessor primIsConnectedToXServer.
+	x := OSProcess accessor primIsConnectedToXServer.
 	OSProcess accessor primOpenXDisplay.
 	x inspect"
 
@@ -1718,8 +1718,8 @@ UnixOSProcessAccessor >> primKillDisplay [
 { #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primLockFileRegion: aSQFileStruct offset: begin length: len exclusive: flag [
 	"Pass a struct SQFile on the stack, and request a lock on the specified region.
-	If the exclusive flag is true, then request an exclusive (F_WRLCK) lock on the
-     file. Otherwise, request a shared (F_RDLCK) lock. Any number of Unix processes
+	If the exclusive flag is true, then request an exclusive (F:=WRLCK) lock on the
+     file. Otherwise, request a shared (F:=RDLCK) lock. Any number of Unix processes
      may  hold  a read lock (shared lock) on a file region, but only one process may
      hold a write lock (exclusive lock). Answer the result of the call to fcntl()."
 
@@ -2192,8 +2192,8 @@ UnixOSProcessAccessor >> primTestEndOfFileFlag: aSqFileStruct [
 { #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primTestLockableFileRegion: aSQFileStruct offset: begin length: len exclusive: flag [
 	"Pass a struct SQFile on the stack, and check for ability to lock the specified region.
-	If the exclusive flag is true, then specify an exclusive (F_WRLCK) lock on the
-     file. Otherwise, specify a shared (F_RDLCK) lock. Any number of Unix processes
+	If the exclusive flag is true, then specify an exclusive (F:=WRLCK) lock on the
+     file. Otherwise, specify a shared (F:=RDLCK) lock. Any number of Unix processes
      may hold  a read lock (shared lock) on a file region, but only one process may
      hold a write lock (exclusive lock).
 
@@ -2203,11 +2203,11 @@ UnixOSProcessAccessor >> primTestLockableFileRegion: aSQFileStruct offset: begin
 	If the fcntl() call fails, answer -1 (the result of the failed call). Otherwise,
 	answer an array with the following six fields:
 		lockable (true or false)
-		l_pid (pid of the process preventing this lock request, or nil)
-		l_type (request type F_WRLCK or F_RDLOCK of the process preventing this lock request)
-		l_whence (the SEEK_SET, SEEK_CUR, or SEEK_END value of the lock preventing this lock request).
-		l_start (offset of the region lock preventing this lock request)
-		l_len (length of the region lock preventing this lock request)"
+		l:=pid (pid of the process preventing this lock request, or nil)
+		l:=type (request type F:=WRLCK or F:=RDLOCK of the process preventing this lock request)
+		l:=whence (the SEEK:=SET, SEEK:=CUR, or SEEK:=END value of the lock preventing this lock request).
+		l:=start (offset of the region lock preventing this lock request)
+		l:=len (length of the region lock preventing this lock request)"
 
 	<primitive: 'primitiveTestLockableFileRegion' module: 'UnixOSProcessPlugin'>
 	^ nil
@@ -2285,7 +2285,7 @@ UnixOSProcessAccessor >> putPath: aString [
 	"Convenience method. Set the environment PATH variable to aString."
 
 	| pathString |
-	pathString _ 'PATH=', aString, ((Character value: 0) asString). 
+	pathString := 'PATH=', aString, ((Character value: 0) asString). 
 	^ self environmentPut: pathString
 
 
@@ -2436,9 +2436,9 @@ UnixOSProcessAccessor >> restoreSignal: signalNumber [
 	"OSProcess accessor restoreSignal: OSProcess accessor primSigIntNumber"
 
 	| semaphoreIndex sema |
-	semaphoreIndex _ self primSemaIndexFor: signalNumber.
+	semaphoreIndex := self primSemaIndexFor: signalNumber.
 	semaphoreIndex ifNotNil:
-		[sema _ Smalltalk externalObjects at: semaphoreIndex ifAbsent: [].
+		[sema := Smalltalk externalObjects at: semaphoreIndex ifAbsent: [].
 		sema ifNotNil:
 			[self primForwardSignal: signalNumber toSemaphore: nil.
 			Smalltalk unregisterExternalObject: sema]].
@@ -2480,7 +2480,7 @@ UnixOSProcessAccessor >> setUnbuffered: anIOHandle [
 UnixOSProcessAccessor >> sigChldSemaphore [
 	"Answer the value of sigChldSemaphore"
 
-	^ sigChldSemaphore ifNil: [sigChldSemaphore _ self forwardSigChld].
+	^ sigChldSemaphore ifNil: [sigChldSemaphore := self forwardSigChld].
 
 ]
 
@@ -2488,7 +2488,7 @@ UnixOSProcessAccessor >> sigChldSemaphore [
 UnixOSProcessAccessor >> sigChldSemaphore: anObject [
 	"Set the value of sigChldSemaphore"
 
-	sigChldSemaphore _ anObject
+	sigChldSemaphore := anObject
 ]
 
 { #category : #testing }
@@ -2550,7 +2550,7 @@ UnixOSProcessAccessor >> unlockFile: aFileStream exclusive: flag [
 
 	| fileLock |
 	aFileStream ifNil: [^ nil].
-	fileLock _ OSFileLock onFile: aFileStream exclusive: flag.
+	fileLock := OSFileLock onFile: aFileStream exclusive: flag.
 	^ self unlockFileRegion: fileLock
 
 ]
@@ -2568,7 +2568,7 @@ UnixOSProcessAccessor >> unlockFile: aFileStream exclusive: flag ifFail: failBlo
 
 	| fileLock |
 	aFileStream ifNil: [^ failBlock value].
-	fileLock _ OSFileLock onFile: aFileStream exclusive: flag.
+	fileLock := OSFileLock onFile: aFileStream exclusive: flag.
 	^ self unlockFileRegion: fileLock ifFail: failBlock
 
 
@@ -2612,7 +2612,7 @@ UnixOSProcessAccessor >> unlockFile: aFileStream from: start to: end exclusive: 
 
 	| fileRegion |
 	aFileStream ifNil: [^ nil].
-	fileRegion _ OSFileRegionLock onFile: aFileStream from: start to: end exclusive: flag.
+	fileRegion := OSFileRegionLock onFile: aFileStream from: start to: end exclusive: flag.
 	^ self unlockFileRegion: fileRegion
 
 ]
@@ -2650,7 +2650,7 @@ UnixOSProcessAccessor >> unlockFile: aFileStream region: anInterval [
 
 	| fileRegion |
 	aFileStream ifNil: [^ nil].
-	fileRegion _ OSFileRegionLock onFile: aFileStream interval: anInterval exclusive: true.
+	fileRegion := OSFileRegionLock onFile: aFileStream interval: anInterval exclusive: true.
 	^ self unlockFileRegion: fileRegion
 
 ]
@@ -2679,7 +2679,7 @@ UnixOSProcessAccessor >> unlockFileRegion: aFileLock [
 UnixOSProcessAccessor >> unlockFileRegion: fileStream from: start to: end exclusive: writeLockFlag ifFail: failBlock [
 
 	| lock |
-	lock _ OSFileRegionLock onFile: fileStream from: start to: end exclusive: writeLockFlag.
+	lock := OSFileRegionLock onFile: fileStream from: start to: end exclusive: writeLockFlag.
 	^ self unlockFileRegion: lock ifFail: [failBlock value]
 ]
 
@@ -2710,7 +2710,7 @@ UnixOSProcessAccessor >> unlockFileRegion: aFileLock ifFail: failBlock [
 	"Check region lock overlap for Win32 compatibility"
 	self emulateWin32FileLocking
 		ifTrue: [ | unregisteredLock |
-				(unregisteredLock _ self unregister: aFileLock)
+				(unregisteredLock := self unregister: aFileLock)
 					ifNil: [^ failBlock value]
 					ifNotNil: [unregisteredLock unlock
 						ifTrue: [^ unregisteredLock]

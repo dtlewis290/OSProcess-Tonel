@@ -37,7 +37,7 @@ WindowsOSProcessAccessor >> canAccessChildProcess: anExternalProcess [
 	watching."
 
 	| handle |
-	^ (handle _ anExternalProcess handle) notNil
+	^ (handle := anExternalProcess handle) notNil
 		ifTrue: [self primCanAccessChildProcess: handle]
 		ifFalse: [false]
 
@@ -64,7 +64,7 @@ WindowsOSProcessAccessor >> childWatcherThread [
 WindowsOSProcessAccessor >> childWatcherThread: aThreadObject [
 	"A thread which signals my sigChldSemaphore when any child process exits."
 
-	childWatcherThread _ aThreadObject
+	childWatcherThread := aThreadObject
 
 ]
 
@@ -74,11 +74,11 @@ WindowsOSProcessAccessor >> finalize [
 
 	grimReaper ifNotNil:
 			[grimReaper terminate.
-			grimReaper _ nil].
+			grimReaper := nil].
 	sigChldSemaphore ifNotNil:
 			[Smalltalk unregisterExternalObject: sigChldSemaphore.
-			sigChldSemaphore _ nil].
-	semaIndex _ nil
+			sigChldSemaphore := nil].
+	semaIndex := nil
 
 ]
 
@@ -102,7 +102,7 @@ WindowsOSProcessAccessor >> getStdErr [
 	"OSProcess accessor getStdErr"
 
 	| error |
-	error _ self primGetStdErrorForSession: self sessionIdentifier.
+	error := self primGetStdErrorForSession: self sessionIdentifier.
 	^ (error notNil and: [error last])
 		ifTrue: [self ioAccessorFromSQFile: error first]
 		ifFalse: [nil]
@@ -127,7 +127,7 @@ WindowsOSProcessAccessor >> getStdIn [
 	"OSProcess accessor getStdIn"
 
 	| input |
-	input _ self primGetStdInputForSession: self sessionIdentifier.
+	input := self primGetStdInputForSession: self sessionIdentifier.
 	^ (input notNil and: [input last])
 		ifTrue: [self ioAccessorFromSQFile: input first]
 		ifFalse: [nil]
@@ -152,7 +152,7 @@ WindowsOSProcessAccessor >> getStdOut [
 	"OSProcess accessor getStdOut"
 
 	| output |
-	output _ self primGetStdOutputForSession: self sessionIdentifier.
+	output := self primGetStdOutputForSession: self sessionIdentifier.
 	^ (output notNil and: [output last])
 		ifTrue: [self ioAccessorFromSQFile: output first]
 		ifFalse: [nil]
@@ -173,7 +173,7 @@ WindowsOSProcessAccessor >> grimReaperProcess [
 	"This is a process which waits for the death of a child OSProcess, and 
 	informs any dependents of the change."
 
-	grimReaper ifNil: [grimReaper _ [
+	grimReaper ifNil: [grimReaper := [
 				[self sigChldSemaphoreSet wait.
 				self changed: #childProcessStatus] repeat] fork].
 	^ grimReaper
@@ -207,8 +207,8 @@ WindowsOSProcessAccessor >> lastReadFor: aSemaphoreIndex [
 	was read, or -1 if an error occurred on the read."
 
 	| c readResult |
-	readResult _ Array new: 3.
-	c _ self primLastReadFor: aSemaphoreIndex storeIn: readResult.
+	readResult := Array new: 3.
+	c := self primLastReadFor: aSemaphoreIndex storeIn: readResult.
 	(c < 1) ifTrue: [self error: 'primLastReadFor: error, returned negative value'].
 	^ c
 
@@ -231,7 +231,7 @@ WindowsOSProcessAccessor >> nextFrom: aFileStream signaling: aSemaphoreIndex [
 	signal the specified Semaphore to notify that the character is available."
 
 	| sqFile |
-	sqFile _ UseIOHandle
+	sqFile := UseIOHandle
 				ifTrue: [aFileStream ioHandle handle]
 				ifFalse: [aFileStream fileID].
 	^ self primNextFrom: sqFile signaling: aSemaphoreIndex
@@ -247,12 +247,12 @@ WindowsOSProcessAccessor >> openStdErr [
 	"OSProcess accessor openStdErr"
 
 	| error |
-	error _ self primGetStdErrorForSession: self sessionIdentifier.
+	error := self primGetStdErrorForSession: self sessionIdentifier.
 	error ifNil: [^ nil].
 	error last
 		ifFalse:
 			[self primAllocConsole.
-			error _ self primGetStdOutputForSession: self sessionIdentifier].
+			error := self primGetStdOutputForSession: self sessionIdentifier].
 	^ self ioAccessorFromSQFile: error first
 
 ]
@@ -266,12 +266,12 @@ WindowsOSProcessAccessor >> openStdIn [
 	"OSProcess accessor openStdIn"
 
 	| input |
-	input _ self primGetStdInputForSession: self sessionIdentifier.
+	input := self primGetStdInputForSession: self sessionIdentifier.
 	input ifNil: [^ nil].
 	input last
 		ifFalse:
 			[self primAllocConsole.
-			input _ self primGetStdOutputForSession: self sessionIdentifier].
+			input := self primGetStdOutputForSession: self sessionIdentifier].
 	^ self ioAccessorFromSQFile: input first
 
 ]
@@ -285,12 +285,12 @@ WindowsOSProcessAccessor >> openStdOut [
 	"OSProcess accessor openStdOut"
 
 	| output |
-	output _ self primGetStdOutputForSession: self sessionIdentifier.
+	output := self primGetStdOutputForSession: self sessionIdentifier.
 	output ifNil: [^ nil].
 	output last
 		ifFalse:
 			[self primAllocConsole.
-			output _ self primGetStdOutputForSession: self sessionIdentifier].
+			output := self primGetStdOutputForSession: self sessionIdentifier].
 	^ self ioAccessorFromSQFile: output first
 
 ]
@@ -354,7 +354,7 @@ WindowsOSProcessAccessor >> primCloseHandle: handleObject [
 	some other Win32 object."
 
 	"| procInfo |
-	procInfo _ OSProcess accessor primCommand: 'SOL'.
+	procInfo := OSProcess accessor primCommand: 'SOL'.
 	OSProcess accessor primCloseHandle: procInfo first"
 
 	<primitive: 'primitiveCloseHandle' module: 'Win32OSProcessPlugin'>
@@ -452,7 +452,7 @@ WindowsOSProcessAccessor >> primGetExitStatusForHandle: handleObject [
 	the process is still active, or if the GetExitCodeProcess call fails."
 
 	"| procInfo |
-	procInfo _ OSProcess accessor primCommand: 'SOL'.
+	procInfo := OSProcess accessor primCommand: 'SOL'.
 	(Delay forSeconds: 5) wait.
 	OSProcess accessor primGetExitStatusForHandle: procInfo first"
 
@@ -730,12 +730,12 @@ WindowsOSProcessAccessor >> setStdErr: aFileStream [
 	"Set the standard error handle for this OSProcess to be that of aFileStream"
 
 	"| fs |
-	fs _ FileStream fileNamed: 'stdError.tmp'.
+	fs := FileStream fileNamed: 'stdError.tmp'.
 	OSProcess accessor setStdErr: fs"
 
 	| sqFile |
 	aFileStream ifNil: [^ false].
-	sqFile _ UseIOHandle
+	sqFile := UseIOHandle
 				ifTrue: [aFileStream ioHandle handle]
 				ifFalse: [aFileStream fileID].
 	^ self primSetStdErr: sqFile
@@ -747,14 +747,14 @@ WindowsOSProcessAccessor >> setStdIn: aFileStream [
 	"Set the standard input handle for this OSProcess to be that of aFileStream"
 
 	"| fs |
-	fs _ FileStream fileNamed: 'stdInput.tmp'.
+	fs := FileStream fileNamed: 'stdInput.tmp'.
 	fs nextPutAll: 'this is a line of text'; cr.
 	fs position: 0.
 	OSProcess accessor setStdIn: fs"
 
 	| sqFile |
 	aFileStream ifNil: [^ false].
-	sqFile _ UseIOHandle
+	sqFile := UseIOHandle
 				ifTrue: [aFileStream ioHandle handle]
 				ifFalse: [aFileStream fileID].
 	^ self primSetStdIn: sqFile
@@ -766,12 +766,12 @@ WindowsOSProcessAccessor >> setStdOut: aFileStream [
 	"Set the standard output handle for this OSProcess to be that of aFileStream"
 
 	"| fs |
-	fs _ FileStream fileNamed: 'stdOutput.tmp'.
+	fs := FileStream fileNamed: 'stdOutput.tmp'.
 	OSProcess accessor setStdOut: fs"
 
 	| sqFile |
 	aFileStream ifNil: [^ false].
-	sqFile _ UseIOHandle
+	sqFile := UseIOHandle
 				ifTrue: [aFileStream ioHandle handle]
 				ifFalse: [aFileStream fileID].
 	^ self primSetStdOut: sqFile
@@ -789,7 +789,7 @@ WindowsOSProcessAccessor >> setWaitForAnyProcessExit: arrayOfProcessHandleObject
 
 	| threadInfo |
 	arrayOfProcessHandleObjects isEmpty ifTrue: [^ nil].
-	threadInfo _ self
+	threadInfo := self
 		primSetWaitForAnyProcessExit: arrayOfProcessHandleObjects
 		thenSignalSemaphoreWithIndex: self semaIndex.
 	^ WindowsThread
@@ -804,7 +804,7 @@ WindowsOSProcessAccessor >> setWaitForAnyProcessExit: arrayOfProcessHandleObject
 WindowsOSProcessAccessor >> sigChldSemaphoreSet [
 
 	sigChldSemaphore ifNil:
-		[sigChldSemaphore _ Semaphore new.
-		semaIndex _ Smalltalk registerExternalObject: sigChldSemaphore].
+		[sigChldSemaphore := Semaphore new.
+		semaIndex := Smalltalk registerExternalObject: sigChldSemaphore].
 	^ sigChldSemaphore
 ]

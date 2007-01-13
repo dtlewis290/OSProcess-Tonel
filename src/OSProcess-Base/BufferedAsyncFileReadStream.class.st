@@ -30,10 +30,10 @@ BufferedAsyncFileReadStream class >> stdIn [
 BufferedAsyncFileReadStream >> actAsExecutor [
 
 	super actAsExecutor.
-	nonBlockingMode _ nil.
-	readBuffer _ nil.
-	readSyncSemaphore _ nil.
-	dataAvailableSemaphore _ nil
+	nonBlockingMode := nil.
+	readBuffer := nil.
+	readSyncSemaphore := nil.
+	dataAvailableSemaphore := nil
 
 ]
 
@@ -48,7 +48,7 @@ BufferedAsyncFileReadStream >> appendAllToBuffer: chars [
 		[(self readBuffer position > self maxReadBufferSize) ifTrue:
 			["Read buffer is getting too large. Replace it."
 			self readBuffer: (ReadWriteStream on: readBuffer upToEnd)].
-		pos _ readBuffer position.
+		pos := readBuffer position.
 		readBuffer setToEnd.
 		readBuffer nextPutAll: chars.
 		readBuffer position: pos].
@@ -64,7 +64,7 @@ BufferedAsyncFileReadStream >> appendToBuffer: aCharacter [
 
 	| pos |
 	self readSyncSemaphore critical:
-		[pos _ self readBuffer position.
+		[pos := self readBuffer position.
 		readBuffer setToEnd.
 		readBuffer nextPut: aCharacter.
 		readBuffer position: pos].
@@ -138,7 +138,7 @@ BufferedAsyncFileReadStream >> dataAvailableSemaphore [
 	"Signalled one or more times when data becomes available. Only one Process
 	is permitted to wait on this Semaphore."
 
-	^ dataAvailableSemaphore ifNil: [dataAvailableSemaphore _ Semaphore new]
+	^ dataAvailableSemaphore ifNil: [dataAvailableSemaphore := Semaphore new]
 
 ]
 
@@ -161,14 +161,14 @@ BufferedAsyncFileReadStream >> maxReadBufferSize [
 BufferedAsyncFileReadStream >> moveAvailableDataFrom: sqFile [
 
 	| count bufferSize buffer |
-	bufferSize _ self readAheadChunkSize.
-	buffer _ String new: bufferSize.
-	[count _ self primRead: sqFile
+	bufferSize := self readAheadChunkSize.
+	buffer := String new: bufferSize.
+	[count := self primRead: sqFile
 				into: buffer
 				startingAt: 1
 				count: bufferSize]
 		on: Error	"Could fail if closed"
-		do: [count _ 0].
+		do: [count := 0].
 	(count notNil and: [count > 0])
 		ifTrue:
 			[count == bufferSize
@@ -206,7 +206,7 @@ BufferedAsyncFileReadStream >> next: n into: aString startingAt: startIndex [
 	Return aString or a partial copy if less than n elements have been read."
 
 	| count |
-	count _ self readInto: aString startingAt: startIndex count: n.
+	count := self readInto: aString startingAt: startIndex count: n.
 	count = n
 		ifTrue: [^ aString]
 		ifFalse: [^ aString copyFrom: 1 to: startIndex+count-1]
@@ -216,7 +216,7 @@ BufferedAsyncFileReadStream >> next: n into: aString startingAt: startIndex [
 BufferedAsyncFileReadStream >> nonBlockingMode [
 	"True if nonblocking read behavior should be implemented"
 
-	^ nonBlockingMode ifNil: [nonBlockingMode _ true]
+	^ nonBlockingMode ifNil: [nonBlockingMode := true]
 
 ]
 
@@ -224,7 +224,7 @@ BufferedAsyncFileReadStream >> nonBlockingMode [
 BufferedAsyncFileReadStream >> nonBlockingMode: trueOrFalse [
 	"True if nonblocking read behavior should be implemented"
 
-	nonBlockingMode _ trueOrFalse
+	nonBlockingMode := trueOrFalse
 
 ]
 
@@ -255,14 +255,14 @@ BufferedAsyncFileReadStream >> readAheadChunkSize [
 BufferedAsyncFileReadStream >> readBuffer [
 	"Read ahead buffer, filled asynchronously as data becomes available on the IO channel"
 
-	^ readBuffer ifNil: [readBuffer _ ReadWriteStream on: '']
+	^ readBuffer ifNil: [readBuffer := ReadWriteStream on: '']
 
 ]
 
 { #category : #accessing }
 BufferedAsyncFileReadStream >> readBuffer: aStream [
 
-	readBuffer _ aStream
+	readBuffer := aStream
 ]
 
 { #category : #'read, write, position' }
@@ -273,11 +273,11 @@ BufferedAsyncFileReadStream >> readInto: byteArray startingAt: startIndex count:
 	self isBlocking
 		ifTrue:
 			[self waitForDataReady: count.
-			s _ self readBuffer next: count.
-			size _ count]
+			s := self readBuffer next: count.
+			size := count]
 		ifFalse:
-			[size _ (self readBuffer size - readBuffer position) min: count.
-			s _ self readBuffer next: size].
+			[size := (self readBuffer size - readBuffer position) min: count.
+			s := self readBuffer next: size].
 	byteArray replaceFrom: startIndex to: (startIndex + size - 1) with: s. 
 	^ size
 
@@ -287,7 +287,7 @@ BufferedAsyncFileReadStream >> readInto: byteArray startingAt: startIndex count:
 BufferedAsyncFileReadStream >> readSyncSemaphore [
 	"A semaphore for synchronizing access to readBuffer"
 
-	^ readSyncSemaphore ifNil: [readSyncSemaphore _ Semaphore forMutualExclusion]
+	^ readSyncSemaphore ifNil: [readSyncSemaphore := Semaphore forMutualExclusion]
 ]
 
 { #category : #'initialize-release' }
