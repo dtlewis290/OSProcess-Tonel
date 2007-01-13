@@ -23,8 +23,8 @@ OSPipe >> next [
 				on: Error
 				do: [nil]]
 		ifFalse:
-			[c _ nextChar.
-			nextChar _ nil.
+			[c := nextChar.
+			nextChar := nil.
 			^ c]
 
 ]
@@ -34,10 +34,10 @@ OSPipe >> next: anInteger [
 	"Answer the next anInteger elements of my collection."
 
 	| c strm |
-	strm _ WriteStream on: ''.
+	strm := WriteStream on: ''.
 	(1 to: anInteger) do:
 		[:index |
-		c _ self next.
+		c := self next.
 		c isNil
 			ifTrue: [^ strm contents]	
 			ifFalse: [strm nextPut: c. false]].
@@ -50,7 +50,7 @@ OSPipe >> peek [
 
 	^ nextChar isNil
 		ifTrue: [reader closed
-				ifFalse: [nextChar _ reader next]]
+				ifFalse: [nextChar := reader next]]
 		ifFalse: [nextChar]
 ]
 
@@ -60,8 +60,8 @@ OSPipe >> upToEnd [
 	compatibility with older versions of CommandShell."
 
 	| strm s |
-	strm _ WriteStream on: ''.
-	[(s _ self next: 2000) isEmpty
+	strm := WriteStream on: ''.
+	[(s := self next: 2000) isEmpty
 		ifTrue: [^ strm contents]
 		ifFalse: [strm nextPutAll: s]] repeat
 
@@ -75,9 +75,9 @@ OSPipe >> upToEndOfFile [
 	of file test in FilePlugin."
 
 	| strm d s |
-	strm _ WriteStream on: ''.
-	d _ Delay forMilliseconds: 200.
-	[(s _ self next: 2000) isEmpty
+	strm := WriteStream on: ''.
+	d := Delay forMilliseconds: 200.
+	[(s := self next: 2000) isEmpty
 		ifTrue: [self atEndOfFile
 			ifTrue: [^ strm contents]
 			ifFalse: [d wait]]

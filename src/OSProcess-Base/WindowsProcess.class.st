@@ -45,7 +45,7 @@ WindowsProcess >> allMyChildren [
 	"On Windows, the process ID is not unique. Use an OrderedCollection instead
 	of a Dictionary to keep track of the child processes."
 
-	allMyChildren ifNil: [ allMyChildren _ OrderedCollection new ].
+	allMyChildren ifNil: [ allMyChildren := OrderedCollection new ].
 	^ allMyChildren
 ]
 
@@ -111,12 +111,12 @@ WindowsProcess >> getEnvironmentDictionary [
 	"OSProcess thisOSProcess getEnvironmentDictionary"
 
 	| strings env |
-	strings _ processAccessor primGetEnvironmentStrings.
+	strings := processAccessor primGetEnvironmentStrings.
 	strings isNil
 		ifTrue:
 			[^ nil]
 		ifFalse:
-			[env _ Dictionary new.
+			[env := Dictionary new.
 			strings do: [:s |
 				env at: (s copyUpTo: $=) asSymbol put: (s copyAfterLast: $=)].
 			^ env]
@@ -133,13 +133,13 @@ WindowsProcess >> initialize [
 
 	processAccessor ifNotNil:
 		[processAccessor removeDependent: self.
-		processAccessor _ nil].
+		processAccessor := nil].
 	(self processAccessor canAccessSystem not or: [processAccessor primOneShot]) ifTrue:
 		["Restarting the VM in a new process"
 		self resetChildProcessDictionary.
 		self resetThreads.
 		self threads; mainThread.
-		processHandle _ nil.
+		processHandle := nil.
 		self processHandle].
 	self refreshFromProcessAccessor
 
@@ -160,7 +160,7 @@ WindowsProcess >> mainThread [
 	"The main thread for this OS process. The handle for this thread is a
 	pseudo-handle, and cannot be used to close the main thread."
 
-	^ mainThread ifNil: [mainThread _ processAccessor getMainThread]
+	^ mainThread ifNil: [mainThread := processAccessor getMainThread]
 ]
 
 { #category : #console }
@@ -188,7 +188,7 @@ WindowsProcess >> path [
 { #category : #accessing }
 WindowsProcess >> pid [
 
-	^ pid _ self processAccessor primGetPid
+	^ pid := self processAccessor primGetPid
 
 ]
 
@@ -198,7 +198,7 @@ WindowsProcess >> processHandle [
 	by Windows to represent the process. Note that the main thread handle is also
 	represented by a pseudo-handle."
 
-	^ processHandle ifNil: [processHandle _ self processAccessor primGetPidHandle]
+	^ processHandle ifNil: [processHandle := self processAccessor primGetPidHandle]
 
 ]
 
@@ -207,12 +207,12 @@ WindowsProcess >> refreshFromProcessAccessor [
 	"Set my instance variables to reflect the state of the OS process in which this Smalltalk
 	virtual machine is executing."
 
-	sessionID _ self processAccessor getSessionIdentifier.
-	pid _ processAccessor primGetPid.
+	sessionID := self processAccessor getSessionIdentifier.
+	pid := processAccessor primGetPid.
 	self setStdIn.
 	self setStdOut.
 	self setStdErr.
-	environment _ self getEnvironmentDictionary
+	environment := self getEnvironmentDictionary
 
 ]
 
@@ -231,8 +231,8 @@ WindowsProcess >> registerChildProcess: anOSProcess [
 WindowsProcess >> resetThreads [
 	"If any cleanup is required, do it here."
 
-	threads _ nil.
-	mainThread _ nil
+	threads := nil.
+	mainThread := nil
 
 ]
 
@@ -250,7 +250,7 @@ WindowsProcess >> setStdErr [
 	"Reset to nil if the console has been closed"
 
 	^ self processAccessor getStdErr isNil
-		ifTrue: [stdErr _ nil]
+		ifTrue: [stdErr := nil]
 		ifFalse: [super setStdErr]
 
 ]
@@ -260,7 +260,7 @@ WindowsProcess >> setStdIn [
 	"Reset to nil if the console has been closed"
 
 	^ self processAccessor getStdIn isNil
-		ifTrue: [stdIn _ nil]
+		ifTrue: [stdIn := nil]
 		ifFalse: [super setStdIn]
 
 ]
@@ -270,7 +270,7 @@ WindowsProcess >> setStdOut [
 	"Reset to nil if the console has been closed"
 
 	^ self processAccessor getStdOut isNil
-		ifTrue: [stdOut _ nil]
+		ifTrue: [stdOut := nil]
 		ifFalse: [super setStdOut]
 
 ]
@@ -282,7 +282,7 @@ WindowsProcess >> threads [
 	included in this collection. Threads are created to wait for the exit of
 	child processes, so this collection grows as child processes are created."
 
-	^ threads ifNil: [threads _ OrderedCollection new]
+	^ threads ifNil: [threads := OrderedCollection new]
 
 ]
 
@@ -307,7 +307,7 @@ WindowsProcess >> update: aParameter [
 	(aParameter == #startUp) ifTrue:
 		[^ self update: #pid].
 	aParameter == #invalidProcessAccessor ifTrue:
-		[processAccessor _ processAccessor ifNotNil: [processAccessor removeDependent: self. nil].
+		[processAccessor := processAccessor ifNotNil: [processAccessor removeDependent: self. nil].
 		^ self].
 	self error: 'Unexpected update parameter'
 ]
