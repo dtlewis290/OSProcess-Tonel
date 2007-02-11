@@ -301,7 +301,7 @@ AioEventHandler >> handleExceptions: exceptionEventFlag readEvents: readEventFla
 			readEvents: readEventFlag
 			writeEvents: writeEventFlag.
 		self semaphore wait.
-		self changed]] fork
+		self changed]] forkAt: Processor userBackgroundPriority
 ]
 
 { #category : #private }
