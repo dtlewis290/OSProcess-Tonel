@@ -104,7 +104,9 @@ BufferedAsyncFileReadStream >> atEnd [
 		(OSPipe new ) closeWriter; next; yourself; atEnd>>true
 		(OSPipe new setBufferedReader; yourself) closeWriter; next; yourself; atEnd>>true"
 
-	^ self readBuffer atEnd and: [super atEnd]
+	^ self readSyncSemaphore
+		critical: [self readBuffer atEnd
+				and: [super atEnd]]
 ]
 
 { #category : #testing }
@@ -114,8 +116,10 @@ BufferedAsyncFileReadStream >> atEndOfFile [
 	stream status, and can be used as an alternative to #atEnd, which
 	does not properly report end of file status for an OSPipe."
 
-	^ self readBuffer atEnd
-		and: [fileID isNil or: [OSProcess accessor isAtEndOfFile: fileID]]
+	^ self readSyncSemaphore
+		critical: [self readBuffer atEnd
+				and: [fileID isNil
+						or: [OSProcess accessor isAtEndOfFile: fileID]]]
 ]
 
 { #category : #'read, write, position' }
@@ -124,13 +128,13 @@ BufferedAsyncFileReadStream >> basicNext [
 	If the readBuffer is empty, force a basicNext in order to ensure that
 	the end of file flag is updated (in stdio stream)."
 
-	self readBuffer atEnd
-		ifTrue:
-			[^ super basicNext]
-		ifFalse:
-			[[self isBlocking] ifTrue: [self waitForDataReady].
-			^ readBuffer next]
-
+	(self readSyncSemaphore
+			critical: [self readBuffer atEnd])
+		ifTrue: [^ super basicNext]
+		ifFalse: [[self isBlocking]
+				ifTrue: [self waitForDataReady].
+			^ self readSyncSemaphore
+				critical: [readBuffer next]]
 ]
 
 { #category : #accessing }
@@ -195,9 +199,12 @@ BufferedAsyncFileReadStream >> moveAvailableDataToBuffer [
 { #category : #'read, write, position' }
 BufferedAsyncFileReadStream >> next [
 
-	(self readBuffer atEnd and: [self isBlocking]) ifTrue: [self waitForDataReady].
-	^ readBuffer next
-
+	((self readSyncSemaphore
+				critical: [self readBuffer atEnd])
+			and: [self isBlocking])
+		ifTrue: [self waitForDataReady].
+	^ self readSyncSemaphore
+		critical: [readBuffer next]
 ]
 
 { #category : #'read, write, position' }
@@ -230,11 +237,15 @@ BufferedAsyncFileReadStream >> nonBlockingMode: trueOrFalse [
 
 { #category : #'read, write, position' }
 BufferedAsyncFileReadStream >> peek [
-	"Answer what would be returned if the message next were sent to the receiver. If the receiver is at the end, answer nil.  "
+	"Answer what would be returned if the message next were sent to the
+	receiver. If the receiver is at the end, answer nil. "
 
-	(self readBuffer atEnd and: [self isBlocking]) ifTrue: [self waitForDataReady].
-	^ readBuffer peek
-
+	((self readSyncSemaphore
+				critical: [self readBuffer atEnd])
+			and: [self isBlocking])
+		ifTrue: [self waitForDataReady].
+	^ self readSyncSemaphore
+		critical: [readBuffer peek]
 ]
 
 { #category : #defaults }
@@ -266,21 +277,24 @@ BufferedAsyncFileReadStream >> readBuffer: aStream [
 ]
 
 { #category : #'read, write, position' }
-BufferedAsyncFileReadStream >> readInto: byteArray startingAt: startIndex count: count [
-	"Read into the given array as specified, and return the count actually transferred."
+BufferedAsyncFileReadStream >> readInto: byteArray startingAt: startIndex count: count [ 
+	"Read into the given array as specified, and return the count actually
+	transferred. "
 
 	| s size |
 	self isBlocking
-		ifTrue:
-			[self waitForDataReady: count.
-			s := self readBuffer next: count.
-			size := count]
-		ifFalse:
-			[size := (self readBuffer size - readBuffer position) min: count.
-			s := self readBuffer next: size].
-	byteArray replaceFrom: startIndex to: (startIndex + size - 1) with: s. 
+		ifTrue: [self waitForDataReady: count.
+			s _ self readSyncSemaphore
+						critical: [self readBuffer next: count].
+			size _ count]
+		ifFalse: [size _ self readBuffer size - readBuffer position min: count.
+			s _ self readSyncSemaphore
+						critical: [self readBuffer next: size]].
+	byteArray
+		replaceFrom: startIndex
+		to: startIndex + size - 1
+		with: s.
 	^ size
-
 ]
 
 { #category : #accessing }
@@ -343,11 +357,10 @@ BufferedAsyncFileReadStream >> waitForDataReady [
 ]
 
 { #category : #'read ahead buffer' }
-BufferedAsyncFileReadStream >> waitForDataReady: count [
+BufferedAsyncFileReadStream >> waitForDataReady: count [ 
 	"Block until at least count characters are available in the readBuffer"
 
-	[(self readBuffer size - readBuffer position) < count]
-		whileTrue:
-			[self waitForDataReady]
-
+	[self readSyncSemaphore
+		critical: [self readBuffer size - readBuffer position < count]]
+		whileTrue: [self waitForDataReady]
 ]

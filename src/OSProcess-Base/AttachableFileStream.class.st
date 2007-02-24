@@ -248,6 +248,18 @@ AttachableFileStream >> reopen [
 
 ]
 
+{ #category : #nonblocking }
+AttachableFileStream >> setBlocking [
+
+	OSProcess accessor setBlocking: self ioHandle
+]
+
+{ #category : #nonblocking }
+AttachableFileStream >> setNonBlocking [
+
+	OSProcess accessor setNonBlocking: self ioHandle
+]
+
 { #category : #'read, write, position' }
 AttachableFileStream >> upToEnd [
 	"Answer a subcollection from the current access position through the last element
