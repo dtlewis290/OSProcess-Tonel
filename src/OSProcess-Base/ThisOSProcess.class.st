@@ -55,14 +55,8 @@ ThisOSProcess class >> initializeThisOSProcess [
 	platform type has changed since shutdown (running on a different
 	type of computer)."
 
-	ThisInstance isNil
-		ifTrue:
-			[ThisInstance := self concreteClass basicNew initialize]
-		ifFalse:
-			[ThisInstance isResponsibleForThisPlatform
-				ifFalse: 
-					[ThisInstance := self concreteClass basicNew initialize]]
-
+	(ThisInstance isNil or: [ThisInstance isResponsibleForThisPlatform not])
+		ifTrue: [ThisInstance := self concreteClass basicNew initialize]
 ]
 
 { #category : #'instance creation' }
@@ -87,6 +81,7 @@ ThisOSProcess class >> startUp: resuming [
 
 	OSProcessAccessor startUp: resuming.
 	AioEventHandler startUp: resuming.
+	self initializeThisOSProcess.
 	self thisOSProcess initialize
 ]
 

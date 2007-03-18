@@ -1522,6 +1522,18 @@ UnixProcess >> isResponsibleForThisPlatform [
 
 ]
 
+{ #category : #'VM atexit' }
+UnixProcess >> killCurrentChildrenAtExit [
+	"Arrange for the currently active child processes to receive a SIGTERM
+	signal then the Squeak VM exits. Each invokation of this method overrides
+	the effects of any previous calls."
+
+	"OSProcess thisOSProcess killCurrentChildrenAtExit"
+
+	self processAccessor killOnVmExit: self allMyChildren withSignal: nil
+
+]
+
 { #category : #private }
 UnixProcess >> needsRefresh [
 	"Answer true if the sessionID variable is out of date with respect to the running OS Process."
@@ -1674,7 +1686,7 @@ UnixProcess >> pthread [
 	to be reparented when the parent exits. The child does not know about this, so
 	we refresh pthread on every access."
 
-	^ pthread := processAccessor primGetThreadID
+	^ pthread := processAccessor getThreadID
 
 ]
 
@@ -1687,7 +1699,7 @@ UnixProcess >> refreshFromProcessAccessor [
 		sessionID := self processAccessor getSessionIdentifier.
 		pid := processAccessor primGetPid.
 		ppid := processAccessor primGetPPid.
-		pthread := processAccessor primGetThreadID.
+		pthread := processAccessor getThreadID.
 		self setStdIn.
 		self setStdOut.
 		self setStdErr.

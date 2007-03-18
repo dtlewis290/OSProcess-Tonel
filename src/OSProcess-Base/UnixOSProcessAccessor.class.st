@@ -456,6 +456,24 @@ UnixOSProcessAccessor >> getStdOutHandle [
 
 ]
 
+{ #category : #pthreads }
+UnixOSProcessAccessor >> getThreadID [
+	"Answer the ID of the pthread that is currently executing (the interpreter thread).
+	A thread ID may be a 64 bit value on some platforms, so answer a byte array
+	containing the value in machine-dependent byte order."
+
+	"OSProcess accessor getThreadID"
+
+	| osppVer |
+	[osppVer := OSProcess accessor osppModuleVersionString asNumber]
+		on: Error
+		do: [^ nil].
+	(osppVer notNil and: [osppVer >= 4.2])
+		ifTrue: [^ self primGetThreadID]
+		ifFalse: [^ nil]
+
+]
+
 { #category : #accessing }
 UnixOSProcessAccessor >> grimReaper [
 	"Answer the value of grimReaper"
@@ -770,6 +788,34 @@ UnixOSProcessAccessor >> isWritable: aPathName forUser: uid inGroup: gid [
 		ifTrue: [^ true]. "Test writable by my user ID"
 	^ false
 
+
+]
+
+{ #category : #'VM atexit' }
+UnixOSProcessAccessor >> kill: listOfPids withSignal: signumOrNil [
+	"On exit of the VM process, send signal to the external processes
+	identified by listOfPids. If signumOrNil is nil, the default SIGTERM
+	signal will be sent to listOfPids."
+
+	^ self primKill: listOfPids withSignal: signumOrNil
+
+]
+
+{ #category : #'VM atexit' }
+UnixOSProcessAccessor >> killOnVmExit: proxies withSignal: signumOrNil [
+	"When Squeak uses OSProcess to start a long running external process, it
+	may be useful to guarantee that one or more child processes is killed when
+	the Squeak VM exits, regardless of whether the normal Squeak shutdown
+	processing has occurred. This method arranges for a collection of external
+	process proxies to receive a signal when the Squeak VM exits. If signumOrNil
+	is nil, the default SIGTERM will be used. Each invocation of this method will
+	override the effects of previous calls."
+
+	"OSProcess accessor killOnVmExit: OSProcess thisOSProcess allMyChildren withSignal: nil"
+
+	| pids |
+	pids := (proxies select: [:p | p isRunning] thenCollect: [:e | e pid]) asArray.
+	^ self kill: pids withSignal: signumOrNil
 
 ]
 
@@ -1552,6 +1598,22 @@ UnixOSProcessAccessor >> primGetGid [
 ]
 
 { #category : #'external process access' }
+UnixOSProcessAccessor >> primGetPGid: pid [
+	"Answer the process group ID of the process identified by pid"
+
+	<primitive: 'primitiveGetPGid' module: 'UnixOSProcessPlugin'>
+	^ nil
+]
+
+{ #category : #'external process access' }
+UnixOSProcessAccessor >> primGetPGrp [
+	"Answer the process group ID of this OS process"
+
+	<primitive: 'primitiveGetPGrp' module: 'UnixOSProcessPlugin'>
+	^ nil
+]
+
+{ #category : #'external process access' }
 UnixOSProcessAccessor >> primGetPPid [
 	"Answer the OS process ID for the parent process of the OS process in which I am
 	currently executing."
@@ -1701,6 +1763,15 @@ UnixOSProcessAccessor >> primIsConnectedToXServer [
 	^ self oldPrimIsConnectedToXServer
 
 
+]
+
+{ #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primKill: listOfPids withSignal: signumOrNil [
+	"Set a list of pids to kill with signum when VM exits. If the signum
+	parameter is nil, the default value of SIGTERM will be used."
+
+	<primitive: 'primitiveKillOnExit' module: 'UnixOSProcessPlugin'>
+	^ self primitiveFailed
 ]
 
 { #category : #'display handling' }
@@ -2049,12 +2120,43 @@ UnixOSProcessAccessor >> primSendSigusr2To: anIntegerPid [
 
 ]
 
+{ #category : #'external process access' }
+UnixOSProcessAccessor >> primSet: pid pGid: processGroupId [
+	"Set the process group ID of the process identified by pid to a new process
+	group ID."
+
+	<primitive: 'primitiveSetPGid' module: 'UnixOSProcessPlugin'>
+	^ nil
+]
+
+{ #category : #'external process access' }
+UnixOSProcessAccessor >> primSetPGrp [
+	"Set a new process group for this OS process. Newly created child processes
+	will be members of the new process group."
+
+	<primitive: 'primitiveSetPGrp' module: 'UnixOSProcessPlugin'>
+	^ nil
+]
+
 { #category : #deprecated }
 UnixOSProcessAccessor >> primSetSemaIndex: anInteger [
 	"Tell the virtual machine what semaphore to use when handling a death of child signal."
 
 	<primitive: 'primitiveSetSemaIndex' module: 'UnixOSProcessPlugin'>
 	^ anInteger
+]
+
+{ #category : #'external process access' }
+UnixOSProcessAccessor >> primSetSid [
+	"Quoted from Linux man pages:
+	setsid() creates a new session if the calling process is not a process group leader.
+	The calling process is the leader of the new session, the process  group  leader  of
+	the new process group, and has no controlling tty.  The process group ID and session
+	ID of the calling process are set to the PID of the calling  process.   The  calling
+	process  will be the only process in this new process group and in this new session."
+
+	<primitive: 'primitiveSetSid' module: 'UnixOSProcessPlugin'>
+	^ nil
 ]
 
 { #category : #'display handling' }
