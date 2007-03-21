@@ -284,11 +284,11 @@ BufferedAsyncFileReadStream >> readInto: byteArray startingAt: startIndex count:
 	| s size |
 	self isBlocking
 		ifTrue: [self waitForDataReady: count.
-			s _ self readSyncSemaphore
+			s := self readSyncSemaphore
 						critical: [self readBuffer next: count].
-			size _ count]
-		ifFalse: [size _ self readBuffer size - readBuffer position min: count.
-			s _ self readSyncSemaphore
+			size := count]
+		ifFalse: [size := self readBuffer size - readBuffer position min: count.
+			s := self readSyncSemaphore
 						critical: [self readBuffer next: size]].
 	byteArray
 		replaceFrom: startIndex
