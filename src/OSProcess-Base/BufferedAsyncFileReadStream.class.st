@@ -321,6 +321,13 @@ BufferedAsyncFileReadStream >> setNonBlocking [
 ]
 
 { #category : #'read, write, position' }
+BufferedAsyncFileReadStream >> upTo: delim [ 
+
+	^ self readSyncSemaphore critical: [self readBuffer upTo: delim]
+
+]
+
+{ #category : #'read, write, position' }
 BufferedAsyncFileReadStream >> upToEndOfFile [
 	"Answer a subcollection from the current access position through
 	the last element of the receiver.  Use #atEndOfFile to determine end
