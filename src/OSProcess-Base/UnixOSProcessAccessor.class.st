@@ -539,22 +539,6 @@ UnixOSProcessAccessor >> initialize [
 ]
 
 { #category : #'file testing' }
-UnixOSProcessAccessor >> isAtEndOfFile: anIOHandle [
-	"Answer whether the file represented by anIOHandle is at end of file, as determined
-	by a call to feof(). This is different from StandardFileStream>>primAtEnd: which answers
-	true if the file pointer is at the end of the file, but which does not call feof() to
-	determine that an end of file condition has occurred. The difference is significant
-	if aSqFileStruct represents a pipe or a device file, which may not be positionable
-	in the sense of a conventional disk file."
-
-	| atEof |
-	atEof := self primTestEndOfFileFlag: (self handleFromAccessor: anIOHandle).
-	atEof ifNil: [self error: 'unsupported primitive, plugin may be out of date'].
-	^ atEof isNil or: [atEof]
-
-]
-
-{ #category : #'file testing' }
 UnixOSProcessAccessor >> isExecutable: aPathName [
 	"Answer true if file at aPathName has execute permission for this process."
 
@@ -1740,9 +1724,9 @@ UnixOSProcessAccessor >> primIsAtEndOfFile: aSqFileStruct [
 	if aSqFileStruct represents a pipe or a device file, which may not be positionable
 	in the sense of a conventional disk file."
 
-	"WARNING: Do not use this method. The sense of the return value is reversed.
-	use #primTestEndOfFileFlag: instead. This method is retained to support use of
-	older versions of OSPP."
+	"WARNING: Do not use this method. In some versions of OSPP, the sense of the
+	return value is reversed. Use #primTestEndOfFileFlag: instead. This method is
+	retained to support use of older versions of OSPP."
 
 	<primitive: 'primitiveIsAtEndOfFile' module: 'UnixOSProcessPlugin'>
 	^ nil
@@ -2287,7 +2271,7 @@ UnixOSProcessAccessor >> primTestEndOfFileFlag: aSqFileStruct [
 	in the sense of a conventional disk file."
 
 	<primitive: 'primitiveTestEndOfFileFlag' module: 'UnixOSProcessPlugin'>
-	^ ((self primIsAtEndOfFile: aSqFileStruct) ifNil: [^nil]) not
+	^ self primIsAtEndOfFile: aSqFileStruct
 
 ]
 

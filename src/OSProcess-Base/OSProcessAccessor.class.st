@@ -6,12 +6,13 @@ Class {
 	#superclass : #Model,
 	#instVars : [
 		'sessionIdentifier',
-		'canObtainSessionIdentifierFromPlugin'
+		'canObtainSessionIdentifierFromPlugin',
+		'hasTestEof'
 	],
 	#classVars : [
-		'EmulateWin32FileLocking',
-		'ThisOSProcessAccessor',
 		'UseIOHandle',
+		'ThisOSProcessAccessor',
+		'EmulateWin32FileLocking',
 		'FileLockRegistry'
 	],
 	#category : #'OSProcess-Base'
@@ -169,9 +170,8 @@ OSProcessAccessor >> canForwardExternalSignals [
 { #category : #accessing }
 OSProcessAccessor >> canObtainSessionIdentifierFromPlugin [
 
-	^ canObtainSessionIdentifierFromPlugin ifNil:
-		[canObtainSessionIdentifierFromPlugin := self primGetSession notNil]
-
+	^ canObtainSessionIdentifierFromPlugin
+		ifNil: [canObtainSessionIdentifierFromPlugin := self primGetSession notNil]
 ]
 
 { #category : #'file lock registry' }
@@ -310,12 +310,22 @@ OSProcessAccessor >> handlesOsSignals [
 	^ false
 ]
 
+{ #category : #testing }
+OSProcessAccessor >> hasTestEof [
+	"True if OSPP supports #primitiveTestEndOfFileFlag. Check this to prevent console
+	error message when running with older OSPP."
+
+	^ hasTestEof
+		ifNil: [hasTestEof := OSProcess accessor osppModuleVersionString asNumber >= 4.2]
+]
+
 { #category : #'initialize - release' }
 OSProcessAccessor >> initialize [
 
 	canObtainSessionIdentifierFromPlugin := nil.
 	self canObtainSessionIdentifierFromPlugin.
 	sessionIdentifier := nil.
+	hasTestEof := nil.
 	self sessionIdentifier.
 
 ]
@@ -328,6 +338,22 @@ OSProcessAccessor >> ioAccessorFromSQFile: aByteArray [
 	UseIOHandle
 		ifTrue: [^ (Smalltalk at: #IOHandle) newFromSqFileStruct: aByteArray]
 		ifFalse: [^ aByteArray]
+]
+
+{ #category : #'file testing' }
+OSProcessAccessor >> isAtEndOfFile: anIOHandle [
+	"Answer whether the file represented by anIOHandle is at end of file, as determined
+	by a call to feof(). This is different from StandardFileStream>>primAtEnd: which answers
+	true if the file pointer is at the end of the file, but which does not call feof() to
+	determine that an end of file condition has occurred. The difference is significant
+	if aSqFileStruct represents a pipe or a device file, which may not be positionable
+	in the sense of a conventional disk file."
+
+	self flag: 'FIXME'. "The #hasTestEof check can be eliminated after newer OSPP is distibuted"
+	^ self hasTestEof
+		ifTrue: [self primTestEndOfFileFlag: (self handleFromAccessor: anIOHandle)]
+		ifFalse: [self primIsAtEndOfFile: (self handleFromAccessor: anIOHandle)]
+
 ]
 
 { #category : #'platform identification' }
@@ -378,6 +404,19 @@ OSProcessAccessor >> primGetSession [
 	"Subclasses should override if they know how to obtain the session identifier."
 
 	^ nil
+]
+
+{ #category : #'file testing' }
+OSProcessAccessor >> primTestEndOfFileFlag: aSqFileStruct [
+	"Answer whether the file represented by aSqFileStruct is at end of file, as determined
+	by a call to feof(). This is different from StandardFileStream>>primAtEnd: which answers
+	true if the file pointer is at the end of the file, but which does not call feof() to
+	determine that an end of file condition has occurred. The difference is significant
+	if aSqFileStruct represents a pipe or a device file, which may not be positionable
+	in the sense of a conventional disk file."
+
+	^ self subclassResponsibility
+
 ]
 
 { #category : #'file lock registry' }
