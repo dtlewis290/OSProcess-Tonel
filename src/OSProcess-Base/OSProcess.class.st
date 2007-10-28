@@ -31,7 +31,7 @@ OSProcess class >> allTestResults [
 	"OSProcess allTestResults"
 
 	| resultsFileName writeStream resultString results fs problems result wordSize |
-	Smalltalk listLoadedModules
+	self listLoadedModules
 		detect: [:e | '*OSProcessPlugin*' match: e]
 		ifNone: [self notify: 'no OSProcessPlugin loaded'].
 	wordSize := (Smalltalk respondsTo: #wordSize)
@@ -271,6 +271,14 @@ OSProcess class >> isWindows [
 	"OSProcess isWindows"
 
 	^ self platformName = 'Win32'
+]
+
+{ #category : #'version dependent' }
+OSProcess class >> listLoadedModules [
+	"After Squeak version 3.6, #listLoadedModules was moved to SmalltalkImage "
+
+	^ ((Smalltalk classNamed: 'SmalltalkImage')
+		ifNil: [^ Smalltalk listLoadedModules]) current listLoadedModules
 ]
 
 { #category : #utility }
