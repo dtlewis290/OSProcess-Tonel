@@ -19,7 +19,11 @@ Class {
 ExternalUnixOSProcess class >> bashShellPath [
 	"A more full-featured shell from the Free Software Foundation"
 
-	^ '/usr/bin/bash'
+	| path |
+	path := '/bin/bash'.
+	(FileDirectory default fileExists: path)
+		ifTrue: [^ path]
+		ifFalse: [self notify: path, ' not found']
 ]
 
 { #category : #'instance creation' }
@@ -36,7 +40,11 @@ ExternalUnixOSProcess class >> command: aCommandString [
 ExternalUnixOSProcess class >> defaultShellPath [
 	"Default shell to run"
 
-	^ '/bin/sh'
+	| path |
+	path := '/bin/sh'.
+	(FileDirectory default fileExists: path)
+		ifTrue: [^ path]
+		ifFalse: [self notify: path, ' not found']
 ]
 
 { #category : #'instance creation' }
@@ -145,7 +153,11 @@ ExternalUnixOSProcess class >> programName: executableFile arguments: arrayOfStr
 ExternalUnixOSProcess class >> remoteShellPath [
 	"A remote shell processor. This may need to be edited for different systems."
 
-	^ '/usr/bin/rsh'
+	| path |
+	path := '/usr/bin/rsh'.
+	(FileDirectory default fileExists: path)
+		ifTrue: [^ path]
+		ifFalse: [self notify: path, ' not found']
 ]
 
 { #category : #shells }
@@ -153,7 +165,11 @@ ExternalUnixOSProcess class >> tkShellPath [
 	"The wish command shell for Tk/Tcl. This tends to be installed in a wide variety
 	of places, so you may need to edit this method for your system."
 
-	^ '/usr/bin/wish'
+	| path |
+	path := '/usr/bin/wish'.
+	(FileDirectory default fileExists: path)
+		ifTrue: [^ path]
+		ifFalse: [self notify: path, ' not found']
 ]
 
 { #category : #accessing }
