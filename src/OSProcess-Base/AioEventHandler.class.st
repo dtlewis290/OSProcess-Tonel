@@ -108,12 +108,6 @@ AioEventHandler class >> startUp: resuming [
 
 ]
 
-{ #category : #'version identification' }
-AioEventHandler class >> versionString [
-
-	^ '1.2'
-]
-
 { #category : #'aio event forwarding' }
 AioEventHandler >> aioDisable: ioDescriptor [
 	"Definitively disable asynchronous event notification for a descriptor. The ioDescriptor
