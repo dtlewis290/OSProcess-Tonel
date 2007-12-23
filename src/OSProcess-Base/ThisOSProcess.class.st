@@ -302,7 +302,7 @@ ThisOSProcess >> initialize [
 	this Smalltalk virtual machine is executing."
 
 	processAccessor ifNotNil:
-		[processAccessor removeDependent: self.
+		[processAccessor breakDependents.
 		processAccessor := nil].
 	((self processAccessor notNil
 		and: [processAccessor canAccessSystem])
