@@ -10,9 +10,9 @@ Class {
 		'hasTestEof'
 	],
 	#classVars : [
-		'EmulateWin32FileLocking',
-		'ThisOSProcessAccessor',
 		'UseIOHandle',
+		'ThisOSProcessAccessor',
+		'EmulateWin32FileLocking',
 		'FileLockRegistry'
 	],
 	#category : #'OSProcess-Base'
