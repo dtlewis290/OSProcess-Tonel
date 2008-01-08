@@ -717,7 +717,7 @@ UnixProcess class >> saveImageInBackground: savedImageName nice: niceFlag [
 	save image snapshots. This method forks a headless Squeak to perform a
 	snapshot without impacting the server Squeak. Very little additional memory
 	is required to do this because Unix copy-on-write memory management allows
-	the two Squeak images share object memory while the save is performed.
+	the two Squeak images to share object memory while the save is performed.
 	The saved image is given a time stamped name, and the image name of
 	the main server Squeak remains unchanged. If niceFlag is true, the
 	background OS process runs at lowered scheduling priority."
