@@ -46,6 +46,7 @@ ThisOSProcess class >> initialize [
 	"Some images may have a bug in startup list processing. Add this class to a known
 	place in the middle of the list to avoid getting bitten by the bug."
 	Smalltalk addToStartUpList: ThisOSProcess after: ImageSegment.
+	Smalltalk addToShutDownList: ThisOSProcess
 
 ]
 
@@ -64,6 +65,18 @@ ThisOSProcess class >> new [
 
 	self notify: self name, ': Only one instance of ThisOSProcess or any of its subclasses should exist in the image. Use #thisOSProcess to obtain the singleton instance.'.
 	self shouldNotImplement
+]
+
+{ #category : #'system startup' }
+ThisOSProcess class >> shutDown: quitting [
+	"Break dependency on my OSProcessAccessor. This is done explicitly at
+	shutDown time in order to prevent possible problems when an image is
+	restarted on another platform type, in which case a new ThisOSProcess
+	instance is created and the old instance could still have an unwanted
+	dependency on an OSProcessAccessor."
+
+	quitting ifTrue: [OSProcess accessor breakDependents]
+
 ]
 
 { #category : #'system startup' }
