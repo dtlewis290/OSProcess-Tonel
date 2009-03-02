@@ -107,6 +107,15 @@ UnixOSProcessAccessor >> chDir: pathString [
 
 ]
 
+{ #category : #'file control' }
+UnixOSProcessAccessor >> closeUnixFileNumber: unixFileDescriptor [
+	"Close the file associated with unixFileDescriptor, a small integer value."
+
+	<primitive: 'primitiveUnixFileClose' module: 'UnixOSProcessPlugin'>
+	^ self primitiveFailed
+
+]
+
 { #category : #debugging }
 UnixOSProcessAccessor >> currentSigHandlerAddress: signalNumber [
 	"Answer the current machine address of the signal handler for signalNumber,
