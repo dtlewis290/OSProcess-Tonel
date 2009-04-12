@@ -1052,7 +1052,7 @@ UnixProcess >> argsAsFlatArrayAndOffsets: anArrayOfNullTerminatedStrings [
 	"Find address offsets to be used in creating the addresses for the strings."
 	ws := WriteStream on: (Array new: anArrayOfNullTerminatedStrings size).
 	(anArrayOfNullTerminatedStrings collect: [:e | e size])
-		inject: offset into: [:p :e | ws nextPut: p. p := p + e].
+		inject: offset into: [:p :e | ws nextPut: p. p + e].
 	addresses := ws contents.
 	"Results"
 	^ Array with: flatStringArray with: addresses
@@ -1169,7 +1169,7 @@ UnixProcess >> envAsFlatArrayAndOffsets: anEnvironmentDictionary [
 	"Find address offsets to be used in creating the addresses for the strings."
 	ws := WriteStream on: (Array new: anEnvironmentDictionary size).
 	(envArray collect: [:e | e size + 1])
-		inject: offset into: [:p :e | ws nextPut: p. p := p + e].
+		inject: offset into: [:p :e | ws nextPut: p. p + e].
 	addresses := ws contents.
 	"Results"
 	^ Array with: flatStringArray with: addresses
