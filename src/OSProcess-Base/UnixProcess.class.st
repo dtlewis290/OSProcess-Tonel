@@ -1690,6 +1690,46 @@ UnixProcess >> pthread [
 
 ]
 
+{ #category : #'IO redirection' }
+UnixProcess >> redirect: aFileStream to: newFileStream [
+
+	| oldfd newfd |
+	oldfd := self processAccessor unixFileNumber: aFileStream fileID.
+	newfd := self processAccessor unixFileNumber: newFileStream fileID.
+	self processAccessor primUnixFileClose: oldfd.
+	^ self processAccessor primDup: newfd to: oldfd
+
+]
+
+{ #category : #'IO redirection' }
+UnixProcess >> redirectStdErrTo: fileStream [
+	"Redirect the standard error stream to another output stream."
+
+	^ self redirect: self stdErr to: fileStream
+
+]
+
+{ #category : #'IO redirection' }
+UnixProcess >> redirectStdInTo: fileStream [
+	"Redirect the standard input stream to another input stream."
+
+	^ self redirect: self stdIn to: fileStream
+
+]
+
+{ #category : #'IO redirection' }
+UnixProcess >> redirectStdOutTo: fileStream [
+	"Redirect the standard output stream to another output stream."
+
+	"| pipe |
+	pipe := OSPipe nonBlockingPipe.
+	OSProcess thisOSProcess redirectStdOutTo: pipe writer.
+	pipe"
+	
+	^ self redirect: self stdOut to: fileStream
+
+]
+
 { #category : #updating }
 UnixProcess >> refreshFromProcessAccessor [
 	"Set my instance variables to reflect the state of the OS process in which this Smalltalk

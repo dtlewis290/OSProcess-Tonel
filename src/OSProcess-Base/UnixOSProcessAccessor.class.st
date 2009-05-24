@@ -1318,6 +1318,16 @@ UnixOSProcessAccessor >> primDisconnectDisplay [
 
 ]
 
+{ #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primDup: oldFileDescriptor to: newFileDescriptor [
+	"Call dup2() to duplicate a file descriptor. Answer the duplicated file descriptor
+	or -1 on failure."
+
+	<primitive: 'primitiveDupTo' module: 'UnixOSProcessPlugin'>
+	^ self primitiveFailed
+
+]
+
 { #category : #'external process access' }
 UnixOSProcessAccessor >> primEnvironmentAt: index [
 	"Answer the environment string at index position in the OS process environment list.
@@ -2305,6 +2315,16 @@ UnixOSProcessAccessor >> primTestLockableFileRegion: aSQFileStruct offset: begin
 		l:=len (length of the region lock preventing this lock request)"
 
 	<primitive: 'primitiveTestLockableFileRegion' module: 'UnixOSProcessPlugin'>
+	^ nil
+
+]
+
+{ #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primUnixFileClose: integerFileNumber [
+	"Close a file handle at the close(2) level, using a handle returned by
+	#primUnixFileNumber."
+
+	<primitive: 'primitiveUnixFileClose' module: 'UnixOSProcessPlugin'>
 	^ nil
 
 ]
