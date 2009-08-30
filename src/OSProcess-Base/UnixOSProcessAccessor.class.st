@@ -936,6 +936,21 @@ UnixOSProcessAccessor >> lockFile: aFileStream from: start to: end exclusive: fl
 ]
 
 { #category : #'file locking' }
+UnixOSProcessAccessor >> lockFile: fileStream from: start to: end exclusive: writeLockFlag ifFail: failBlock [
+
+	| lock |
+	lock := OSFileRegionLock onFile: fileStream from: start to: end exclusive: writeLockFlag.
+	^ self lockFileRegion: lock ifFail: [failBlock value]
+]
+
+{ #category : #'file locking' }
+UnixOSProcessAccessor >> lockFile: fileStream from: start to: end ifFail: failBlock [
+
+	^ self lockFileRegion: fileStream from: start to: end exclusive: true ifFail: failBlock
+
+]
+
+{ #category : #'file locking' }
 UnixOSProcessAccessor >> lockFile: aFileStream ifFail: failBlock [
 	"Request an exclusive lock on the entire file represented by aFileStream. The
 	exclusive lock (write lock) permits only one OS process to hold the lock. Answer
@@ -1016,16 +1031,18 @@ UnixOSProcessAccessor >> lockFileRegion: aFileLock [
 
 ]
 
-{ #category : #'file locking' }
+{ #category : #deprecated }
 UnixOSProcessAccessor >> lockFileRegion: fileStream from: start to: end exclusive: writeLockFlag ifFail: failBlock [
+	"Deprecated - poor method name. Use #lockFile:from:to:exclusive:ifFail: instead"
 
 	| lock |
 	lock := OSFileRegionLock onFile: fileStream from: start to: end exclusive: writeLockFlag.
 	^ self lockFileRegion: lock ifFail: [failBlock value]
 ]
 
-{ #category : #'file locking' }
+{ #category : #deprecated }
 UnixOSProcessAccessor >> lockFileRegion: fileStream from: start to: end ifFail: failBlock [
+	"Deprecated - poor method name. Use #lockFile:from:to:ifFail: instead"
 
 	^ self lockFileRegion: fileStream from: start to: end exclusive: true ifFail: failBlock
 
@@ -2733,6 +2750,21 @@ UnixOSProcessAccessor >> unlockFile: aFileStream from: start to: end exclusive: 
 ]
 
 { #category : #'file locking' }
+UnixOSProcessAccessor >> unlockFile: fileStream from: start to: end exclusive: writeLockFlag ifFail: failBlock [
+
+	| lock |
+	lock := OSFileRegionLock onFile: fileStream from: start to: end exclusive: writeLockFlag.
+	^ self unlockFileRegion: lock ifFail: [failBlock value]
+]
+
+{ #category : #'file locking' }
+UnixOSProcessAccessor >> unlockFile: fileStream from: start to: end ifFail: failBlock [
+
+	^ self unlockFile: fileStream from: start to: end exclusive: true ifFail: failBlock
+
+]
+
+{ #category : #'file locking' }
 UnixOSProcessAccessor >> unlockFile: aFileStream ifFail: failBlock [
 	"Unlock the file represented by aFileStream.  Answer a descriptor for the unlocked
 	file region, an Array of file handle and region interval; or answer nil on error
@@ -2790,16 +2822,18 @@ UnixOSProcessAccessor >> unlockFileRegion: aFileLock [
 
 ]
 
-{ #category : #'file locking' }
+{ #category : #deprecated }
 UnixOSProcessAccessor >> unlockFileRegion: fileStream from: start to: end exclusive: writeLockFlag ifFail: failBlock [
+	"Deprecated - poor method name. Use #unlockFile:from:to:exclusive:ifFail: instead"
 
 	| lock |
 	lock := OSFileRegionLock onFile: fileStream from: start to: end exclusive: writeLockFlag.
 	^ self unlockFileRegion: lock ifFail: [failBlock value]
 ]
 
-{ #category : #'file locking' }
+{ #category : #deprecated }
 UnixOSProcessAccessor >> unlockFileRegion: fileStream from: start to: end ifFail: failBlock [
+	"Deprecated - poor method name. Use #unlockFile:from:to:ifFail: instead"
 
 	^ self unlockFileRegion: fileStream from: start to: end exclusive: true ifFail: failBlock
 
