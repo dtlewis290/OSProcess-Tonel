@@ -204,7 +204,7 @@ BufferedAsyncFileReadStream >> next [
 			and: [self isBlocking])
 		ifTrue: [self waitForDataReady].
 	^ self readSyncSemaphore
-		critical: [readBuffer next ifNotNilDo: [:c | c asciiValue]]
+		critical: [readBuffer next ifNotNilDo: [:c | c]]
 ]
 
 { #category : #'read, write, position' }
@@ -245,7 +245,7 @@ BufferedAsyncFileReadStream >> peek [
 			and: [self isBlocking])
 		ifTrue: [self waitForDataReady].
 	^ self readSyncSemaphore
-		critical: [readBuffer peek ifNotNilDo: [:c | c asciiValue]]
+		critical: [readBuffer peek ifNotNilDo: [:c | c]]
 ]
 
 { #category : #defaults }
