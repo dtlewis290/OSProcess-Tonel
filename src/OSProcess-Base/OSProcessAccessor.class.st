@@ -184,7 +184,7 @@ OSProcessAccessor >> emulateWin32FileLocking [
 { #category : #'file lock registry' }
 OSProcessAccessor >> fileLockRegistry [
 
-	^ FileLockRegistry ifNil: [FileLockRegistry := WeakSet new]
+	^ FileLockRegistry ifNil: [FileLockRegistry := Set new]
 
 ]
 
