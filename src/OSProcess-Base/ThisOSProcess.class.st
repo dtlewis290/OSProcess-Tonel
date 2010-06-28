@@ -129,7 +129,6 @@ ThisOSProcess class >> thisOSProcess [
 
 	"ThisOSProcess thisOSProcess"
 
-	ThisInstance ifNil: [self initializeThisOSProcessWithNotifier].
 	^ ThisInstance
 ]
 
