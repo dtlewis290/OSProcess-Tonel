@@ -34,6 +34,18 @@ ThisOSProcess class >> concreteClass [
 
 ]
 
+{ #category : #'concrete subclasses' }
+ThisOSProcess class >> concreteClassOrNil [
+
+	"ThisOSProcess concreteClassOrNil"
+
+	^ self subclasses
+		detect: [:c | c isResponsibleForThisPlatform]
+		ifNone: [nil]
+
+
+]
+
 { #category : #'initialize-release' }
 ThisOSProcess class >> initialize [
 
@@ -55,6 +67,18 @@ ThisOSProcess class >> initializeThisOSProcess [
 	"Initialize the singleton instance, creating a new instance only if the
 	platform type has changed since shutdown (running on a different
 	type of computer)."
+
+	(ThisInstance isNil or: [ThisInstance isResponsibleForThisPlatform not])
+		ifTrue: [self concreteClassOrNil
+				ifNil: [ThisInstance := nil "no concrete class for this platform"]
+				ifNotNil: [:cls | ThisInstance := cls basicNew initialize]]
+]
+
+{ #category : #'initialize-release' }
+ThisOSProcess class >> initializeThisOSProcessWithNotifier [
+	"Initialize the singleton instance, creating a new instance only if the
+	platform type has changed since shutdown (running on a different
+	type of computer). Warn if no implementation is available for this platform."
 
 	(ThisInstance isNil or: [ThisInstance isResponsibleForThisPlatform not])
 		ifTrue: [ThisInstance := self concreteClass basicNew initialize]
@@ -105,7 +129,17 @@ ThisOSProcess class >> thisOSProcess [
 
 	"ThisOSProcess thisOSProcess"
 
+	ThisInstance ifNil: [self initializeThisOSProcessWithNotifier].
 	^ ThisInstance
+]
+
+{ #category : #comparing }
+ThisOSProcess >> = processProxy [
+	"True if this is a proxy that represents the same OS process as processProxy"
+
+	^ ((self isKindOf: ThisOSProcess)
+			and: [pid = processProxy pid])
+		and: [sessionID = processProxy sessionID]
 ]
 
 { #category : #'child process management' }
@@ -307,6 +341,15 @@ ThisOSProcess >> handleFromFileStream: aFileStream [
 		ifTrue: [^ aFileStream ioHandle asSQFileStruct]
 		ifFalse: [^ aFileStream fileID]
 
+]
+
+{ #category : #comparing }
+ThisOSProcess >> hash [
+
+	^ (pid ifNil: [self identityHash])
+		+ (sessionID
+				ifNil: [0]
+				ifNotNil: [sessionID sum])
 ]
 
 { #category : #'initialize - release' }
