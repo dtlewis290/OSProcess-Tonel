@@ -61,6 +61,15 @@ ExternalWindowsOSProcess class >> programName: executableFile arguments: arrayOf
 
 ]
 
+{ #category : #comparing }
+ExternalWindowsOSProcess >> = processProxy [
+	"True if this is a proxy that represents the same OS process as processProxy"
+
+	^ ((self isKindOf: ExternalWindowsOSProcess)
+			and: [pid = processProxy pid])
+				and: [ppid = processProxy ppid]
+]
+
 { #category : #'initialize - release' }
 ExternalWindowsOSProcess >> closeHandles [
 	"Clean up after process exits."
@@ -121,6 +130,13 @@ ExternalWindowsOSProcess >> handle: aHandleObject [
 	handle should be closed when the process exits."
 
 	handle := aHandleObject
+]
+
+{ #category : #comparing }
+ExternalWindowsOSProcess >> hash [
+
+	^ (pid ifNil: [self identityHash]) + (ppid ifNil: [self identityHash])
+
 ]
 
 { #category : #accessing }
