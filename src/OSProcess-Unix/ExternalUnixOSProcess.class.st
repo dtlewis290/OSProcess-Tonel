@@ -172,6 +172,15 @@ ExternalUnixOSProcess class >> tkShellPath [
 		ifFalse: [self notify: path, ' not found']
 ]
 
+{ #category : #comparing }
+ExternalUnixOSProcess >> = processProxy [
+	"True if this is a proxy that represents the same OS process as processProxy"
+
+	^ ((self isKindOf: ExternalUnixOSProcess)
+			and: [pid = processProxy pid])
+				and: [ppid = processProxy ppid]
+]
+
 { #category : #accessing }
 ExternalUnixOSProcess >> arguments [
 
@@ -215,6 +224,13 @@ ExternalUnixOSProcess >> forkChild [
 				with: initialStdIn
 				with: initialStdOut
 				with: initialStdErr)
+
+]
+
+{ #category : #comparing }
+ExternalUnixOSProcess >> hash [
+
+	^ (pid ifNil: [self identityHash]) + (ppid ifNil: [self identityHash])
 
 ]
 
