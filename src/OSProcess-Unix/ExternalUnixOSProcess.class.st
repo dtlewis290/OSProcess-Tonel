@@ -42,7 +42,7 @@ ExternalUnixOSProcess class >> defaultShellPath [
 
 	| path |
 	path := '/bin/sh'.
-	(FileDirectory default fileExists: path)
+	((FileDirectory on: '/bin') fileNames includes: 'sh') "work around bug in symlink resolution for some VMs"
 		ifTrue: [^ path]
 		ifFalse: [self notify: path, ' not found']
 ]
