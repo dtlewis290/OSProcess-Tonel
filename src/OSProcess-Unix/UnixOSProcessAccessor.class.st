@@ -107,6 +107,18 @@ UnixOSProcessAccessor >> chDir: pathString [
 
 ]
 
+{ #category : #'signal print stack trace' }
+UnixOSProcessAccessor >> clearPrintAllStacksOnSigUsr1 [
+	"Clear any signal handler in the VM that was set to print all call stacks on
+	console output when a SIGUSR1 is received. Restores default SIGUSR1
+	handler, which may result in exiting the VM on this signal. Answer an
+	identifier for the previously defined signal handler or nil if no handler
+	had been set."
+
+	^self primForwardSignal: self primSigUsr1Number toSemaphore: nil	
+
+]
+
 { #category : #'file control' }
 UnixOSProcessAccessor >> closeUnixFileNumber: unixFileDescriptor [
 	"Close the file associated with unixFileDescriptor, a small integer value."
@@ -1897,6 +1909,21 @@ UnixOSProcessAccessor >> primOpenXDisplay [
 
 ]
 
+{ #category : #'private - signal forwarding' }
+UnixOSProcessAccessor >> primPrintAllStacksOnSignal: signalNumber [
+	"Set a signal handler in the VM which will print all call stacks on the console
+	output whenever an external signal sigNum is received. Answer the
+	prior value of the signal handler."
+
+	"OSProcess accessor primPrintAllStacksOnSignal: OSProcess accessor primSigUsr1Number"
+
+	"OSProcess accessor primForwardSignal: OSProcess accessor primSigUsr1Number toSemaphore: nil"
+
+	<primitive: 'primitivePrintAllStacksOnSignal' module: 'UnixOSProcessPlugin'>
+	^ nil
+
+]
+
 { #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primPutEnv: aString [
 	"Add or update an environment variable in the external OS process using a 'KEY=value'
@@ -2595,6 +2622,19 @@ UnixOSProcessAccessor >> setNonBlocking: anIOHandle [
 	^ self canObtainSessionIdentifierFromPlugin
 		ifTrue: [self primSQFileSetNonBlocking: (self handleFromAccessor: anIOHandle)]
 		ifFalse: [self primSQFileSetNonBlocking: (self handleFromAccessor: anIOHandle) withSessionIdentifier: self sessionIdentifier]
+
+]
+
+{ #category : #'signal print stack trace' }
+UnixOSProcessAccessor >> setPrintAllStacksOnSigUsr1 [
+	"Set a signal handler in the VM that will print all call stacks on console output
+	whenever a SIGUSR1 is received. Answer an identifier for the previously
+	defined signal handler or nil if this signal handler has already been set."
+	
+	"OSProcess accessor setPrintAllStacksOnSigUsr1"
+	"OSProcess accessor clearPrintAllStacksOnSigUsr1"
+
+	^self primPrintAllStacksOnSignal: self primSigUsr1Number	
 
 ]
 
