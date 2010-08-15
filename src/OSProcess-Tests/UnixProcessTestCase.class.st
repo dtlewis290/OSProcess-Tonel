@@ -64,6 +64,8 @@ UnixProcessTestCase >> runAll [
 { #category : #running }
 UnixProcessTestCase >> setUp [
 
+	(self respondsTo: #timeout: ) "Recent Squeak images with test case timeout"
+		ifTrue: [self perform: #timeout: with: 60].
 	thisOSProcess := OSProcess thisOSProcess
 
 ]
