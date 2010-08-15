@@ -40,15 +40,6 @@ WindowsProcess >> activeHandles [
 
 ]
 
-{ #category : #'child process management' }
-WindowsProcess >> allMyChildren [
-	"On Windows, the process ID is not unique. Use an OrderedCollection instead
-	of a Dictionary to keep track of the child processes."
-
-	allMyChildren ifNil: [ allMyChildren := OrderedCollection new ].
-	^ allMyChildren
-]
-
 { #category : #console }
 WindowsProcess >> closeConsole [
 	"Close the console. The standard input, output and error streams will no longer be available."
@@ -145,6 +136,15 @@ WindowsProcess >> initialize [
 
 ]
 
+{ #category : #'initialize - release' }
+WindowsProcess >> initializeAllMyChildren [
+	"On Windows, the process ID is not unique. Use an OrderedCollection instead
+	of a Dictionary to keep track of the child processes."
+
+	^ allMyChildren := OrderedCollection new
+
+]
+
 { #category : #'platform identification' }
 WindowsProcess >> isResponsibleForThisPlatform [
 	"Answer true is this is an instance of the class which is responsible for representing
@@ -221,7 +221,7 @@ WindowsProcess >> registerChildProcess: anOSProcess [
 	"Register the external process and set an exit handler thread to signal when
 	the process exits."
 
-	self allMyChildren add: anOSProcess.
+	accessProtect critical: [ allMyChildren add: anOSProcess ].
 	self threads add: self restartChildWatcherThread.
 	^ anOSProcess
 
@@ -289,7 +289,9 @@ WindowsProcess >> threads [
 { #category : #'child process management' }
 WindowsProcess >> unregisterChildProcess: anOSProcess [
 
-	^ self allMyChildren remove: anOSProcess pid
+	| p |
+	accessProtect critical: [ p := allMyChildren remove: anOSProcess pid ].
+	^ p
 
 ]
 
