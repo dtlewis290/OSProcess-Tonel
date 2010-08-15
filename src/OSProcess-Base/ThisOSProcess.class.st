@@ -11,7 +11,8 @@ Class {
 		'stdOut',
 		'stdErr',
 		'processAccessor',
-		'allMyChildren'
+		'allMyChildren',
+		'accessProtect'
 	],
 	#classVars : [
 		'ThisInstance'
@@ -71,7 +72,8 @@ ThisOSProcess class >> initializeThisOSProcess [
 	(ThisInstance isNil or: [ThisInstance isResponsibleForThisPlatform not])
 		ifTrue: [self concreteClassOrNil
 				ifNil: [ThisInstance := nil "no concrete class for this platform"]
-				ifNotNil: [:cls | ThisInstance := cls basicNew initialize]]
+				ifNotNil: [:cls | ThisInstance := cls basicNew]].
+	ThisInstance initialize
 ]
 
 { #category : #'initialize-release' }
@@ -81,7 +83,8 @@ ThisOSProcess class >> initializeThisOSProcessWithNotifier [
 	type of computer). Warn if no implementation is available for this platform."
 
 	(ThisInstance isNil or: [ThisInstance isResponsibleForThisPlatform not])
-		ifTrue: [ThisInstance := self concreteClass basicNew initialize]
+		ifTrue: [ThisInstance := self concreteClass basicNew].
+	ThisInstance initialize
 ]
 
 { #category : #'instance creation' }
@@ -116,10 +119,9 @@ ThisOSProcess class >> startUp: resuming [
 	case when #startUp is called after a simple image save). The
 	notification is done in the initialization of my OSProcessAccessor."
 
-	OSProcessAccessor startUp: resuming.
-	AioEventHandler startUp: resuming.
-	self initializeThisOSProcess.
-	self thisOSProcess initialize
+	(Smalltalk at: #AioEventHandler)
+		ifNotNilDo: [ :aio | aio startUp: resuming ].
+	self initializeThisOSProcess
 ]
 
 { #category : #'instance creation' }
@@ -145,16 +147,18 @@ ThisOSProcess >> = processProxy [
 ThisOSProcess >> activeChildren [
 	"Answer child processes which are currently believed to be running."
 
-	"OSProcess thisOSProcess activeChildren inspect"
+	"OSProcess thisOSProcess activeChildren"
 
-	^ self allMyChildren select: [ :p | p isRunning ]
+	| children |
+	accessProtect
+		critical: [ children := allMyChildren select: [ :p | p isRunning ] ].
+	^children
 
 ]
 
 { #category : #'child process management' }
 ThisOSProcess >> allMyChildren [
 
-	allMyChildren ifNil: [ allMyChildren := Dictionary new ].
 	^ allMyChildren
 ]
 
@@ -176,7 +180,7 @@ ThisOSProcess >> canConnectToXDisplay: xDisplayName [
 { #category : #'child process management' }
 ThisOSProcess >> childPids [
 
-	^ self allMyChildren keys asArray
+	^ allMyChildren asArray asArray collect: [ :p | p pid ]
 
 ]
 
@@ -228,7 +232,9 @@ ThisOSProcess >> discardExitedChildren [
 	"Remove entries for completed child processed from dictionary."
 
 	self updateAllMyChildren.
-	^ allMyChildren := self allMyChildren select: [ :p | p isComplete not ]
+	accessProtect
+		critical: [ allMyChildren := allMyChildren select: [ :p | p isComplete not ] ].
+	^ allMyChildren
 
 ]
 
@@ -280,9 +286,12 @@ ThisOSProcess >> displayOnXServer: xDisplayName [
 ThisOSProcess >> exitedChildren [
 	"Answer child processes which have exited and are no longer running."
 
-	"OSProcess thisOSProcess exitedChildren inspect"
+	"OSProcess thisOSProcess exitedChildren"
 
-	^ self allMyChildren select: [ :p | p isComplete ]
+	| children |
+	accessProtect
+		critical: [ children := allMyChildren select: [ :p | p isComplete ]].
+	^ children
 
 ]
 
@@ -354,8 +363,10 @@ ThisOSProcess >> hash [
 { #category : #'initialize - release' }
 ThisOSProcess >> initialize [
 	"Set my instance variables to reflect the state of the OS process in which 
-	this Smalltalk virtual machine is executing."
+	this Smalltalk virtual machine is. executing."
 
+	accessProtect := Semaphore forMutualExclusion.
+	self initializeAllMyChildren.
 	processAccessor ifNotNil:
 		[processAccessor breakDependents.
 		processAccessor := nil].
@@ -363,6 +374,15 @@ ThisOSProcess >> initialize [
 		and: [processAccessor canAccessSystem])
 			and: [pid ~= processAccessor primGetPid])
 		ifTrue: [self resetChildProcessDictionary]
+
+]
+
+{ #category : #'initialize - release' }
+ThisOSProcess >> initializeAllMyChildren [
+	"Use a Dictionary if process identifiers are unique. On Windows, the
+	process ID is not unique, so use an OrderedCollection instead."
+
+	self subclassResponsibility
 
 ]
 
@@ -483,9 +503,7 @@ ThisOSProcess >> refreshFromProcessAccessor [
 { #category : #'child process management' }
 ThisOSProcess >> registerChildProcess: anOSProcess [
 
-	self allMyChildren at: anOSProcess pid put: anOSProcess.
-	^ anOSProcess
-
+	self subclassResponsibility
 ]
 
 { #category : #updating }
@@ -495,8 +513,7 @@ ThisOSProcess >> resetChildProcessDictionary [
 	probably no longer of any interest."
 
 	self updateAllMyChildren. "Ensure contents are up to date before releasing them."
-	allMyChildren := nil.
-	self allMyChildren
+	self initializeAllMyChildren
 
 ]
 
@@ -594,6 +611,13 @@ ThisOSProcess >> stdOut [
 	^ stdOut
 ]
 
+{ #category : #'child process management' }
+ThisOSProcess >> unregisterChildProcess: anOSProcess [
+
+	self subclassResponsibility
+
+]
+
 { #category : #updating }
 ThisOSProcess >> update: aParameter [
 
@@ -619,8 +643,11 @@ ThisOSProcess >> updateAllMyChildren [
 	"Test each child to make sure that it is still accessible. If the child is believed to be
 	running, check to see if it has exited, and update runState and exitStatus accordingly."
 
-	self allMyChildren do:
+	| children |
+	accessProtect critical: [children := allMyChildren asArray].
+	children do:
 		[:child |
 		child update: #accessibility.
 		child isRunning ifTrue: [child update: #runState]]
+
 ]
