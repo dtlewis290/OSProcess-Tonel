@@ -242,7 +242,7 @@ UnixOSProcessAccessor >> finalize [
 			[grimReaper terminate.
 			grimReaper := nil].
 	self sigChldSemaphore ifNotNil:
-			[self restoreSignal: self primSigChldNumber.
+			[self restoreSigChld.
 			self sigChldSemaphore: nil]
 
 ]
@@ -526,7 +526,9 @@ UnixOSProcessAccessor >> grimReaperProcess [
 				[grimReaper :=
 					[[event wait.
 					processSynchronizationDelay wait. "Avoids lost signals in heavy process switching"
-					self changed: #childProcessStatus] repeat] fork]]
+					self changed: #childProcessStatus] repeat] fork.
+			"name selected to look reasonable in the process browser"
+			grimReaper name: ((grimReaper hash asString first: 5), ': the child OSProcess watcher')]]
 		ifFalse:
 			[nil]
 
@@ -548,14 +550,14 @@ UnixOSProcessAccessor >> initialize [
 
 	self finalize.
 	super initialize.
-	self sigChldSemaphore.
-	self grimReaperProcess.
 	ThisProcessPid ~~ self primGetPid
 		ifTrue: 
 			["Image has been restarted and is now running in a different OS process"
 			ThisProcessPid := self primGetPid.
 			self changed: #startUp].
-	self changed
+	self changed.
+	self restartChildWatcherProcess.
+
 
 ]
 
@@ -2474,6 +2476,15 @@ UnixOSProcessAccessor >> register: fileRegionLock [
 	^ self emulateWin32FileLocking
 		ifTrue: [super register: fileRegionLock]
 		ifFalse: [fileRegionLock]
+
+]
+
+{ #category : #'initialize - release' }
+UnixOSProcessAccessor >> restartChildWatcherProcess [
+	"OSProcess accessor restartChildWatcherProcess"
+
+	self finalize.
+	^ self grimReaperProcess
 
 ]
 

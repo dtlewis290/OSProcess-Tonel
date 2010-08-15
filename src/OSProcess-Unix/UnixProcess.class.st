@@ -17,15 +17,6 @@ Class {
 }
 
 { #category : #utility }
-UnixProcess class >> allMyChildren [
-
-	"UnixProcess allMyChildren"
-
-	^ self thisOSProcess allMyChildren
-
-]
-
-{ #category : #utility }
 UnixProcess class >> arguments [
 
 	"UnixProcess arguments"
@@ -703,7 +694,7 @@ UnixProcess class >> runTests [
 
 { #category : #'utility - image save' }
 UnixProcess class >> saveImageInBackground [
-	"Same image in a background OS process."
+	"Save image in a background OS process."
 
 	"UnixProcess saveImageInBackground"
 
@@ -745,7 +736,7 @@ UnixProcess class >> saveImageInBackground: savedImageName nice: niceFlag [
 
 { #category : #'utility - image save' }
 UnixProcess class >> saveImageInBackgroundNicely [
-	"Same image in a background OS process with lowered scheduling priority."
+	"Save image in a background OS process with lowered scheduling priority."
 
 	"UnixProcess saveImageInBackgroundNicely"
 
@@ -1508,7 +1499,15 @@ UnixProcess >> initialize [
 		ifFalse: 
 			[stdIn := nil.
 			stdOut := nil.
-			stdErr := nil]
+			stdErr := nil].
+	processAccessor restartChildWatcherProcess
+
+]
+
+{ #category : #'initialize - release' }
+UnixProcess >> initializeAllMyChildren [
+
+	^ allMyChildren := Dictionary new
 
 ]
 
@@ -1530,7 +1529,7 @@ UnixProcess >> killCurrentChildrenAtExit [
 
 	"OSProcess thisOSProcess killCurrentChildrenAtExit"
 
-	self processAccessor killOnVmExit: self allMyChildren withSignal: nil
+	self processAccessor killOnVmExit: allMyChildren withSignal: nil
 
 ]
 
@@ -1586,8 +1585,6 @@ UnixProcess >> printOn: aStream [
 	"In English, say 'a Unix' rather than 'an Unix'. Therefore do not use super printOn, which
 	treats $U as a vowel."
 
-	self initialize.	"Make sure we are attached to the current OS process (not left over from
-					a previous session)."
 	self ppid.		"Force update of ppid, in case parent may have exited."
 	aStream nextPutAll: 'a ';
 			nextPutAll: self class name;
@@ -1747,7 +1744,7 @@ UnixProcess >> refreshFromProcessAccessor [
 		arguments := self getArgumentList.
 		environment := self getEnvironmentDictionary.
 		path := self pathString.
-		self allMyChildren]
+		self updateAllMyChildren]
 
 ]
 
@@ -1756,7 +1753,11 @@ UnixProcess >> registerChildProcess: anOSProcess [
 
 	self processAccessor sigChldSemaphore.
 	self processAccessor grimReaperProcess.	 "Start the reaper process if it is not running."
-	^ super registerChildProcess: anOSProcess
+	accessProtect
+		critical: [allMyChildren
+				at: anOSProcess pid
+				put: anOSProcess].
+	^ anOSProcess
 
 ]
 
@@ -1864,6 +1865,17 @@ UnixProcess >> squeak [
 		arguments: self arguments
 		environment: nil
 		descriptors: nil
+]
+
+{ #category : #'child process management' }
+UnixProcess >> unregisterChildProcess: anOSProcess [
+
+	accessProtect
+		critical: [allMyChildren
+				removeKey: self pid
+				ifAbsent: []].
+	^ anOSProcess
+
 ]
 
 { #category : #updating }
