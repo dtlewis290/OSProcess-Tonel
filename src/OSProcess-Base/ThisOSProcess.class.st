@@ -70,9 +70,10 @@ ThisOSProcess class >> initializeThisOSProcess [
 	type of computer)."
 
 	(ThisInstance isNil or: [ThisInstance isResponsibleForThisPlatform not])
-		ifTrue: [self concreteClassOrNil
+		ifTrue: [ | cls |
+			(cls := self concreteClassOrNil)
 				ifNil: [ThisInstance := nil "no concrete class for this platform"]
-				ifNotNil: [:cls | ThisInstance := cls basicNew]].
+				ifNotNil: [ThisInstance := cls basicNew]].
 	ThisInstance initialize
 ]
 
