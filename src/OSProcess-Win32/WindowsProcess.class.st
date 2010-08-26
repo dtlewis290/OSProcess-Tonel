@@ -122,12 +122,9 @@ WindowsProcess >> initialize [
 	function to determine if we are restarting the VM (as opposed to returning
 	from an image save)."
 
-	processAccessor ifNotNil:
-		[processAccessor removeDependent: self.
-		processAccessor := nil].
+	super initialize.
 	(self processAccessor canAccessSystem not or: [processAccessor primOneShot]) ifTrue:
 		["Restarting the VM in a new process"
-		self resetChildProcessDictionary.
 		self resetThreads.
 		self threads; mainThread.
 		processHandle := nil.
