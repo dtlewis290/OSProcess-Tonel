@@ -528,7 +528,8 @@ UnixOSProcessAccessor >> grimReaperProcess [
 					processSynchronizationDelay wait. "Avoids lost signals in heavy process switching"
 					self changed: #childProcessStatus] repeat] fork.
 			"name selected to look reasonable in the process browser"
-			grimReaper name: ((grimReaper hash asString first: 5), ': the child OSProcess watcher')]]
+			grimReaper name: ((ReadStream on: grimReaper hash asString) next: 5)
+							, ': the child OSProcess watcher']]
 		ifFalse:
 			[nil]
 
