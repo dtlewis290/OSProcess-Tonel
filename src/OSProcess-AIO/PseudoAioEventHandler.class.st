@@ -29,10 +29,11 @@ PseudoAioEventHandler >> eventGenerator [
 PseudoAioEventHandler >> eventGeneratorProcess [
 	"A process that generates periodic #changed events"
 
-	| d |
+	| d p|
 	d := Delay forMilliseconds: 125.
-	^ [[self changed.
-	d wait] repeat] fork
+	p := [[self changed.
+	d wait] repeat] newProcess.
+	^p resume.
 ]
 
 { #category : #'initialize-release' }

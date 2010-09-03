@@ -366,11 +366,11 @@ AioEventHandler >> initializeForExceptions: exceptionEventFlag readEvents: readE
 		do: [:e |
 			self close. "unregister the semaphore"
 			self notify: e messageText. nil])
-		ifNotNilDo:
-			[:h | handlerProc := self
-					handleExceptions: exceptionEventFlag
-					readEvents: readEventFlag
-					writeEvents: writeEventFlag]
+		ifNotNil:
+			[handlerProc := self
+				handleExceptions: exceptionEventFlag
+				readEvents: readEventFlag
+				writeEvents: writeEventFlag]
 
 ]
 
