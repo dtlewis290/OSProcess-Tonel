@@ -120,8 +120,9 @@ ThisOSProcess class >> startUp: resuming [
 	case when #startUp is called after a simple image save). The
 	notification is done in the initialization of my OSProcessAccessor."
 
-	(Smalltalk at: #AioEventHandler)
-		ifNotNilDo: [ :aio | aio startUp: resuming ].
+	| aio |
+	(aio := Smalltalk at: #AioEventHandler)
+		ifNotNil: [ aio startUp: resuming ].
 	self initializeThisOSProcess
 ]
 

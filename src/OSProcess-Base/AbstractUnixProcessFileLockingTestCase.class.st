@@ -66,19 +66,19 @@ AbstractUnixProcessFileLockingTestCase >> doRemote: remoteBlock doLocal: localBl
 					nextPut: Character lf]"
 
 	| result |
-	self remoteProcess: OSProcess thisOSProcess forkHeadlessSqueak.
-	self assert: self remoteProcess notNil. "Fail if fork did not succeed"
-	(self remoteProcess == OSProcess thisOSProcess)
+	remoteProcess := OSProcess thisOSProcess forkHeadlessSqueak.
+	self assert: remoteProcess notNil. "Fail if fork did not succeed"
+	(remoteProcess == OSProcess thisOSProcess)
 		ifTrue:
 			["remote child Squeak"
 			remoteBlock value]
 		ifFalse:
 			["parent Squeak"
-			[[self remoteProcess isRunning] whileFalse: [self delay wait].
+			[[remoteProcess isRunning] whileFalse: [self delay wait].
 			self delay wait.
 			result := localBlock value]
-				ensure:	[self remoteProcess terminate.
-					[self remoteProcess isComplete] whileFalse: [self delay wait].
+				ensure:	[remoteProcess terminate.
+					[remoteProcess isComplete] whileFalse: [self delay wait].
 					self delay wait.
 					^ result]]
 
@@ -134,20 +134,6 @@ AbstractUnixProcessFileLockingTestCase >> quitImage [
 
 ]
 
-{ #category : #accessing }
-AbstractUnixProcessFileLockingTestCase >> remoteProcess [
-	"Answer the value of remoteProcess"
-
-	^ remoteProcess
-]
-
-{ #category : #accessing }
-AbstractUnixProcessFileLockingTestCase >> remoteProcess: anObject [
-	"Set the value of remoteProcess"
-
-	remoteProcess := anObject
-]
-
 { #category : #running }
 AbstractUnixProcessFileLockingTestCase >> setUp [
 
@@ -167,10 +153,10 @@ AbstractUnixProcessFileLockingTestCase >> tearDown [
 	OSProcessAccessor emulateWin32FileLocking: self initialCompatibilitySetting.
 	d := Delay forMilliseconds: 50.
 	self fileStream close.
-	self remoteProcess ifNotNilDo:
-		[:p | p terminate.
-		[p isComplete] whileFalse: [d wait].
-		self remoteProcess: nil]
+	remoteProcess ifNotNil:
+		[remoteProcess terminate.
+		[remoteProcess isComplete] whileFalse: [d wait].
+		remoteProcess := nil]
 
 ]
 

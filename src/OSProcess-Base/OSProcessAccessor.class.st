@@ -64,16 +64,16 @@ OSProcessAccessor class >> forThisOSProcess [
 
 	"OSProcessAccessor forThisOSProcess"
 
-	| oldAccessor |
-	(ThisOSProcessAccessor notNil and: [ThisOSProcessAccessor isResponsibleForThisPlatform])
-		ifTrue:
-			[^ ThisOSProcessAccessor]
-		ifFalse:
-			["We are running on a different platform, so start a new accessor"
-			oldAccessor := ThisOSProcessAccessor.
-			oldAccessor changed: #invalidProcessAccessor.
-			oldAccessor release; finalize.
-			^ ThisOSProcessAccessor := self concreteClass basicNew initialize]
+	ThisOSProcessAccessor
+		ifNotNil: [ThisOSProcessAccessor isResponsibleForThisPlatform
+					ifTrue:
+						["Common case, platform has not changed"
+						^ThisOSProcessAccessor ]
+					ifFalse:
+						["We are running on a different platform, so start a new accessor"
+						ThisOSProcessAccessor changed: #invalidProcessAccessor.
+						ThisOSProcessAccessor release; finalize]].
+	^ ThisOSProcessAccessor := self concreteClass basicNew initialize
 
 ]
 
@@ -202,12 +202,12 @@ OSProcessAccessor >> getSessionIdentifierFromFileInSqueakDirectory [
 
 	"OSProcess accessor getSessionIdentifierFromFileInSqueakDirectory"
 
-	| id |
+	| id s |
 	FileDirectory default fileNames do:
-		[:n | (FileStream readOnlyFileNamed: n) ifNotNilDo:
-			[:s | (Smalltalk hasClassNamed: #IOHandle)
+		[:n | (s := FileStream readOnlyFileNamed: n) ifNotNil:
+			[(Smalltalk hasClassNamed: #IOHandle)
 				ifTrue: [id := s ioHandle getHandle copyFrom: 5 to: 8]
-				ifFalse: [id := (id := s fileID) ifNotNil: [id copyFrom: 5 to: 8]].
+				ifFalse: [(id := s fileID) ifNotNil: [id copyFrom: 5 to: 8]].
 			s close.
 			^ id]].
 	^ nil

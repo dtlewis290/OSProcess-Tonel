@@ -38,7 +38,7 @@ UnixProcess class >> backgroundProcessInHeadlessSqueak [
 
 	"UnixProcess backgroundProcessInHeadlessSqueak"
 
-	^ [[| pipe backgroundJob ws | 
+	^ [[| pipe backgroundJob ws s | 
 	pipe := OSPipe new.
 	backgroundJob := OSProcess thisOSProcess
 	forkHeadlessSqueakAndDoThenQuit: [| beers | 
@@ -58,7 +58,7 @@ UnixProcess class >> backgroundProcessInHeadlessSqueak [
 	ws := WriteStream on: ''.
 	[backgroundJob isComplete] whileFalse:
 		[(Delay forMilliseconds: 200) wait.
-		pipe upToEnd ifNotNilDo: [:s | ws nextPutAll: s]].
+		(s := pipe upToEnd) ifNotNil: [ws nextPutAll: s]].
 	pipe close.
 	WorldState addDeferredUIMessage:
 		[Transcript show: backgroundJob asString

@@ -145,13 +145,14 @@ AttachableFileStream >> autoClose [
 AttachableFileStream >> close [
 	"Close this file."
 
-	self ioHandle ifNotNilDo:
-		[:handle | UseIOHandle
+	| h |
+	(h := self ioHandle) ifNotNil:
+		[UseIOHandle
 			ifTrue:
-				[handle close.
+				[h close.
 				self ioHandle: nil]
 			ifFalse:
-				[self primCloseNoError: handle.
+				[self primCloseNoError: h.
 				self unregister.
 				fileID := nil]]
 

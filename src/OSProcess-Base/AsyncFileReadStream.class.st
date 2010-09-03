@@ -70,7 +70,7 @@ AsyncFileReadStream >> close [
 AsyncFileReadStream >> disableEventHandling [
 
 	eventHandler
-		ifNotNilDo: [:h | h removeDependent: self; close].
+		ifNotNil: [eventHandler removeDependent: self; close].
 	self eventHandler: nil
 ]
 
@@ -106,7 +106,7 @@ AsyncFileReadStream >> finalize [
 	"Shut the the event handler before closing the file, otherwise aio
 	functions may reference a closed file handle."
 
-	eventHandler ifNotNilDo: [:e | e finalize].
+	eventHandler ifNotNil: [eventHandler finalize].
 	super finalize
 
 ]

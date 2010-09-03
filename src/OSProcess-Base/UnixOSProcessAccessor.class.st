@@ -526,9 +526,10 @@ UnixOSProcessAccessor >> grimReaperProcess [
 				[grimReaper :=
 					[[event wait.
 					processSynchronizationDelay wait. "Avoids lost signals in heavy process switching"
-					self changed: #childProcessStatus] repeat] fork.
-			"name selected to look reasonable in the process browser"
-			grimReaper name: ((ReadStream on: grimReaper hash asString) next: 5)
+					self changed: #childProcessStatus] repeat] newProcess.
+					grimReaper resume.
+					"name selected to look reasonable in the process browser"
+					grimReaper name: ((ReadStream on: grimReaper hash asString) next: 5)
 							, ': the child OSProcess watcher']]
 		ifFalse:
 			[nil]

@@ -175,7 +175,11 @@ WindowsOSProcessAccessor >> grimReaperProcess [
 
 	grimReaper ifNil: [grimReaper := [
 				[self sigChldSemaphoreSet wait.
-				self changed: #childProcessStatus] repeat] fork].
+				self changed: #childProcessStatus] repeat] newProcess.
+				grimReaper resume.
+				"name selected to look reasonable in the process browser"
+				grimReaper name: ((ReadStream on: grimReaper hash asString) next: 5)
+						, ': the child OSProcess watcher'].
 	^ grimReaper
 ]
 
