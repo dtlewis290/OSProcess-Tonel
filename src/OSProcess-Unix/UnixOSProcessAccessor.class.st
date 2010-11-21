@@ -310,7 +310,9 @@ UnixOSProcessAccessor >> forkSqueak [
 	example, the child may lose its connections to stdin, stdout, and stderr after its parent
 	exits."
 
-	^ self primForkSqueak
+	self safeToForkSqueak
+		ifTrue: [^self primForkSqueak].
+	self notify: 'forkSqueak requires XDisplayControlPlugin'
 
 ]
 
@@ -2616,6 +2618,16 @@ UnixOSProcessAccessor >> restoreSignal: signalNumber [
 			Smalltalk unregisterExternalObject: sema]].
 	^ sema
 
+]
+
+{ #category : #'fork and exec' }
+UnixOSProcessAccessor >> safeToForkSqueak [
+	"The forkSqueak method is currently supported only for X11 displays with
+	XDisplayControlPlugin available. If the plugin is not available, the child Squeak
+	VM will continue interacting with the X display, which leads to errors in the
+	parent Squeak, including VM crashes."
+
+	^self canControlXDisplay
 ]
 
 { #category : #'file control' }
