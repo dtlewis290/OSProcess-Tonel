@@ -291,15 +291,6 @@ OSProcessAccessor >> handlesOsSignals [
 	^ false
 ]
 
-{ #category : #testing }
-OSProcessAccessor >> hasTestEof [
-	"True if OSPP supports #primitiveTestEndOfFileFlag. Check this to prevent console
-	error message when running with older OSPP."
-
-	^ hasTestEof
-		ifNil: [hasTestEof := OSProcess accessor osppModuleVersionString asNumber >= 4.2]
-]
-
 { #category : #'initialize - release' }
 OSProcessAccessor >> initialize [
 
@@ -330,10 +321,7 @@ OSProcessAccessor >> isAtEndOfFile: anIOHandle [
 	if aSqFileStruct represents a pipe or a device file, which may not be positionable
 	in the sense of a conventional disk file."
 
-	self flag: 'FIXME'. "The #hasTestEof check can be eliminated after newer OSPP is distibuted"
-	^ self hasTestEof
-		ifTrue: [self primTestEndOfFileFlag: (self handleFromAccessor: anIOHandle)]
-		ifFalse: [self primIsAtEndOfFile: (self handleFromAccessor: anIOHandle)]
+	^ self primTestEndOfFileFlag: (self handleFromAccessor: anIOHandle)
 
 ]
 
@@ -353,13 +341,9 @@ OSProcessAccessor >> makePipeHandles [
 
 	"OSProcess accessor makePipeHandles"
 
-	| p |
-	self canObtainSessionIdentifierFromPlugin
-		ifTrue: [p := self primCreatePipe]
-		ifFalse: [p := self primCreatePipeWithSessionIdentifier: self sessionIdentifier].
-	p isNil
-		ifTrue: [^ nil]
-		ifFalse: [^ p collect: [:e | self ioAccessorFromSQFile: e]]
+	^self primCreatePipe
+		ifNotNilDo: [:p | ^ p collect: [:e | self ioAccessorFromSQFile: e]]
+
 ]
 
 { #category : #'plugin identification' }

@@ -22,9 +22,9 @@ OSFileLock class >> onFile: aFileStream exclusive: writeLockFlag [
 
 { #category : #comparing }
 OSFileLock >> = aFileLock [
-	^ (self species = aFileLock species)
-		and: [self fileStream == aFileLock fileStream]
-		and: [self exclusive == aFileLock exclusive]
+	^ ((self species = aFileLock species)
+		and: [self fileStream == aFileLock fileStream])
+			and: [self exclusive == aFileLock exclusive]
 ]
 
 { #category : #'conflict testing' }

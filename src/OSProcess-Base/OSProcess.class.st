@@ -316,18 +316,34 @@ OSProcess class >> noAccessorAvailable [
 
 { #category : #'version dependent' }
 OSProcess class >> osVersion [
-	"After Squeak version 3.6, #osVersion was moved to SmalltalkImage "
+	"After Squeak version 3.6, #osVersion was moved to SmalltalkImage. Some
+	versions of Pharo move this to OSPlatform and issue deprecation warnings
+	about the other usages."
 
-	^ ((Smalltalk classNamed: 'SmalltalkImage')
-		ifNil: [^ Smalltalk osVersion]) current osVersion
+	"self osVersion"
+
+	^ (((Smalltalk hasClassNamed: #OSPlatform)
+			and: [(Smalltalk at: #OSPlatform)
+					respondsTo: #osVersion])
+		ifTrue: [Smalltalk at: #OSPlatform]
+		ifFalse: [((Smalltalk classNamed: 'SmalltalkImage')
+				ifNil: [^ Smalltalk osVersion]) current]) osVersion
 ]
 
 { #category : #'version dependent' }
 OSProcess class >> platformName [ 
-	"After Squeak version 3.6, #platformName was moved to SmalltalkImage "
+	"After Squeak version 3.6, #platformName was moved to SmalltalkImage Some
+	versions of Pharo move this to OSPlatform and issue deprecation warnings
+	about the other usages."
 
-	^ ((Smalltalk classNamed: 'SmalltalkImage')
-		ifNil: [^ Smalltalk platformName]) current platformName
+	"self platformName"
+
+	^ (((Smalltalk hasClassNamed: #OSPlatform)
+			and: [(Smalltalk at: #OSPlatform)
+					respondsTo: #platformName])
+		ifTrue: [Smalltalk at: #OSPlatform]
+		ifFalse: [((Smalltalk classNamed: 'SmalltalkImage')
+				ifNil: [^ Smalltalk osVersion]) current]) platformName
 ]
 
 { #category : #'version dependent' }
@@ -549,7 +565,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.3.17'
+	^'4.4.0'
 ]
 
 { #category : #'version dependent' }
