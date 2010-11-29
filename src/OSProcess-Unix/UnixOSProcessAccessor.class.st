@@ -252,9 +252,7 @@ UnixOSProcessAccessor >> flushExternalStream: anIOHandle [
 	"Convert anIOHandle to an SQFile data structure and call primitive to flush the
 	external I/O stream."
 
-	^ self canObtainSessionIdentifierFromPlugin
-		ifTrue: [self primSQFileFlush: (self handleFromAccessor: anIOHandle)]
-		ifFalse: [self primSQFileFlush: (self handleFromAccessor: anIOHandle) withSessionIdentifier: self sessionIdentifier]
+	^ self primSQFileFlush: (self handleFromAccessor: anIOHandle)
 
 ]
 
@@ -442,13 +440,8 @@ UnixOSProcessAccessor >> getStdErrHandle [
 	"Answer the handle (a SQFile data structure in interp.c) for the standard error for the
 	OS process in which I am currently executing."
 
-	| handle |
-	handle := self canObtainSessionIdentifierFromPlugin
-		ifTrue: [handle := self primGetStdErrHandle]
-		ifFalse: [handle := self primGetStdErrHandleWithSessionIdentifier: self sessionIdentifier].
-	handle ifNil: [^ nil].
-	^ self ioAccessorFromSQFile: handle
-
+	^ self primGetStdErrHandle
+		ifNotNilDo: [:handle | self ioAccessorFromSQFile: handle]
 ]
 
 { #category : #'standard IO handles' }
@@ -456,13 +449,8 @@ UnixOSProcessAccessor >> getStdInHandle [
 	"Answer the handle (a SQFile data structure in interp.c) for the standard input for the
 	OS process in which I am currently executing."
 
-	| handle |
-	handle := self canObtainSessionIdentifierFromPlugin
-		ifTrue: [handle := self primGetStdInHandle]
-		ifFalse: [handle := self primGetStdInHandleWithSessionIdentifier: self sessionIdentifier].
-	handle ifNil: [^ nil].
-	^ self ioAccessorFromSQFile: handle
-
+	^ self primGetStdInHandle
+		ifNotNilDo: [:handle | self ioAccessorFromSQFile: handle]
 ]
 
 { #category : #'standard IO handles' }
@@ -470,13 +458,8 @@ UnixOSProcessAccessor >> getStdOutHandle [
 	"Answer the handle (a SQFile data structure in interp.c) for the standard output for the
 	OS process in which I am currently executing."
 
-	| handle |
-	handle := self canObtainSessionIdentifierFromPlugin
-		ifTrue: [handle := self primGetStdOutHandle]
-		ifFalse: [handle := self primGetStdOutHandleWithSessionIdentifier: self sessionIdentifier].
-	handle ifNil: [^ nil].
-	^ self ioAccessorFromSQFile: handle
-
+	^ self primGetStdOutHandle
+		ifNotNilDo: [:handle | self ioAccessorFromSQFile: handle]
 ]
 
 { #category : #pthreads }
@@ -667,39 +650,6 @@ UnixOSProcessAccessor >> isLockableFile: aFileStream from: start to: end exclusi
 	| fileRegion |
 	aFileStream ifNil: [^ false].
 	fileRegion := OSFileRegionLock onFile: aFileStream from: start to: end exclusive: flag.
-	^ self isLockableFileRegion: fileRegion
-
-]
-
-{ #category : #deprecated }
-UnixOSProcessAccessor >> isLockableFile: aFileStream region: anInterval [
-	"Pass a struct SQFile on the stack, and check for ability to place an exclusive
-	lock on the specified region. An exclusive lock (write lock) permits only one
-	OS process to hold the lock. Answer true if the region is lockable.
-
-	If length is zero, then the request is for the entire file to be locked, including
-	region extents that have not yet been allocated for the file."
-
-	^ self isLockableFile: aFileStream region: anInterval exclusive: true
-
-]
-
-{ #category : #deprecated }
-UnixOSProcessAccessor >> isLockableFile: aFileStream region: anInterval exclusive: flag [
-	"Pass a struct SQFile on the stack, and check for ability to lock the specified region.
-	If the exclusive flag is true, then specify an exclusive (F:=WRLCK) lock on the
-     file. Otherwise, specify a shared (F:=RDLCK) lock. Any number of Unix processes
-     may hold  a read lock (shared lock) on a file region, but only one process may
-     hold a write lock (exclusive lock).
-
-	If length is zero, then the request is for the entire file to be locked, including
-	region extents that have not yet been allocated for the file.
-
-	Answer true if the region is lockable."
-
-	| fileRegion |
-	aFileStream ifNil: [^ false].
-	fileRegion := OSFileRegionLock onFile: aFileStream interval: anInterval exclusive: flag.
 	^ self isLockableFileRegion: fileRegion
 
 ]
@@ -964,7 +914,7 @@ UnixOSProcessAccessor >> lockFile: fileStream from: start to: end exclusive: wri
 { #category : #'file locking' }
 UnixOSProcessAccessor >> lockFile: fileStream from: start to: end ifFail: failBlock [
 
-	^ self lockFileRegion: fileStream from: start to: end exclusive: true ifFail: failBlock
+	^ self lockFile: fileStream from: start to: end exclusive: true ifFail: failBlock
 
 ]
 
@@ -981,50 +931,6 @@ UnixOSProcessAccessor >> lockFile: aFileStream ifFail: failBlock [
 	cannot be shared across images in different OS process contexts."
 
 	^ self lockFile: aFileStream exclusive: true ifFail: failBlock
-
-]
-
-{ #category : #deprecated }
-UnixOSProcessAccessor >> lockFile: aFileStream region: anInterval [
-	"Pass a struct SQFile on the stack, and request an exclusive lock on the specified
-	region. The exclusive lock (write lock) permits only one OS process to hold the lock.
-	Answer a descriptor for the locked file region, an Array of file handle and region
-	interval; or answer nil on error.
-
-	If length is zero, then the request is for the entire file to be locked, including
-	region extents that have not yet been allocated for the file.
-
-	Warning: The registry permits compatibility with Win32 file locking semantics,
-	but only within a single Squeak image. Multiple cooperating images must not
-	rely on the overlap checking, because the registry is local to this image and
-	cannot be shared across images in different OS process contexts."
-
-	^ self lockFile: aFileStream region: anInterval exclusive: true
-
-
-]
-
-{ #category : #deprecated }
-UnixOSProcessAccessor >> lockFile: aFileStream region: anInterval exclusive: flag [
-	"Pass a struct SQFile on the stack, and request a lock on the specified region.
-	If the exclusive flag is true, then request an exclusive (F:=WRLCK) lock on the
-     file. Otherwise, request a shared (F:=RDLCK) lock. Any number of Unix processes
-     may hold a read lock (shared lock) on a file region, but only one process may
-     hold a write lock (exclusive lock). Answer a descriptor for the locked file region,
-	an Array of file handle and region interval; or answer nil on error.
-
-	If length is zero, then the request is for the entire file to be locked, including
-	region extents that have not yet been allocated for the file.
-
-	Warning: The registry permits compatibility with Win32 file locking semantics,
-	but only within a single Squeak image. Multiple cooperating images must not
-	rely on the overlap checking, because the registry is local to this image and
-	cannot be shared across images in different OS process contexts."
-
-	| fileRegion |
-	aFileStream ifNil: [^ nil].
-	fileRegion := OSFileRegionLock onFile: aFileStream interval: anInterval exclusive: flag.
-	^ self lockFileRegion: fileRegion
 
 ]
 
@@ -1046,23 +952,6 @@ UnixOSProcessAccessor >> lockFileRegion: aFileLock [
 	cannot be shared across images in different OS process contexts."
 
 	^ self lockFileRegion: aFileLock ifFail: [nil]
-
-]
-
-{ #category : #deprecated }
-UnixOSProcessAccessor >> lockFileRegion: fileStream from: start to: end exclusive: writeLockFlag ifFail: failBlock [
-	"Deprecated - poor method name. Use #lockFile:from:to:exclusive:ifFail: instead"
-
-	| lock |
-	lock := OSFileRegionLock onFile: fileStream from: start to: end exclusive: writeLockFlag.
-	^ self lockFileRegion: lock ifFail: [failBlock value]
-]
-
-{ #category : #deprecated }
-UnixOSProcessAccessor >> lockFileRegion: fileStream from: start to: end ifFail: failBlock [
-	"Deprecated - poor method name. Use #lockFile:from:to:ifFail: instead"
-
-	^ self lockFileRegion: fileStream from: start to: end exclusive: true ifFail: failBlock
 
 ]
 
@@ -1328,7 +1217,7 @@ UnixOSProcessAccessor >> primCreatePipe [
 	for the pipe reader and writer."
 
 	<primitive: 'primitiveCreatePipe' module: 'UnixOSProcessPlugin'>
-	^ self primMakePipe "try the older deprecated version"
+	^ nil
 ]
 
 { #category : #'private - primitive access' }
@@ -1337,7 +1226,7 @@ UnixOSProcessAccessor >> primCreatePipeWithSessionIdentifier: aByteArray [
 	for the pipe reader and writer."
 
 	<primitive: 'primitiveCreatePipeWithSessionIdentifier' module: 'UnixOSProcessPlugin'>
-	^ self primMakePipeWithSessionIdentifier: aByteArray "try the older deprecated version"
+	^ nil
 ]
 
 { #category : #'display handling' }
@@ -1440,71 +1329,6 @@ UnixOSProcessAccessor >> primFlushXDisplay [
 
 ]
 
-{ #category : #deprecated }
-UnixOSProcessAccessor >> primForkAndExec: executableFile
-	stdIn: inputFileHandle
-	stdOut: outputFileHandle
-	stdErr: errorFileHandle
-	argBuf: argVec
-	argOffsets: argOffsets
-	envBuf: envVec
-	envOffsets: envOffsets
-	workingDir: pathString [
-
-	"Parameters are expected to have been properly prepared by the caller, including string
-	values which are to be null terminated strings. In other words, all strings should have
-	(Character value: 0) as the last element in the string.
-
-	Parameters should be:
-		executableFile: a string with the name of a file to execute.
-		stdIn: a fileID ByteArray (struct SQFile in C) to be used as standard input.
-		stdOut: a fileID ByteArray to be used as standard output.
-		stdErr: a fileID ByteArray to be used as standard error.
-		argVec: a String arranged to look more or less like a char **, but with the addresses not yet fixed.
-		argOffsets: an Array of offsets for fixing up the argVec addresses.
-		envVec: a String arranged to look more or less like a char **, but with the addresses not yet fixed.
-		envOffsets: an Array of offsets for fixing up the envVec addresses.
-		workingDir: a null terminated path name String, or nil.
-	The envVec parameter may be nil, in which case envOffsets is ignored. workingDir may be nil. The
-	other parameters are required. Parameters with nil value indicate that current values for this process
-	should be used."
-
-	<primitive: 'primitiveForkAndExecInDirectory' module: 'UnixOSProcessPlugin'>
-	^ nil
-
-]
-
-{ #category : #deprecated }
-UnixOSProcessAccessor >> primForkAndExec: executableFile
-	withArgs: anArrayOfArgumentStrings
-	argCount: numberOfArgumentStrings
-	withEnv: anArrayOfEnvironmentStrings
-	envCount: numberOfEnvironmentStrings
-	stdIn: inputFileHandle
-	stdOut: outputFileHandle
-	stdErr: errorFileHandle [
-
-	"Obsolete as of OSProcess version 1.6 or later (early 2001). This method is retained in
-	order to maintain backward compatibility with older versions of UnixOSProcessPlugin."
-
-	"Parameters are expected to have been properly prepared by the caller, including string
-	values which are to be null terminated strings. In other words, all strings should have
-	(Character value: 0) as the last element in the string.
-
-	Parameters should be:
-		executableFile: a string with the name of a file to execute
-		args: a possibly empty array of strings
-		env: either nil, or an array of 'KEY=value' strings
-		stdIn: either nil, or a fileID ByteArray (struct SQFile in C) to be used as standard input
-		stdOut: either nil, or fileID ByteArray to be used as standard output
-		stdErr: either nil, or a fileID ByteArray to be used as standard error
-	Parameters with nil value indicate that current values for this process should be used."
-
-	<primitive: 'primitiveForkAndExec' module: 'UnixOSProcessPlugin'>
-	^ nil
-
-]
-
 { #category : #'fork and exec' }
 UnixOSProcessAccessor >> primForkExec: executableFile
 	stdIn: inputFileHandle
@@ -1535,18 +1359,7 @@ UnixOSProcessAccessor >> primForkExec: executableFile
 	should be used."
 
 	<primitive: 'primitiveForkExec' module: 'UnixOSProcessPlugin'>
-
-	"On failure, try the older deprecated version. First tell the plugin what semaphore to use."
-	self primSetSemaIndex: (Smalltalk externalObjects indexOf: OSProcess accessor sigChldSemaphore).
-	^ self primForkAndExec: executableFile
-		stdIn: inputFileHandle
-		stdOut: outputFileHandle
-		stdErr: errorFileHandle
-		argBuf: argVec
-		argOffsets: argOffsets
-		envBuf: envVec
-		envOffsets: envOffsets
-		workingDir: pathString
+	^ nil
 
 ]
 
@@ -1562,11 +1375,7 @@ UnixOSProcessAccessor >> primForkSqueak [
 	exits."
 
 	<primitive: 'primitiveForkSqueakWithoutSigHandler' module: 'UnixOSProcessPlugin'>
-
-	"On failure, try the older deprecated version. First tell the plugin what semaphore to use."
-	self primSetSemaIndex: (Smalltalk externalObjects indexOf: OSProcess accessor sigChldSemaphore).
-	^ self primOldForkSqueak
-
+	^ nil
 ]
 
 { #category : #'private - signal forwarding' }
@@ -1689,15 +1498,6 @@ UnixOSProcessAccessor >> primGetStdErrHandle [
 ]
 
 { #category : #'private - primitive access' }
-UnixOSProcessAccessor >> primGetStdErrHandleWithSessionIdentifier: aByteArray [
-	"Answer the handle (a SQFile data structure in interp.c) for the standard error for the
-	OS process in which I am currently executing."
-
-	<primitive: 'primitiveGetStdErrHandleWithSessionIdentifier' module: 'UnixOSProcessPlugin'>
-	^ nil
-]
-
-{ #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primGetStdInHandle [
 	"Answer the handle (a SQFile data structure in interp.c) for the standard input for
 	the OS process in which I am currently executing."
@@ -1707,29 +1507,11 @@ UnixOSProcessAccessor >> primGetStdInHandle [
 ]
 
 { #category : #'private - primitive access' }
-UnixOSProcessAccessor >> primGetStdInHandleWithSessionIdentifier: aByteArray [
-	"Answer the handle (a SQFile data structure in interp.c) for the standard input for
-	the OS process in which I am currently executing."
-
-	<primitive: 'primitiveGetStdInHandleWithSessionIdentifier' module: 'UnixOSProcessPlugin'>
-	^ nil
-]
-
-{ #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primGetStdOutHandle [
 	"Answer the handle (a SQFile data structure in interp.c) for the standard output for the
 	OS process in which I am currently executing."
 
 	<primitive: 'primitiveGetStdOutHandle' module: 'UnixOSProcessPlugin'>
-	^ nil
-]
-
-{ #category : #'private - primitive access' }
-UnixOSProcessAccessor >> primGetStdOutHandleWithSessionIdentifier: aByteArray [
-	"Answer the handle (a SQFile data structure in interp.c) for the standard output for the
-	OS process in which I am currently executing."
-
-	<primitive: 'primitiveGetStdOutHandleWithSessionIdentifier' module: 'UnixOSProcessPlugin'>
 	^ nil
 ]
 
@@ -1767,23 +1549,6 @@ UnixOSProcessAccessor >> primGetXDisplayName [
 	^ self oldPrimGetXDisplayName
 
 
-]
-
-{ #category : #deprecated }
-UnixOSProcessAccessor >> primIsAtEndOfFile: aSqFileStruct [
-	"Answer whether the file represented by aSqFileStruct is at end of file, as determined
-	by a call to feof(). This is different from StandardFileStream>>primAtEnd: which answers
-	true if the file pointer is at the end of the file, but which does not call feof() to
-	determine that an end of file condition has occurred. The difference is significant
-	if aSqFileStruct represents a pipe or a device file, which may not be positionable
-	in the sense of a conventional disk file."
-
-	"WARNING: Do not use this method. In some versions of OSPP, the sense of the
-	return value is reversed. Use #primTestEndOfFileFlag: instead. This method is
-	retained to support use of older versions of OSPP."
-
-	<primitive: 'primitiveIsAtEndOfFile' module: 'UnixOSProcessPlugin'>
-	^ nil
 ]
 
 { #category : #'display handling' }
@@ -1837,24 +1602,6 @@ UnixOSProcessAccessor >> primLockFileRegion: aSQFileStruct offset: begin length:
 
 ]
 
-{ #category : #deprecated }
-UnixOSProcessAccessor >> primMakePipe [
-	"Create a pipe, and answer an array of two file handles (SQFile data structures in interp.c)
-	for the pipe reader and writer."
-
-	<primitive: 'primitiveMakePipe' module: 'UnixOSProcessPlugin'>
-	^ nil
-]
-
-{ #category : #deprecated }
-UnixOSProcessAccessor >> primMakePipeWithSessionIdentifier: aByteArray [
-	"Create a pipe, and answer an array of two file handles (SQFile data structures in interp.c)
-	for the pipe reader and writer."
-
-	<primitive: 'primitiveMakePipeWithSessionIdentifier' module: 'UnixOSProcessPlugin'>
-	^ nil
-]
-
 { #category : #'fork and exec' }
 UnixOSProcessAccessor >> primNice: inc [
 	"Change the scheduling priority of this OS process by the given nice increment."
@@ -1884,21 +1631,6 @@ UnixOSProcessAccessor >> primOSProcessPluginModuleVersionString [
 	<primitive: 'primitiveVersionString' module: 'UnixOSProcessPlugin'>
 	^ nil
 
-]
-
-{ #category : #deprecated }
-UnixOSProcessAccessor >> primOldForkSqueak [
-	"Clone this Squeak Smalltalk image in a child OSProcess. The child is the same as the
-	parent, except for its new X session connection, and the return value of this method,
-	which is zero for the child process, and a positive integer equal to the pid of the child
-	for the parent process.
-
-	The child should not depend on using existing connections to external resources. For
-	example, the child may lose its connections to stdin, stdout, and stderr after its parent
-	exits."
-
-	<primitive: 'primitiveForkSqueak' module: 'UnixOSProcessPlugin'>
-	^ nil
 ]
 
 { #category : #'display handling' }
@@ -1957,28 +1689,10 @@ UnixOSProcessAccessor >> primSQFileFlush: aSQFileStruct [
 ]
 
 { #category : #'private - primitive access' }
-UnixOSProcessAccessor >> primSQFileFlush: aSQFileStruct withSessionIdentifier: aByteArray [
-	"Pass a struct SQFile on the stack, flush the external file stream."
-
-	<primitive: 'primitiveSQFileFlushWithSessionIdentifier' module: 'UnixOSProcessPlugin'>
-	^ nil
-
-]
-
-{ #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primSQFileSetBlocking: aSQFileStruct [
 	"Pass a struct SQFile on the stack, and call fcntl() to set the file non-blocking."
 
 	<primitive: 'primitiveSQFileSetBlocking' module: 'UnixOSProcessPlugin'>
-	^ nil
-
-]
-
-{ #category : #'private - primitive access' }
-UnixOSProcessAccessor >> primSQFileSetBlocking: aSQFileStruct withSessionIdentifier: aByteArray [
-	"Pass a struct SQFile on the stack, and call fcntl() to set the file non-blocking."
-
-	<primitive: 'primitiveSQFileSetBlockingWithSessionIdentifier' module: 'UnixOSProcessPlugin'>
 	^ nil
 
 ]
@@ -1993,28 +1707,10 @@ UnixOSProcessAccessor >> primSQFileSetNonBlocking: aSQFileStruct [
 ]
 
 { #category : #'private - primitive access' }
-UnixOSProcessAccessor >> primSQFileSetNonBlocking: aSQFileStruct withSessionIdentifier: aByteArray [
-	"Pass a struct SQFile on the stack, and call fcntl() to set the file non-blocking."
-
-	<primitive: 'primitiveSQFileSetNonBlockingWithSessionIdentifier' module: 'UnixOSProcessPlugin'>
-	^ nil
-
-]
-
-{ #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primSQFileSetUnbuffered: aSQFileStruct [
 	"Pass a struct SQFile on the stack, set the file non-blocking."
 
 	<primitive: 'primitiveSQFileSetUnbuffered' module: 'UnixOSProcessPlugin'>
-	^ nil
-
-]
-
-{ #category : #'private - primitive access' }
-UnixOSProcessAccessor >> primSQFileSetUnbuffered: aSQFileStruct withSessionIdentifier: aByteArray [
-	"Pass a struct SQFile on the stack, set the file non-blocking."
-
-	<primitive: 'primitiveSQFileSetUnbufferedWithSessionIdentifier' module: 'UnixOSProcessPlugin'>
 	^ nil
 
 ]
@@ -2191,14 +1887,6 @@ UnixOSProcessAccessor >> primSetPGrp [
 	^ nil
 ]
 
-{ #category : #deprecated }
-UnixOSProcessAccessor >> primSetSemaIndex: anInteger [
-	"Tell the virtual machine what semaphore to use when handling a death of child signal."
-
-	<primitive: 'primitiveSetSemaIndex' module: 'UnixOSProcessPlugin'>
-	^ anInteger
-]
-
 { #category : #'external process access' }
 UnixOSProcessAccessor >> primSetSid [
 	"Quoted from Linux man pages:
@@ -2340,8 +2028,7 @@ UnixOSProcessAccessor >> primTestEndOfFileFlag: aSqFileStruct [
 	in the sense of a conventional disk file."
 
 	<primitive: 'primitiveTestEndOfFileFlag' module: 'UnixOSProcessPlugin'>
-	^ self primIsAtEndOfFile: aSqFileStruct
-
+	^ nil
 ]
 
 { #category : #'private - primitive access' }
@@ -2634,9 +2321,7 @@ UnixOSProcessAccessor >> safeToForkSqueak [
 UnixOSProcessAccessor >> setBlocking: anIOHandle [
 	"Convert anIOHandle to an SQFile data structure and call primitive to set for blocking I/O."
 
-	^ self canObtainSessionIdentifierFromPlugin
-		ifTrue: [self primSQFileSetBlocking: (self handleFromAccessor: anIOHandle)]
-		ifFalse: [self primSQFileSetBlocking: (self handleFromAccessor: anIOHandle) withSessionIdentifier: self sessionIdentifier]
+	^ self primSQFileSetBlocking: (self handleFromAccessor: anIOHandle)
 
 ]
 
@@ -2644,10 +2329,7 @@ UnixOSProcessAccessor >> setBlocking: anIOHandle [
 UnixOSProcessAccessor >> setNonBlocking: anIOHandle [
 	"Convert anIOHandle to an SQFile data structure and call primitive to set it non-blocking."
 
-	^ self canObtainSessionIdentifierFromPlugin
-		ifTrue: [self primSQFileSetNonBlocking: (self handleFromAccessor: anIOHandle)]
-		ifFalse: [self primSQFileSetNonBlocking: (self handleFromAccessor: anIOHandle) withSessionIdentifier: self sessionIdentifier]
-
+	^ self primSQFileSetNonBlocking: (self handleFromAccessor: anIOHandle)
 ]
 
 { #category : #'signal print stack trace' }
@@ -2667,10 +2349,7 @@ UnixOSProcessAccessor >> setPrintAllStacksOnSigUsr1 [
 UnixOSProcessAccessor >> setUnbuffered: anIOHandle [
 	"Convert anIOHandle to an SQFile data structure and call primitive to set unbuffered I/O."
 
-	^ self canObtainSessionIdentifierFromPlugin
-		ifTrue: [self primSQFileSetUnbuffered: (self handleFromAccessor: anIOHandle)]
-		ifFalse: [self primSQFileSetUnbuffered: (self handleFromAccessor: anIOHandle) withSessionIdentifier: self sessionIdentifier]
-
+	^ self primSQFileSetUnbuffered: (self handleFromAccessor: anIOHandle)
 ]
 
 { #category : #accessing }
@@ -2844,29 +2523,6 @@ UnixOSProcessAccessor >> unlockFile: aFileStream ifFail: failBlock [
 
 ]
 
-{ #category : #deprecated }
-UnixOSProcessAccessor >> unlockFile: aFileStream region: anInterval [
-	"Pass a struct SQFile on the stack, and unlock the specified region.
-	Answer the result of the call to fcntl(). If the region is in the file lock cache,
-	remove it, but otherwise ignore the cache. The cache supports Win32 semantics
-	within a single Squeak image, but not across separate images, therefore the
-	unlock should be attempted regardless of whether this image thinks that the
-	region has previously been locked. Answer a descriptor for the unlocked file
-	region, an Array of file handle and region interval; or answer nil on error
-	or if the region did not appear in the cache.
-
-	Warning: The registry permits compatibility with Win32 file locking semantics,
-	but only within a single Squeak image. Multiple cooperating images must not
-	rely on the overlap checking, because the registry is local to this image and
-	cannot be shared across images in different OS process contexts."
-
-	| fileRegion |
-	aFileStream ifNil: [^ nil].
-	fileRegion := OSFileRegionLock onFile: aFileStream interval: anInterval exclusive: true.
-	^ self unlockFileRegion: fileRegion
-
-]
-
 { #category : #'file locking' }
 UnixOSProcessAccessor >> unlockFileRegion: aFileLock [
 	"Pass a struct SQFile on the stack, and unlock the specified region.
@@ -2884,23 +2540,6 @@ UnixOSProcessAccessor >> unlockFileRegion: aFileLock [
 	cannot be shared across images in different OS process contexts."
 
 	^ self unlockFileRegion: aFileLock ifFail: [nil]
-
-]
-
-{ #category : #deprecated }
-UnixOSProcessAccessor >> unlockFileRegion: fileStream from: start to: end exclusive: writeLockFlag ifFail: failBlock [
-	"Deprecated - poor method name. Use #unlockFile:from:to:exclusive:ifFail: instead"
-
-	| lock |
-	lock := OSFileRegionLock onFile: fileStream from: start to: end exclusive: writeLockFlag.
-	^ self unlockFileRegion: lock ifFail: [failBlock value]
-]
-
-{ #category : #deprecated }
-UnixOSProcessAccessor >> unlockFileRegion: fileStream from: start to: end ifFail: failBlock [
-	"Deprecated - poor method name. Use #unlockFile:from:to:ifFail: instead"
-
-	^ self unlockFileRegion: fileStream from: start to: end exclusive: true ifFail: failBlock
 
 ]
 
