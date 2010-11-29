@@ -406,7 +406,7 @@ WindowsOSProcessAccessor >> primCreatePipe [
 	for the pipe reader and writer."
 
 	<primitive: 'primitiveCreatePipe' module: 'Win32OSProcessPlugin'>
-	^ self primMakePipe "try the older deprecated version"
+	^ nil
 ]
 
 { #category : #'pipe open' }
@@ -415,7 +415,7 @@ WindowsOSProcessAccessor >> primCreatePipeWithSessionIdentifier: aByteArray [
 	for the pipe reader and writer."
 
 	<primitive: 'primitiveCreatePipeWithSessionIdentifier' module: 'Win32OSProcessPlugin'>
-	^ self primMakePipeWithSessionIdentifier: aByteArray "try the older deprecated version"
+	^ nil
 ]
 
 { #category : #console }
@@ -575,24 +575,6 @@ WindowsOSProcessAccessor >> primLastReadFor: aSemaphoreIndex storeIn: aThreeElem
 	always be 1)."
 
 	<primitive: 'primitiveLastReadForStoreIn' module: 'Win32OSProcessPlugin'>
-	^ nil
-]
-
-{ #category : #deprecated }
-WindowsOSProcessAccessor >> primMakePipe [
-	"Create a pipe, and answer an array of two file handles (SQFile data structures in interp.c)
-	for the pipe reader and writer."
-
-	<primitive: 'primitiveMakePipe' module: 'Win32OSProcessPlugin'>
-	^ nil
-]
-
-{ #category : #deprecated }
-WindowsOSProcessAccessor >> primMakePipeWithSessionIdentifier: aByteArray [
-	"Create a pipe, and answer an array of two file handles (SQFile data structures in interp.c)
-	for the pipe reader and writer."
-
-	<primitive: 'primitiveMakePipeWithSessionIdentifier' module: 'Win32OSProcessPlugin'>
 	^ nil
 ]
 
