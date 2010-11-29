@@ -662,16 +662,16 @@ AbstractUnixProcessFileLockingTestCase >> testLockFileRegionIfFail [
 	| fail |
 	fail := false.
 	accessor
-		lockFileRegion: fileStream from: 100 to: 199 exclusive: true
+		lockFile: fileStream from: 100 to: 199 exclusive: true
 		ifFail: [fail := true].
 	self shouldnt: fail.
 	fileStream close.
 	accessor
-		lockFileRegion: fileStream from: 100 to: 199 exclusive: true
+		lockFile: fileStream from: 100 to: 199 exclusive: true
 		ifFail: [fail := true].
 	self should: fail.
 	accessor
-		lockFileRegion: fileStream from: 100 to: 199
+		lockFile: fileStream from: 100 to: 199
 		ifFail: [fail := true].
 	self should: fail
 
@@ -945,20 +945,20 @@ AbstractUnixProcessFileLockingTestCase >> testUnlockFileRegionIfFail [
 	| fail |
 	fail := false.
 	accessor
-		lockFileRegion: fileStream from: 100 to: 199 exclusive: true
+		lockFile: fileStream from: 100 to: 199 exclusive: true
 		ifFail: [fail := true].
 	self shouldnt: fail.
 	accessor
-		unlockFileRegion: fileStream from: 100 to: 199 exclusive: true
+		unlockFile: fileStream from: 100 to: 199 exclusive: true
 		ifFail: [fail := true].
 	self shouldnt: fail.
 	fileStream close.
 	accessor
-		unlockFileRegion: fileStream from: 100 to: 199 exclusive: true
+		unlockFile: fileStream from: 100 to: 199 exclusive: true
 		ifFail: [fail := true].
 	self should: fail.
 	accessor
-		unlockFileRegion: fileStream from: 100 to: 199
+		unlockFile: fileStream from: 100 to: 199
 		ifFail: [fail := true].
 	self should: fail
 
