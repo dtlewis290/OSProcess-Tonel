@@ -310,7 +310,8 @@ UnixOSProcessAccessor >> forkSqueak [
 
 	self safeToForkSqueak
 		ifTrue: [^self primForkSqueak].
-	self notify: 'forkSqueak requires XDisplayControlPlugin'
+	[self notify: 'forkSqueak requires XDisplayControlPlugin']
+		ensure: [^nil]
 
 ]
 
