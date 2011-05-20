@@ -56,9 +56,7 @@ ThisOSProcess class >> initialize [
 	AttachableFileStream initialize.
 	OSProcessAccessor initialize.
 	self initializeThisOSProcess.
-	"Some images may have a bug in startup list processing. Add this class to a known
-	place in the middle of the list to avoid getting bitten by the bug."
-	Smalltalk addToStartUpList: ThisOSProcess after: ImageSegment.
+	Smalltalk addToStartUpList: ThisOSProcess.
 	Smalltalk addToShutDownList: ThisOSProcess
 
 ]
