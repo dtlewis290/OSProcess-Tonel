@@ -66,7 +66,8 @@ AbstractUnixProcessFileLockingTestCase >> doRemote: remoteBlock doLocal: localBl
 					nextPut: Character lf]"
 
 	| result |
-	remoteProcess := OSProcess thisOSProcess forkHeadlessSqueak.
+	self shouldnt: [remoteProcess := OSProcess thisOSProcess forkHeadlessSqueak]
+		raise: Warning.
 	self assert: remoteProcess notNil. "Fail if fork did not succeed"
 	(remoteProcess == OSProcess thisOSProcess)
 		ifTrue:

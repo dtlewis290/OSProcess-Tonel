@@ -172,7 +172,8 @@ UnixProcessTestCase >> testClassForkSqueak [
 
 	| p openFileCount |
 	openFileCount := self numberOfOpenFiles.
-	p := UnixProcess forkSqueak.
+	self shouldnt: [p := UnixProcess forkSqueak]
+		raise: Warning.
 	self assert: p notNil.
 	(p == thisOSProcess)
 		ifTrue:
@@ -197,9 +198,11 @@ UnixProcessTestCase >> testClassForkSqueakAndDo [
 
 	| p openFileCount |
 	openFileCount := self numberOfOpenFiles.
-	p := UnixProcess forkSqueakAndDo:
-			[(Delay forMilliseconds: 100) wait.
-			OSProcess snapshot: false andQuit: true].
+	self shouldnt:
+			[p := UnixProcess forkSqueakAndDo:
+					[(Delay forMilliseconds: 100) wait.
+					OSProcess snapshot: false andQuit: true]]
+		raise: Warning.
 	self assert: p notNil.
 	(p == thisOSProcess)
 		ifFalse:
@@ -219,8 +222,10 @@ UnixProcessTestCase >> testClassForkSqueakAndDoThenQuit [
 
 	| p openFileCount |
 	openFileCount := self numberOfOpenFiles.
-	p := UnixProcess forkSqueakAndDoThenQuit:
-			[(Delay forMilliseconds: 100) wait].
+	self shouldnt:
+			[p := UnixProcess forkSqueakAndDoThenQuit:
+					[(Delay forMilliseconds: 100) wait]]
+		raise: Warning.
 	self assert: p notNil.
 	(p == thisOSProcess)
 		ifFalse:
@@ -240,7 +245,8 @@ UnixProcessTestCase >> testEightLeafSqueakTree [
 
 	| a openFileCount |
 	openFileCount := self numberOfOpenFiles.
-	a := UnixProcess eightLeafSqueakTree.
+	self shouldnt: [a := UnixProcess eightLeafSqueakTree]
+		raise: Warning.
 	self assert: (a isKindOf: Array).
 	self assert: a size == 3.
 	(a includes: 0)
@@ -258,9 +264,9 @@ UnixProcessTestCase >> testForkHeadlessSqueakAndDo [
 	| p openFileCount |
 	openFileCount := self numberOfOpenFiles.
 	self shouldnt:
-		[p := thisOSProcess forkHeadlessSqueakAndDo:
-			[(Delay forMilliseconds: 100) wait.
-			OSProcess snapshot: false andQuit: true]]
+			[p := thisOSProcess forkHeadlessSqueakAndDo:
+					[(Delay forMilliseconds: 100) wait.
+					OSProcess snapshot: false andQuit: true]]
 		raise: Warning. "Catch warning if fork fails"
 	self assert: p notNil.
 	(p == thisOSProcess)
@@ -282,8 +288,8 @@ UnixProcessTestCase >> testForkHeadlessSqueakAndDoThenQuit [
 	| p openFileCount |
 	openFileCount := self numberOfOpenFiles.
 	self shouldnt:
-		[p := thisOSProcess forkHeadlessSqueakAndDoThenQuit:
-			[(Delay forMilliseconds: 100) wait]]
+			[p := thisOSProcess forkHeadlessSqueakAndDoThenQuit:
+					[(Delay forMilliseconds: 100) wait]]
 		raise: Warning. "Catch warning if fork fails"
 	self assert: p notNil.
 	(p == thisOSProcess)
@@ -330,9 +336,11 @@ UnixProcessTestCase >> testForkSqueakAndDo [
 
 	| p openFileCount |
 	openFileCount := self numberOfOpenFiles.
-	p := thisOSProcess forkSqueakAndDo:
-			[(Delay forMilliseconds: 100) wait.
-			OSProcess snapshot: false andQuit: true].
+	self shouldnt:
+			[p := thisOSProcess forkSqueakAndDo:
+					[(Delay forMilliseconds: 100) wait.
+					OSProcess snapshot: false andQuit: true]]
+		raise: Warning.
 	self assert: p notNil.
 	(p == thisOSProcess)
 		ifFalse:
@@ -352,8 +360,10 @@ UnixProcessTestCase >> testForkSqueakAndDoThenQuit [
 
 	| p openFileCount |
 	openFileCount := self numberOfOpenFiles.
-	p := thisOSProcess forkSqueakAndDoThenQuit:
-			[(Delay forMilliseconds: 100) wait].
+	self shouldnt:
+			[p := thisOSProcess forkSqueakAndDoThenQuit:
+					[(Delay forMilliseconds: 100) wait]]
+		raise: Warning.
 	self assert: p notNil.
 	(p == thisOSProcess)
 		ifFalse:

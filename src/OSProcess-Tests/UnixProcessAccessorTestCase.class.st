@@ -194,7 +194,7 @@ UnixProcessAccessorTestCase >> testChDir [
 
 	| cwd new |
 	cwd := accessor primGetCurrentWorkingDirectory.
-	new := '/tmp'.
+	new := '/bin'. "nb Do not use /tmp because OS X implements it as a sym link to private/tmp"
 	accessor chDir: new.
 	self should: [new = accessor primGetCurrentWorkingDirectory].
 	accessor chDir: cwd.
@@ -408,6 +408,8 @@ UnixProcessAccessorTestCase >> testIsExecutableForUserInGroup [
 
 	OSProcess waitForCommand: 'touch /tmp/delete.me'.
 	OSProcess waitForCommand: 'chmod 550 /tmp/delete.me'.
+	"explicitly set file group because OS X may have set it to something other than current gid"
+	OSProcess waitForCommand: 'chgrp ', accessor primGetGid asString, ' /tmp/delete.me'.
 	self should: [accessor isExecutable: '/bin/sh'
 					forUser: accessor primGetUid
 					inGroup: accessor primGetGid].
@@ -475,6 +477,8 @@ UnixProcessAccessorTestCase >> testIsReadableForUserInGroup [
 
 	OSProcess waitForCommand: 'touch /tmp/delete.me'.
 	OSProcess waitForCommand: 'chmod 550 /tmp/delete.me'.
+	"explicitly set file group because OS X may have set it to something other than current gid"
+	OSProcess waitForCommand: 'chgrp ', accessor primGetGid asString, ' /tmp/delete.me'.
 	self should: [accessor isReadable: '/bin/sh'
 					forUser: accessor primGetUid
 					inGroup: accessor primGetGid].
@@ -511,6 +515,8 @@ UnixProcessAccessorTestCase >> testIsWritableForUserInGroup [
 
 	OSProcess waitForCommand: 'touch /tmp/delete.me'.
 	OSProcess waitForCommand: 'chmod 770 /tmp/delete.me'.
+	"explicitly set file group because OS X may have set it to something other than current gid"
+	OSProcess waitForCommand: 'chgrp ', accessor primGetGid asString, ' /tmp/delete.me'.
 	self shouldnt: [accessor isWritable: '/bin/sh'
 					forUser: accessor primGetUid
 					inGroup: accessor primGetGid].
