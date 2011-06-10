@@ -1251,25 +1251,26 @@ UnixProcess >> forkHeadlessSqueak [
 	connected := self processAccessor canControlXDisplay
 					and: [self flushXDisplay notNil].
 	childPid := self processAccessor forkSqueak.
-	childPid == 0
-		ifTrue:
-			[connected ifTrue: [self disconnectXDisplay].
-			OSProcess thisOSProcess processAccessor changed: #pid.
-			^ self]
-		ifFalse:
-			[child := ExternalUnixOSProcess new.
-			child pid: childPid.
-			child ppid: thisPid.
-			child programName: self programName.
-			child initialStdIn: self stdIn.	
-			child initialStdOut: self stdOut.
-			child initialStdErr: self stdErr.
-			child arguments: self arguments.
-			child initialEnvironment: self environment.
-			child notYetRunning.
-			self registerChildProcess: child.
-			child running.
-			^ child]
+	^ childPid ifNotNil: [
+		childPid == 0
+			ifTrue:
+				[connected ifTrue: [self disconnectXDisplay].
+				OSProcess thisOSProcess processAccessor changed: #pid.
+				^ self]
+			ifFalse:
+				[child := ExternalUnixOSProcess new.
+				child pid: childPid.
+				child ppid: thisPid.
+				child programName: self programName.
+				child initialStdIn: self stdIn.	
+				child initialStdOut: self stdOut.
+				child initialStdErr: self stdErr.
+				child arguments: self arguments.
+				child initialEnvironment: self environment.
+				child notYetRunning.
+				self registerChildProcess: child.
+				child running.
+				^ child]]
 
 ]
 
