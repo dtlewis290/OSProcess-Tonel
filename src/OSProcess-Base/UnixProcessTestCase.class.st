@@ -77,7 +77,8 @@ UnixProcessTestCase >> testCatAFile [
 
 	| p openFileCount |
 	openFileCount := self numberOfOpenFiles.
-	p := UnixProcess catAFile.
+	self shouldnt: [p := UnixProcess catAFile]
+		raise: Warning.
 	self assert: p notNil.
 	self should: [p isRunning].
 	[p isRunning] whileTrue: [(Delay forMilliseconds: 100) wait].
@@ -99,7 +100,8 @@ UnixProcessTestCase >> testCatFromFileToFiles [
 	openFileCount := self numberOfOpenFiles.
 	FileDirectory default deleteFileNamed: '/tmp/deleteMe.out' ifAbsent: [].
 	FileDirectory default deleteFileNamed: '/tmp/deleteMe.err' ifAbsent: [].
-	p := UnixProcess catFromFileToFiles.
+	self shouldnt: [p := UnixProcess catFromFileToFiles]
+		raise: Warning.
 	self assert: p notNil.
 	self should: [p isRunning].
 	[p isRunning] whileTrue: [(Delay forMilliseconds: 100) wait].
@@ -425,7 +427,8 @@ UnixProcessTestCase >> testRunCommand [
 	openFileCount := self numberOfOpenFiles.
 	FileDirectory default deleteFileNamed: '/tmp/deleteMe.out' ifAbsent: [].
 	FileDirectory default deleteFileNamed: '/tmp/deleteMe.err' ifAbsent: [].
-	p := UnixProcess testRunCommand.
+	self shouldnt: [p := UnixProcess testRunCommand]
+		raise: Warning.
 	self assert: p notNil.
 	self should: [p isRunning].
 	[p isRunning] whileTrue: [(Delay forMilliseconds: 100) wait].

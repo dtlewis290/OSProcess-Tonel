@@ -406,7 +406,8 @@ UnixProcessAccessorTestCase >> testIsExecutableForUserInGroup [
 
 	"(UnixProcessAccessorTestCase selector: #testIsExecutableForUserInGroup) run"
 
-	OSProcess waitForCommand: 'touch /tmp/delete.me'.
+	self shouldnt: [OSProcess waitForCommand: 'touch /tmp/delete.me']
+		raise: Warning.
 	OSProcess waitForCommand: 'chmod 550 /tmp/delete.me'.
 	"explicitly set file group because OS X may have set it to something other than current gid"
 	OSProcess waitForCommand: 'chgrp ', accessor primGetGid asString, ' /tmp/delete.me'.
@@ -475,7 +476,8 @@ UnixProcessAccessorTestCase >> testIsReadableForUserInGroup [
 
 	"(UnixProcessAccessorTestCase selector: #testIsReadableForUserInGroup) run"
 
-	OSProcess waitForCommand: 'touch /tmp/delete.me'.
+	self shouldnt: [OSProcess waitForCommand: 'touch /tmp/delete.me']
+		raise: Warning.
 	OSProcess waitForCommand: 'chmod 550 /tmp/delete.me'.
 	"explicitly set file group because OS X may have set it to something other than current gid"
 	OSProcess waitForCommand: 'chgrp ', accessor primGetGid asString, ' /tmp/delete.me'.
@@ -513,7 +515,8 @@ UnixProcessAccessorTestCase >> testIsWritableForUserInGroup [
 
 	"(UnixProcessAccessorTestCase selector: #testIsWritableForUserInGroup) run"
 
-	OSProcess waitForCommand: 'touch /tmp/delete.me'.
+	self shouldnt: [OSProcess waitForCommand: 'touch /tmp/delete.me']
+		raise: Warning.
 	OSProcess waitForCommand: 'chmod 770 /tmp/delete.me'.
 	"explicitly set file group because OS X may have set it to something other than current gid"
 	OSProcess waitForCommand: 'chgrp ', accessor primGetGid asString, ' /tmp/delete.me'.
@@ -730,7 +733,8 @@ UnixProcessAccessorTestCase >> testPrimForkAndExec [
 	"(UnixProcessAccessorTestCase selector: #testPrimForkAndExec) run"
 
 	| p |
-	p := UnixProcess command: 'ls /bin'.
+	self shouldnt: [p := UnixProcess command: 'ls /bin']
+		raise: Warning.
 	(Delay forMilliseconds: 500) wait.
 	self should: [p isComplete].
 	self should: [p exitStatus == 0]
