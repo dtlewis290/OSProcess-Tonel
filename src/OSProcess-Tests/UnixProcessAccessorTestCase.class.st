@@ -5,8 +5,7 @@ Class {
 	#name : #UnixProcessAccessorTestCase,
 	#superclass : #TestCase,
 	#instVars : [
-		'accessor',
-		'totalLength'
+		'accessor'
 	],
 	#category : #'OSProcess-Tests'
 }
@@ -123,7 +122,7 @@ UnixProcessAccessorTestCase >> testArgsAsFlatArrayAndOffsets [
 
 	"(UnixProcessAccessorTestCase selector: #testArgsAsFlatArrayAndOffsets) debug"
 
-	| a pointerSize lengthOfCStrings stringsAndOffsets rs s arrayWithMachineDependentPointers |
+	| a pointerSize lengthOfCStrings totalLength stringsAndOffsets rs s arrayWithMachineDependentPointers |
 	pointerSize := OSProcess accessor sizeOfPointer.
 	a := { 'one ' . 'two ' . 'three ' }.
 	a do: [:e | e at: e size put: (Character value: 0)].
@@ -202,6 +201,43 @@ UnixProcessAccessorTestCase >> testChDir [
 
 ]
 
+{ #category : #testing }
+UnixProcessAccessorTestCase >> testDupTo [
+	"Perform a dup2() call to assign IO to a new file stream"
+
+	"(UnixProcessAccessorTestCase selector: #testDupTo) run"
+
+	| f1 f2 fd1 fd2 result contents1 contents2 |
+	FileDirectory deleteFilePath: '/tmp/delete-1.me'.	
+	FileDirectory deleteFilePath: '/tmp/delete-2.me'.	
+	f1 := FileStream newFileNamed: '/tmp/delete-1.me'.
+	f2 := FileStream newFileNamed: '/tmp/delete-2.me'.
+	fd1 := OSProcess accessor primUnixFileNumber: f1 fileID.
+	fd2 := OSProcess accessor primUnixFileNumber: f2 fileID.
+	result := OSProcess accessor primDup: fd1 to: fd2.
+	"f1 and f2 now both refer to the same IO stream"
+	self assert: result = fd2.
+	f2 nextPutAll: 'write something to the original f2 file stream that will appear in duped f1 instead'.
+	f1 reset.
+	contents1 := f1 upToEnd.
+	self deny: contents1 isEmpty.
+	self assert: ['write something*' match: contents1].
+	f2 reset.
+	contents2 := f2 upToEnd.
+	self deny: contents2 isEmpty.
+	self assert: ['write something*' match: contents2].
+	f1 close.
+	f2 close.
+	"check the contents of the actual files"
+	contents1 := (FileStream fileNamed: '/tmp/delete-1.me') contentsOfEntireFile.
+	self assert: ['write something*' match: contents1].
+	contents2 := (FileStream fileNamed: '/tmp/delete-2.me') contentsOfEntireFile.
+	self assert: contents2 isEmpty.
+	FileDirectory deleteFilePath: '/tmp/delete-1.me'.	
+	FileDirectory deleteFilePath: '/tmp/delete-2.me'.	
+
+]
+
 { #category : #'testing - C string arrays' }
 UnixProcessAccessorTestCase >> testEnvAsFlatArrayAndOffsets [
 	"Test conversion of a dictionary of key-value environment variables into the
@@ -209,7 +245,7 @@ UnixProcessAccessorTestCase >> testEnvAsFlatArrayAndOffsets [
 
 	"(UnixProcessAccessorTestCase selector: #testEnvAsFlatArrayAndOffsets) debug"
 
-	| pointerSize lengthOfCStrings stringsAndOffsets rs s arrayWithMachineDependentPointers d |
+	| pointerSize lengthOfCStrings totalLength stringsAndOffsets rs s arrayWithMachineDependentPointers d |
 	pointerSize := OSProcess accessor sizeOfPointer.
 	d := Dictionary new.
 	d at: #ONE put: 'one'.
@@ -887,6 +923,59 @@ UnixProcessAccessorTestCase >> testRealpath [
 ]
 
 { #category : #testing }
+UnixProcessAccessorTestCase >> testRedirectStdOutTo [
+	"Perform a dup2() call on the standard output descriptor to assign it
+	to a new file stream"
+
+	"(UnixProcessAccessorTestCase selector: #testRedirectStdOutTo) run"
+
+	| out aFileStream contents outFd saveFd newFileNo saveFs |
+	out := OSProcess thisOSProcess stdOut.
+	"save file number to allow cleanup at end of test"
+	FileDirectory deleteFilePath: '/tmp/delete.2.me'.	
+	saveFs := FileStream newFileNamed: '/tmp/delete.2.me'.
+	outFd := OSProcess accessor primUnixFileNumber: out fileID.
+	saveFd := OSProcess accessor primUnixFileNumber: saveFs fileID.
+	OSProcess accessor primDup: outFd to: saveFd.
+	"Original stdout file descriptor is saved as safeFd, to be restored at end of test"
+
+	FileDirectory deleteFilePath: '/tmp/delete.me'.	
+	aFileStream := FileStream newFileNamed: '/tmp/delete.me'.
+	"nb - #contentsOfEntireFile closes the file, do not use"
+	aFileStream reset.
+	self assert: aFileStream upToEnd isEmpty.
+	"note - do not close aFileStream as this affects actual stdout"
+	out nextPutAll: 'foo'.
+	aFileStream reset.
+	self assert: aFileStream upToEnd isEmpty.
+	OSProcess thisOSProcess redirectStdOutTo: aFileStream.
+	out nextPutAll: 'foo'.
+	aFileStream reset.
+	contents := aFileStream upToEnd.
+	self deny: contents isEmpty.
+	self assert: contents = 'foo'. "assume noone else is using stdout right now"
+	"ensure the we can still find the real stdout"
+	self deny: OSProcess thisOSProcess stdOut closed.
+	OSProcess thisOSProcess stdOut nextPutAll: 'bar'.
+	aFileStream reset.
+	contents := aFileStream upToEnd.
+	self deny: contents isEmpty.
+	self assert: contents = 'foobar'.
+	"Restore the original file number. The stdOut stream is cached in ThisOSProcess
+	(and should probably be recalculated following a dup2(), so find the real handle
+	with getStdOutHandle."
+	newFileNo := OSProcess accessor primUnixFileNumber: OSProcess accessor getStdOutHandle.
+	OSProcess accessor primDup: saveFd to: newFileNo.
+	OSProcess thisOSProcess stdOut lf; nextPutAll: 'UnixProcessAccessorTestCase>>testRedirectStdOutTo - this should appear on original console stdout'; lf.
+	saveFs close.
+	aFileStream close.	
+	FileDirectory deleteFilePath: '/tmp/delete.me'.	
+	FileDirectory deleteFilePath: '/tmp/delete.2.me'.	
+
+
+]
+
+{ #category : #testing }
 UnixProcessAccessorTestCase >> testSessionIdentifier [
 	"This is an indirect way to make sure that the primitive for obtaining the session ID does
 	not get out of kilter with respect to the method for obtaining session ID from an existing
@@ -914,12 +1003,28 @@ UnixProcessAccessorTestCase >> testSessionIdentifier [
 
 { #category : #testing }
 UnixProcessAccessorTestCase >> testUnixFileNumber [
+	"For purposes of this test, assume that stdin and stderr have not been
+	directed."
 
 	"(UnixProcessAccessorTestCase selector: #testUnixFileNumber) run"
 
-	| num |
-	num := accessor unixFileNumber: OSProcess thisOSProcess stdOut ioHandle.
-	self assert: num ==1
+	| err errFileNo errHandle in inFileNo inHandle aFileStream fFileNo fHandle |
+	err := OSProcess thisOSProcess stdErr.
+	errHandle := err fileID.
+	errFileNo := OSProcess accessor unixFileNumber: errHandle.
+	self assert: errFileNo == 2.
+	in := OSProcess thisOSProcess stdIn.
+	inHandle := in fileID.
+	inFileNo := OSProcess accessor unixFileNumber: inHandle.
+	self assert: inFileNo == 0.
+	aFileStream := FileStream fileNamed: '/tmp/delete.me'.
+	fHandle := aFileStream fileID.
+	fFileNo := OSProcess accessor unixFileNumber: fHandle.
+	self assert: fFileNo notNil.
+	self assert: fFileNo > 2.
+	aFileStream close
+
+
 ]
 
 { #category : #'file locking' }
