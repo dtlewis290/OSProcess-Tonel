@@ -416,7 +416,9 @@ ThisOSProcess >> isStdErr: anIOHandle [
 	realHandle ifNil: [^ false].
 	UseIOHandle
 		ifTrue: [^ anIOHandle handle = realHandle handle]
-		ifFalse: [^ anIOHandle = realHandle]
+		ifFalse: [ | len | "compare first two fields of SQFile struct"
+			len := self processAccessor sizeOfInt + self processAccessor sizeOfPointer.
+			^ (anIOHandle first: len) = (realHandle first: len)]
 
 ]
 
@@ -430,7 +432,9 @@ ThisOSProcess >> isStdIn: anIOHandle [
 	realHandle ifNil: [^ false].
 	UseIOHandle
 		ifTrue: [^ anIOHandle handle = realHandle handle]
-		ifFalse: [^ anIOHandle = realHandle]
+		ifFalse: [ | len | "compare first two fields of SQFile struct"
+			len := self processAccessor sizeOfInt + self processAccessor sizeOfPointer.
+			^ (anIOHandle first: len) = (realHandle first: len)]
 
 ]
 
@@ -444,7 +448,9 @@ ThisOSProcess >> isStdOut: anIOHandle [
 	realHandle ifNil: [^ false].
 	UseIOHandle
 		ifTrue: [^ anIOHandle handle = realHandle handle]
-		ifFalse: [^ anIOHandle = realHandle]
+		ifFalse: [ | len | "compare first two fields of SQFile struct"
+			len := self processAccessor sizeOfInt + self processAccessor sizeOfPointer.
+			^ (anIOHandle first: len) = (realHandle first: len)]
 
 ]
 
