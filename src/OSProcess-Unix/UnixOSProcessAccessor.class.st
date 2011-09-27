@@ -1244,6 +1244,16 @@ UnixOSProcessAccessor >> primDisconnectDisplay [
 ]
 
 { #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primDup: fileDescriptor [
+	"Call dup2 to duplicate a file descriptor to the next available descriptor. Answer
+	the new file descriptor or -1 on failure."
+
+	<primitive: 'primitiveDup' module: 'UnixOSProcessPlugin'>
+	^ self primitiveFailed
+
+]
+
+{ #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primDup: oldFileDescriptor to: newFileDescriptor [
 	"Call dup2() to duplicate a file descriptor. Answer the duplicated file descriptor
 	or -1 on failure."
