@@ -221,16 +221,16 @@ UnixProcessAccessorTestCase >> testDupTo [
 	f1 reset.
 	contents1 := f1 upToEnd.
 	self deny: contents1 isEmpty.
-	self assert: ['write something*' match: contents1].
+	self assert: ('write something*' match: contents1).
 	f2 reset.
 	contents2 := f2 upToEnd.
 	self deny: contents2 isEmpty.
-	self assert: ['write something*' match: contents2].
+	self assert: ('write something*' match: contents2).
 	f1 close.
 	f2 close.
 	"check the contents of the actual files"
 	contents1 := (FileStream fileNamed: '/tmp/delete-1.me') contentsOfEntireFile.
-	self assert: ['write something*' match: contents1].
+	self assert: ('write something*' match: contents1).
 	contents2 := (FileStream fileNamed: '/tmp/delete-2.me') contentsOfEntireFile.
 	self assert: contents2 isEmpty.
 	FileDirectory deleteFilePath: '/tmp/delete-1.me'.	
