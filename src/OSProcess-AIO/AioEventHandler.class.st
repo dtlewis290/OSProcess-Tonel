@@ -359,7 +359,8 @@ AioEventHandler >> hasValidHandler [
 	object semaphore. For protection following an image restart."
 
 	^ semaIndex notNil
-		and: [(Smalltalk externalObjects at: semaIndex) == semaphore]
+		and: [Smalltalk externalObjects size >= semaIndex
+			and: [(Smalltalk externalObjects at: semaIndex) == semaphore]]
 ]
 
 { #category : #'initialize-release' }
