@@ -184,7 +184,8 @@ OSPipeTestCase >> testIsAtEndOfFile [
 	self assert: (OSProcess accessor isAtEndOfFile: p reader fileID).
 	self deny: p reader atEnd. "#atEnd does not detect EOF on a pipe"
 	self assert: p reader atEndOfFile.
-	self assert: p atEnd
+	self assert: p atEnd.
+	p close
 
 ]
 
