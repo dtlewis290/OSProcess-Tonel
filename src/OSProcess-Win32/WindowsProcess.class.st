@@ -71,6 +71,29 @@ WindowsProcess >> environment [
 
 ]
 
+{ #category : #environment }
+WindowsProcess >> environmentAt: aSymbol [
+	"Answer an environment variable for the external OS process, and update the dictionary
+	in this Smalltalk object."
+
+	^ environment at: aSymbol asSymbol ifAbsent: []
+
+]
+
+{ #category : #environment }
+WindowsProcess >> environmentAt: aSymbol put: aString [
+	"Set an environment variable for the external OS process, and update the dictionary in
+	this Smalltalk object."
+
+	| s |
+	self initialize.
+	s := self processAccessor environmentAt: aSymbol put: aString.
+	s ifNotNil: [ self environment at: aSymbol asSymbol put: aString ].
+	^ s
+
+
+]
+
 { #category : #'child process creation' }
 WindowsProcess >> forkAndExec: executableFile arguments: arrayOfStrings environment: stringDictionary descriptors: arrayOf3Streams [
 	"Use my processAccessor to call vfork() and execve() and create a
