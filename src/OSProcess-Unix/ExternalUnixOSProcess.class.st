@@ -296,9 +296,11 @@ ExternalUnixOSProcess >> printOn: aStream [
 				nextPutAll: ' on ';
 				nextPutAll: programName;
 				nextPutAll: ' (';
-				nextPutAll: self runState asString;
-				nextPut: $)]
-
+				nextPutAll: self runState asString.
+			self isComplete
+				ifTrue: [aStream nextPutAll: ', ';
+					nextPutAll: (UnixProcessExitStatus for: exitStatus) printString].
+			aStream nextPut: $)].
 
 ]
 
