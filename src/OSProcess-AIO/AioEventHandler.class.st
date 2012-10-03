@@ -19,7 +19,9 @@ Class {
 { #category : #testing }
 AioEventHandler class >> aioPluginPresent [
 	"Answer true if an AIO plugin is available. The value of AioPluginPresent
-	is cleared at startup time, and is reestablished once for each Squeak session."
+	is cleared at startup time, and is reestablished once for each Squeak session.
+	See initializeAioPluginPresent to initialize after an image startup if warning
+	dialog is not desired."
 
 	"AioEventHandler aioPluginPresent"
 
@@ -94,6 +96,19 @@ AioEventHandler class >> forSocket: aSocket exceptions: exceptionEventFlag readE
 			readEvents: readEventFlag
 			writeEvents: writeEventFlag
 
+]
+
+{ #category : #testing }
+AioEventHandler class >> initializeAioPluginPresent [
+	"Initialize the AioPluginPresent flag silently without invoking a warning
+	if the plugin is not present, and answer the value of the flag. Send this
+	to prevent a warning dialog from being presented after image startup,
+	as may be preferred if the image is to be run headless."
+
+	"AioEventHandler initializeAioPluginPresent"
+
+	^ AioPluginPresent
+		ifNil: [AioPluginPresent := self basicNew primAioModuleVersionString notNil]
 ]
 
 { #category : #'system startup' }
