@@ -165,6 +165,9 @@ BufferedAsyncFileReadStream >> maxReadBufferSize [
 BufferedAsyncFileReadStream >> moveAvailableDataFrom: sqFile [
 
 	| count bufferSize buffer |
+	(readBuffer notNil and: [readBuffer size > self readBufferMemoryWarningThreshold])
+		ifTrue: [self notify: 'buffer size ', readBuffer size asString.
+			^(Delay forSeconds: 2) wait].
 	bufferSize := self readAheadChunkSize.
 	buffer := String new: bufferSize.
 	[count := self primRead: sqFile
@@ -274,6 +277,15 @@ BufferedAsyncFileReadStream >> readBuffer [
 BufferedAsyncFileReadStream >> readBuffer: aStream [
 
 	readBuffer := aStream
+]
+
+{ #category : #defaults }
+BufferedAsyncFileReadStream >> readBufferMemoryWarningThreshold [
+	"A read buffer larger that this may start causing problems. Issue a warning
+	before the object memory becomes too large." 
+
+	^self maxReadBufferSize * 1000
+
 ]
 
 { #category : #'read, write, position' }
