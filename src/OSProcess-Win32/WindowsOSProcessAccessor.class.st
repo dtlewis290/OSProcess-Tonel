@@ -614,7 +614,7 @@ WindowsOSProcessAccessor >> primOSProcessPluginModuleVersionString [
 
 { #category : #testing }
 WindowsOSProcessAccessor >> primOneShot [
-	"Anwer true the first time this is called in a Squeak session, and false thereafter."
+	"Answer true the first time this is called in a Squeak session, and false thereafter."
 
 	"OSProcess accessor primOneShot"
 
