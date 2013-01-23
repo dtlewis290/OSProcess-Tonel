@@ -203,7 +203,7 @@ OSProcessAccessor >> getSessionIdentifierFromFileInSqueakDirectory [
 	"OSProcess accessor getSessionIdentifierFromFileInSqueakDirectory"
 
 	| id s |
-	FileDirectory default fileNames do:
+	(OSProcess directoryEntryNames: OSProcess defaultPathString) do:
 		[:n | (s := FileStream readOnlyFileNamed: n) ifNotNil:
 			[(Smalltalk hasClassNamed: #IOHandle)
 				ifTrue: [id := s ioHandle getHandle copyFrom: 5 to: 8]

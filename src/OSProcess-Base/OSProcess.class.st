@@ -149,6 +149,58 @@ OSProcess class >> debugMessage: aString [
 ]
 
 { #category : #'version dependent' }
+OSProcess class >> defaultPathString [
+	"Use FileReference if available, otherwise use traditional FileDirectory"
+
+	^ (Smalltalk hasClassNamed: #FileReference)
+		ifTrue: [(((Smalltalk at: #Path) perform: #workingDirectory) perform: #asFileReference) pathString]
+		ifFalse: [(Smalltalk at: #FileDirectory) default pathName]
+
+]
+
+{ #category : #'version dependent' }
+OSProcess class >> deleteFileNamed: fileName [
+	"Use FileReference if available, otherwise use traditional FileDirectory"
+
+	(fileName respondsTo: #asFileReference)
+		ifTrue: [ (fileName perform: #asFileReference)
+				perform: #ensureDeleted ]
+		ifFalse: [ (Smalltalk at: #FileDirectory) default
+				deleteFileNamed: fileName ]
+
+]
+
+{ #category : #'version dependent' }
+OSProcess class >> directoryEntryNames: path [
+	"Use FileReference if available, otherwise use traditional FileDirectory"
+
+	^ (path respondsTo: #asFileReference)
+		ifTrue: [ (path perform: #asFileReference) children collect: [:e | e perform: #basenameWithIndicator] ]
+		ifFalse: [ ((Smalltalk at: #FileDirectory) on: path) entries collect: [:e | e name] ]
+
+]
+
+{ #category : #'version dependent' }
+OSProcess class >> directoryExists: path [
+	"Use FileReference if available, otherwise use traditional FileDirectory"
+
+	^ (path respondsTo: #asFileReference)
+		ifTrue: [ (path perform: #asFileReference) exists ]
+		ifFalse: [ (Smalltalk at: #FileDirectory) default directoryExists: path ]
+
+]
+
+{ #category : #'version dependent' }
+OSProcess class >> fileExists: path [
+	"Use FileReference if available, otherwise use traditional FileDirectory"
+
+	^ (path respondsTo: #asFileReference)
+		ifTrue: [ (path perform: #asFileReference) exists ]
+		ifFalse: [ (Smalltalk at: #FileDirectory) default fileExists: path ]
+
+]
+
+{ #category : #'version dependent' }
 OSProcess class >> getSystemAttribute: attributeID [ 
 	"After Squeak version 3.6, #getSystemAttribute was moved to SmalltalkImage "
 
@@ -290,7 +342,7 @@ OSProcess class >> makeVM [
 
 	"OSProcess makeVM"
 
-	^ self makeVmIn: FileDirectory default pathName, FileDirectory slash, 'build'
+	^ self makeVmIn: OSProcess defaultPathString, FileDirectory slash, 'build'
 
 ]
 
@@ -565,7 +617,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.4.12'
+	^'4.4.13'
 ]
 
 { #category : #'version dependent' }
