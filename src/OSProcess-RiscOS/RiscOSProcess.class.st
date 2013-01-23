@@ -51,7 +51,7 @@ RiscOSProcess >> forkAndExec: executableFile arguments: arrayOfStrings environme
 RiscOSProcess >> getCwd [
 	"Not yet implemented - answer a reasonable default."
 
-	^ FileDirectory default pathName
+	^ OSProcess defaultPathString
 ]
 
 { #category : #'initialize - release' }
