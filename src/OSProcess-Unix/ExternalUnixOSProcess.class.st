@@ -21,7 +21,7 @@ ExternalUnixOSProcess class >> bashShellPath [
 
 	| path |
 	path := '/bin/bash'.
-	(FileDirectory default fileExists: path)
+	(OSProcess fileExists: path)
 		ifTrue: [^ path]
 		ifFalse: [self notify: path, ' not found']
 ]
@@ -42,7 +42,7 @@ ExternalUnixOSProcess class >> defaultShellPath [
 
 	| path |
 	path := '/bin/sh'.
-	((FileDirectory on: '/bin') fileNames includes: 'sh') "work around bug in symlink resolution for some VMs"
+	(OSProcess fileExists: path)
 		ifTrue: [^ path]
 		ifFalse: [self notify: path, ' not found']
 ]
@@ -155,7 +155,7 @@ ExternalUnixOSProcess class >> remoteShellPath [
 
 	| path |
 	path := '/usr/bin/rsh'.
-	(FileDirectory default fileExists: path)
+	(OSProcess fileExists: path)
 		ifTrue: [^ path]
 		ifFalse: [self notify: path, ' not found']
 ]
@@ -167,7 +167,7 @@ ExternalUnixOSProcess class >> tkShellPath [
 
 	| path |
 	path := '/usr/bin/wish'.
-	(FileDirectory default fileExists: path)
+	(OSProcess fileExists: path)
 		ifTrue: [^ path]
 		ifFalse: [self notify: path, ' not found']
 ]
