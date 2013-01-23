@@ -41,7 +41,7 @@ MacProcess >> forkAndExec: executableFile arguments: arrayOfStrings environment:
 MacProcess >> getCwd [
 	"Not yet implemented - answer a reasonable default."
 
-	^ FileDirectory default pathName
+	^ OSProcess defaultPathString
 ]
 
 { #category : #'initialize - release' }
