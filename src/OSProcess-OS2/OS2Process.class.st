@@ -41,7 +41,7 @@ OS2Process >> forkAndExec: executableFile arguments: arrayOfStrings environment:
 OS2Process >> getCwd [
 	"Not yet implemented - answer a reasonable default."
 
-	^ FileDirectory default pathName
+	^ OSProcess defaultPathString
 ]
 
 { #category : #'initialize - release' }
