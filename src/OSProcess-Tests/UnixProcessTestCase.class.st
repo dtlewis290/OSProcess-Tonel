@@ -20,8 +20,8 @@ UnixProcessTestCase >> numberOfOpenFiles [
 
 	| path |
 	path := '/proc/' , OSProcess thisOSProcess pid printString, '/fd'.
-	^ (FileDirectory default directoryExists: path)
-		ifTrue: [(FileDirectory on: path) entries size]
+	^ (OSProcess directoryExists: path)
+		ifTrue: [(OSProcess directoryEntryNames: path) size]
 		ifFalse: [0]
 
 ]
@@ -98,8 +98,8 @@ UnixProcessTestCase >> testCatFromFileToFiles [
 
 	| p f openFileCount |
 	openFileCount := self numberOfOpenFiles.
-	FileDirectory default deleteFileNamed: '/tmp/deleteMe.out' ifAbsent: [].
-	FileDirectory default deleteFileNamed: '/tmp/deleteMe.err' ifAbsent: [].
+	OSProcess deleteFileNamed: '/tmp/deleteMe.out'.
+	OSProcess deleteFileNamed: '/tmp/deleteMe.err'.
 	self shouldnt: [p := UnixProcess catFromFileToFiles]
 		raise: Warning.
 	self assert: p notNil.
@@ -425,8 +425,8 @@ UnixProcessTestCase >> testRunCommand [
 
 	| p f openFileCount |
 	openFileCount := self numberOfOpenFiles.
-	FileDirectory default deleteFileNamed: '/tmp/deleteMe.out' ifAbsent: [].
-	FileDirectory default deleteFileNamed: '/tmp/deleteMe.err' ifAbsent: [].
+	OSProcess deleteFileNamed: '/tmp/deleteMe.out'.
+	OSProcess deleteFileNamed: '/tmp/deleteMe.err'.
 	self shouldnt: [p := UnixProcess testRunCommand]
 		raise: Warning.
 	self assert: p notNil.

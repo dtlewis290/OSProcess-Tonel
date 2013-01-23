@@ -54,7 +54,7 @@ UnixProcessFileLockTestCase >> setUp [
 { #category : #running }
 UnixProcessFileLockTestCase >> tearDown [
 	fileStream close.
-	FileDirectory deleteFilePath: fileStream fullName
+	OSProcess deleteFileNamed: fileStream fullName
 ]
 
 { #category : #testing }

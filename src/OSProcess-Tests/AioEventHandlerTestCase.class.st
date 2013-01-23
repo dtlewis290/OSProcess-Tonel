@@ -67,7 +67,7 @@ AioEventHandlerTestCase >> testFileReadableEvent [
 	fileName := 'DeleteThisTemporaryFile'.
 
 	eventHandler := AioEventHandler new.
-	FileDirectory default deleteFileNamed: fileName.
+	OSProcess deleteFileNamed: fileName.
 	[anOpenFile := FileStream fileNamed: fileName.
 	fileHandle := eventHandler handleForFile: anOpenFile.
 	sema := Semaphore new.
@@ -149,7 +149,7 @@ AioEventHandlerTestCase >> testFileWritableEvent [
 	fileName := 'DeleteThisTemporaryFile'.
 
 	eventHandler := AioEventHandler new.
-	FileDirectory default deleteFileNamed: fileName.
+	OSProcess deleteFileNamed: fileName.
 	[anOpenFile := FileStream fileNamed: fileName.
 	fileHandle := eventHandler handleForFile: anOpenFile.
 	sema := Semaphore new.

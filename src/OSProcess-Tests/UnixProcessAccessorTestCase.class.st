@@ -208,8 +208,8 @@ UnixProcessAccessorTestCase >> testDupTo [
 	"(UnixProcessAccessorTestCase selector: #testDupTo) run"
 
 	| f1 f2 fd1 fd2 result contents1 contents2 |
-	FileDirectory deleteFilePath: '/tmp/delete-1.me'.	
-	FileDirectory deleteFilePath: '/tmp/delete-2.me'.	
+	OSProcess deleteFileNamed: '/tmp/delete-1.me'.	
+	OSProcess deleteFileNamed: '/tmp/delete-2.me'.	
 	f1 := FileStream newFileNamed: '/tmp/delete-1.me'.
 	f2 := FileStream newFileNamed: '/tmp/delete-2.me'.
 	fd1 := OSProcess accessor primUnixFileNumber: f1 fileID.
@@ -233,8 +233,8 @@ UnixProcessAccessorTestCase >> testDupTo [
 	self assert: ('write something*' match: contents1).
 	contents2 := (FileStream fileNamed: '/tmp/delete-2.me') contentsOfEntireFile.
 	self assert: contents2 isEmpty.
-	FileDirectory deleteFilePath: '/tmp/delete-1.me'.	
-	FileDirectory deleteFilePath: '/tmp/delete-2.me'.	
+	OSProcess deleteFileNamed: '/tmp/delete-1.me'.	
+	OSProcess deleteFileNamed: '/tmp/delete-2.me'.	
 
 ]
 
@@ -462,7 +462,7 @@ UnixProcessAccessorTestCase >> testIsExecutableForUserInGroup [
 	self shouldnt: [accessor isExecutable: '/tmp/delete.me'
 					forUser: 99999
 					inGroup: 99999].
-	FileDirectory default deleteFileNamed: '/tmp/delete.me' ifAbsent: []
+	OSProcess deleteFileNamed: '/tmp/delete.me'
 
 ]
 
@@ -529,7 +529,7 @@ UnixProcessAccessorTestCase >> testIsReadableForUserInGroup [
 	self shouldnt: [accessor isReadable: '/tmp/delete.me'
 					forUser: 99999
 					inGroup: 99999].
-	FileDirectory default deleteFileNamed: '/tmp/delete.me' ifAbsent: []
+	OSProcess deleteFileNamed: '/tmp/delete.me'
 
 ]
 
@@ -568,7 +568,7 @@ UnixProcessAccessorTestCase >> testIsWritableForUserInGroup [
 	self shouldnt: [accessor isWritable: '/tmp/delete.me'
 					forUser: 99999
 					inGroup: 99999].
-	FileDirectory default deleteFileNamed: '/tmp/delete.me' ifAbsent: []
+	OSProcess deleteFileNamed: '/tmp/delete.me'
 
 ]
 
@@ -932,14 +932,14 @@ UnixProcessAccessorTestCase >> testRedirectStdOutTo [
 	| out aFileStream contents outFd saveFd newFileNo saveFs |
 	out := OSProcess thisOSProcess stdOut.
 	"save file number to allow cleanup at end of test"
-	FileDirectory deleteFilePath: '/tmp/delete.2.me'.	
+	OSProcess deleteFileNamed: '/tmp/delete.2.me'.	
 	saveFs := FileStream newFileNamed: '/tmp/delete.2.me'.
 	outFd := OSProcess accessor primUnixFileNumber: out fileID.
 	saveFd := OSProcess accessor primUnixFileNumber: saveFs fileID.
 	OSProcess accessor primDup: outFd to: saveFd.
 	"Original stdout file descriptor is saved as safeFd, to be restored at end of test"
 
-	FileDirectory deleteFilePath: '/tmp/delete.me'.	
+	OSProcess deleteFileNamed: '/tmp/delete.me'.	
 	aFileStream := FileStream newFileNamed: '/tmp/delete.me'.
 	"nb - #contentsOfEntireFile closes the file, do not use"
 	aFileStream reset.
@@ -969,8 +969,8 @@ UnixProcessAccessorTestCase >> testRedirectStdOutTo [
 	OSProcess thisOSProcess stdOut lf; nextPutAll: 'UnixProcessAccessorTestCase>>testRedirectStdOutTo - this should appear on original console stdout'; lf.
 	saveFs close.
 	aFileStream close.	
-	FileDirectory deleteFilePath: '/tmp/delete.me'.	
-	FileDirectory deleteFilePath: '/tmp/delete.2.me'.	
+	OSProcess deleteFileNamed: '/tmp/delete.me'.	
+	OSProcess deleteFileNamed: '/tmp/delete.2.me'.	
 
 
 ]
@@ -998,6 +998,30 @@ UnixProcessAccessorTestCase >> testSessionIdentifier [
 		ifTrue: ["ignore this test"]
 		ifFalse: [self should:
 			[accessor getSessionIdentifierFromSourcesFile = accessor getSessionIdentifier]]
+
+]
+
+{ #category : #testing }
+UnixProcessAccessorTestCase >> testSignalNumbers [
+	"Signal numbers as reported by UnixOSProcessPlugin. Note that some signal definitions
+	are architecture dependent, with specific number assignments differing between e.g. Intel
+	and Sparc. Intel architecture is assumed for this test."
+
+	"NOTE OSPP prior to version 4.4.12 had several incorrect signal number assignments.
+	Check the version level of OSPP by evaluating this expression:
+
+		OSProcess accessor primOSProcessPluginModuleVersionString"
+
+	self assert: OSProcess accessor primSigHupNumber = 1.
+	self assert: OSProcess accessor primSigIntNumber = 2.
+	self assert: OSProcess accessor primSigKillNumber = 9.
+	self assert: OSProcess accessor primSigPipeNumber = 13.
+	self assert: OSProcess accessor primSigQuitNumber = 3.
+	self assert: OSProcess accessor primSigTermNumber = 15.
+	self assert: OSProcess accessor primSigUsr1Number = 10. "architecture dependent"
+	self assert: OSProcess accessor primSigUsr2Number = 12. "architecture dependent"
+	self assert: OSProcess accessor primSigChldNumber = 17. "architecture dependent"
+	
 
 ]
 
