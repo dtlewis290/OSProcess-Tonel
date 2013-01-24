@@ -112,7 +112,7 @@ WindowsProcess >> getCwd [
 	"OSProcess thisOSProcess getCwd"
 
 	^ self processAccessor primGetCurrentWorkingDirectory
-		ifNil: [FileDirectory default pathName]
+		ifNil: [OSProcess defaultPathString]
 
 
 
