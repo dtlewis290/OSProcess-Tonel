@@ -342,7 +342,7 @@ OSProcess class >> makeVM [
 
 	"OSProcess makeVM"
 
-	^ self makeVmIn: OSProcess defaultPathString, FileDirectory slash, 'build'
+	^ self makeVmIn: OSProcess defaultPathString, OSProcess pathSeparator, 'build'
 
 ]
 
@@ -380,6 +380,16 @@ OSProcess class >> osVersion [
 		ifTrue: [Smalltalk at: #OSPlatform]
 		ifFalse: [((Smalltalk classNamed: 'SmalltalkImage')
 				ifNil: [^ Smalltalk osVersion]) current]) osVersion
+]
+
+{ #category : #'version dependent' }
+OSProcess class >> pathSeparator [
+	"Use FileReference if available, otherwise use traditional FileDirectory"
+
+	^ (Smalltalk hasClassNamed: #FileReference)
+		ifTrue: [((Smalltalk at: #DiskStore) perform: #delimiter) asString]
+		ifFalse: [(Smalltalk at: #FileDirectory) slash]
+
 ]
 
 { #category : #'version dependent' }
@@ -617,7 +627,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.4.13'
+	^'4.4.14'
 ]
 
 { #category : #'version dependent' }
