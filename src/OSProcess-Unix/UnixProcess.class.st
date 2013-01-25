@@ -1064,7 +1064,7 @@ UnixProcess >> chDir: pathString [
 
 	"OSProcess thisOSProcess chDir: '/tmp'"
 	"OSProcess thisOSProcess chDir: '/no/such/path'"
-	"OSProcess thisOSProcess chDir: FileDirectory default pathName"
+	"OSProcess thisOSProcess chDir: OSProcess defaultPathString"
 
 	| realPath result |
 	realPath := self processAccessor realpath: pathString.
