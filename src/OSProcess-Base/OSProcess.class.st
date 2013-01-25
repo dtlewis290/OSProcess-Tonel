@@ -353,7 +353,7 @@ OSProcess class >> makeVmIn: buildDirectoryPathName [
 	new VM. This assumes that the currently executing VM is either located in,
 	or linked to, the buildDirectoryPathName directory."
 
-	"OSProcess makeVmIn: FileDirectory default pathName, FileDirectory slash, 'build'"
+	"OSProcess makeVmIn: OSProcess defaultPathString, OSProcess pathSeparator, 'build'"
 
 	^ self classForThisOSProcess makeVmIn: buildDirectoryPathName
 
