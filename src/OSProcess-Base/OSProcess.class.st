@@ -150,9 +150,8 @@ OSProcess class >> debugMessage: aString [
 
 { #category : #'version dependent' }
 OSProcess class >> defaultPathString [
-	"Use FileReference if available, otherwise use traditional FileDirectory"
 
-	^ (Smalltalk hasClassNamed: #FileReference)
+	^ self useFileSystem
 		ifTrue: [(((Smalltalk at: #Path) perform: #workingDirectory) perform: #asFileReference) pathString]
 		ifFalse: [(Smalltalk at: #FileDirectory) default pathName]
 
@@ -160,9 +159,9 @@ OSProcess class >> defaultPathString [
 
 { #category : #'version dependent' }
 OSProcess class >> deleteFileNamed: fileName [
-	"Use FileReference if available, otherwise use traditional FileDirectory"
+	"Delete the file with the given name."
 
-	(fileName respondsTo: #asFileReference)
+	self useFileSystem
 		ifTrue: [ (fileName perform: #asFileReference)
 				perform: #ensureDeleted ]
 		ifFalse: [ (Smalltalk at: #FileDirectory) default
@@ -172,19 +171,19 @@ OSProcess class >> deleteFileNamed: fileName [
 
 { #category : #'version dependent' }
 OSProcess class >> directoryEntryNames: path [
-	"Use FileReference if available, otherwise use traditional FileDirectory"
 
-	^ (path respondsTo: #asFileReference)
-		ifTrue: [ (path perform: #asFileReference) children collect: [:e | e perform: #basenameWithIndicator] ]
+	^ self useFileSystem
+		ifTrue: [ (path perform: #asFileReference) children collect: [:e | e perform: #basename] ]
 		ifFalse: [ ((Smalltalk at: #FileDirectory) on: path) entries collect: [:e | e name] ]
 
 ]
 
 { #category : #'version dependent' }
 OSProcess class >> directoryExists: path [
-	"Use FileReference if available, otherwise use traditional FileDirectory"
+	"Answer true if a directory of the given name exists. The given name may
+	be either a full path name or a local directory within this directory."
 
-	^ (path respondsTo: #asFileReference)
+	^ self useFileSystem
 		ifTrue: [ (path perform: #asFileReference) exists ]
 		ifFalse: [ (Smalltalk at: #FileDirectory) default directoryExists: path ]
 
@@ -192,9 +191,10 @@ OSProcess class >> directoryExists: path [
 
 { #category : #'version dependent' }
 OSProcess class >> fileExists: path [
-	"Use FileReference if available, otherwise use traditional FileDirectory"
+	"Answer true if a file of the given name exists. The given name may be
+	either a full path name or a local file within this directory."
 
-	^ (path respondsTo: #asFileReference)
+	^ self useFileSystem
 		ifTrue: [ (path perform: #asFileReference) exists ]
 		ifFalse: [ (Smalltalk at: #FileDirectory) default fileExists: path ]
 
@@ -384,9 +384,8 @@ OSProcess class >> osVersion [
 
 { #category : #'version dependent' }
 OSProcess class >> pathSeparator [
-	"Use FileReference if available, otherwise use traditional FileDirectory"
 
-	^ (Smalltalk hasClassNamed: #FileReference)
+	^ self useFileSystem
 		ifTrue: [((Smalltalk at: #DiskStore) perform: #delimiter) asString]
 		ifFalse: [(Smalltalk at: #FileDirectory) slash]
 
@@ -596,6 +595,14 @@ OSProcess class >> trace: debugMessageString [
 			do: []
 ]
 
+{ #category : #'version dependent' }
+OSProcess class >> useFileSystem [
+	"If true use FileSystem, otherwise use traditional FileDirectory. See senders
+	for methods with file system dependencies."
+
+	^ Smalltalk hasClassNamed: #FileReference
+]
+
 { #category : #'version testing' }
 OSProcess class >> versionInformation [
 
@@ -627,7 +634,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.4.14'
+	^'4.5.1'
 ]
 
 { #category : #'version dependent' }
