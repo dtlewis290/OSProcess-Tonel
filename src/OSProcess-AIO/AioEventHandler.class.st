@@ -28,7 +28,7 @@ AioEventHandler class >> aioPluginPresent [
 	^ AioPluginPresent
 		ifNil: [AioPluginPresent := self basicNew primAioModuleVersionString notNil.
 			AioPluginPresent ifFalse:
-				[self inform: 'AioPlugin not present, AioEventHandler will use polling input'].
+				[self notify: 'AioPlugin not present, AioEventHandler will use polling input'].
 			^ AioPluginPresent]
 ]
 
