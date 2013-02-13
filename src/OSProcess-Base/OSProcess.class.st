@@ -162,8 +162,11 @@ OSProcess class >> deleteFileNamed: fileName [
 	"Delete the file with the given name."
 
 	self useFileSystem
-		ifTrue: [ (fileName perform: #asFileReference)
-				perform: #ensureDeleted ]
+		ifTrue: [ | file |
+			file := fileName perform: #asFileReference.
+			(file respondsTo: #ensureDeleted)
+				ifTrue: [ file perform: #ensureDeleted ]
+				ifFalse: [ file perform: #delete ] ]
 		ifFalse: [ (Smalltalk at: #FileDirectory) default
 				deleteFileNamed: fileName ]
 
@@ -386,7 +389,7 @@ OSProcess class >> osVersion [
 OSProcess class >> pathSeparator [
 
 	^ self useFileSystem
-		ifTrue: [((Smalltalk at: #DiskStore) perform: #delimiter) asString]
+		ifTrue: [((Smalltalk at: #DiskStore) current perform: #delimiter) asString]
 		ifFalse: [(Smalltalk at: #FileDirectory) slash]
 
 ]
@@ -634,7 +637,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.5.2'
+	^'4.5.1'
 ]
 
 { #category : #'version dependent' }
