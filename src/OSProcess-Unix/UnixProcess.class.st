@@ -55,7 +55,7 @@ UnixProcess class >> backgroundProcessInHeadlessSqueak [
 		[Transcript show: backgroundJob asString , ' started'; cr].
 	pipe closeWriter. "don't need writer end, close it before the #upToEnd"
 	"pipe writer blocks when pipe full, so we need to loop while reading to end "
-	ws := WriteStream on: ''.
+	ws := WriteStream on: String new.
 	[backgroundJob isComplete] whileFalse:
 		[(Delay forMilliseconds: 200) wait.
 		(s := pipe upToEnd) ifNotNil: [ws nextPutAll: s]].
