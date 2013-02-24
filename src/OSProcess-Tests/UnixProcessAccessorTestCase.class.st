@@ -306,7 +306,7 @@ UnixProcessAccessorTestCase >> testEnvironmentAtPut [
 	accessor environmentAt: 'PATH' put: oldPath.
 	resetPath := accessor environmentAt: 'PATH'.
 	self should: [oldPath = resetPath].
-	s := WriteStream on: ''.
+	s := WriteStream on: String new.
 	10000 timesRepeat: [s nextPutAll: 'Do something to provoke garbage collection'].
 	resetPath := accessor environmentAt: 'PATH'.
 	self should: [oldPath = resetPath].
