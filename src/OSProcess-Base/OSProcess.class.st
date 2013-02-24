@@ -42,7 +42,7 @@ OSProcess class >> allTestResults [
 		(OSProcess accessor sizeOfPointer * 8) asString , 'bitHw.txt'.
 	[fs := FileStream newFileNamed: resultsFileName.
 	problems := false.
-	writeStream := WriteStream on: ''.
+	writeStream := WriteStream on: String new.
 	writeStream nextPutAll: Utilities authorInitials , ' running OSProcess unit tests ' , TimeStamp now asString;
 		 cr.
 	writeStream nextPutAll: 'OSProcess platformName => ' , OSProcess platformName;
@@ -637,7 +637,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.5.1'
+	^'4.5.3'
 ]
 
 { #category : #'version dependent' }

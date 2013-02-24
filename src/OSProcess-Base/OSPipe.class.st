@@ -34,7 +34,7 @@ OSPipe >> next: anInteger [
 	"Answer the next anInteger elements of my collection."
 
 	| c strm |
-	strm := WriteStream on: ''.
+	strm := WriteStream on: String new.
 	(1 to: anInteger) do:
 		[:index |
 		c := self next.
@@ -60,7 +60,7 @@ OSPipe >> upToEnd [
 	compatibility with older versions of CommandShell."
 
 	| strm s |
-	strm := WriteStream on: ''.
+	strm := WriteStream on: String new.
 	[(s := self next: 2000) isEmpty
 		ifTrue: [^ strm contents]
 		ifFalse: [strm nextPutAll: s]] repeat
@@ -75,7 +75,7 @@ OSPipe >> upToEndOfFile [
 	of file test in FilePlugin."
 
 	| strm d s |
-	strm := WriteStream on: ''.
+	strm := WriteStream on: String new.
 	d := Delay forMilliseconds: 200.
 	[(s := self next: 2000) isEmpty
 		ifTrue: [self atEndOfFile
