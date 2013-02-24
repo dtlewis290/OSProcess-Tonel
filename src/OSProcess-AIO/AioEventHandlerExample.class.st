@@ -152,12 +152,6 @@ AioEventHandlerExample class >> tcpSocketExample [
 	^ Array with: example with: serverTcpSocket with: clientTcpSocket
 ]
 
-{ #category : #'version identification' }
-AioEventHandlerExample class >> versionString [
-
-	^ '1.2'
-]
-
 { #category : #'initialize-release' }
 AioEventHandlerExample >> close [
 
@@ -176,7 +170,7 @@ AioEventHandlerExample >> getAvailableData [
 	buffer := String new: 4000.
 	(self ioStream isKindOf: FileStream)
 		ifTrue:
-			[ws := WriteStream on: ''.
+			[ws := WriteStream on: String new.
 			[c := ioStream next.
 			(c == Character lf)
 				ifTrue: [ws nextPut: Character cr]

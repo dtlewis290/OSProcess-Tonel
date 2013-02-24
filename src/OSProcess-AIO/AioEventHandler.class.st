@@ -306,13 +306,15 @@ AioEventHandler >> handleExceptions: exceptionEventFlag readEvents: readEventFla
 
 	| p sema handler |
 	sema := Semaphore new.
-	handler := [[self hasValidHandler] whileTrue:
+	handler := [ | r |
+		r := Random new. "for semaphore timeout in case of missed aio notification"
+		[self hasValidHandler] whileTrue:
 		[self aioHandle: self descriptor
 			exceptionEvents: exceptionEventFlag
 			readEvents: readEventFlag
 			writeEvents: writeEventFlag.
 		sema signal. "event handler is ready"
-		self semaphore wait.
+		self semaphore waitTimeoutSeconds: ((r next * 100) asInteger \\ 7) + 5.
 		self changed]].
 	p := handler forkAt: Processor userBackgroundPriority.
 	sema wait. "until process has been started and events are being handled"
