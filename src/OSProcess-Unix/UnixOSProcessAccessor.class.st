@@ -1001,6 +1001,58 @@ UnixOSProcessAccessor >> makePipeHandles [
 
 ]
 
+{ #category : #'temp files and directories' }
+UnixOSProcessAccessor >> mkdtemp: templateString [
+	"Call mkdtemp() to generate a uniquely named temporary directory from a template
+	string. The last six or more characters of template must be XXXXXX and these are
+	replaced with characters that make the directory name unique. The directory is then
+	created with permissions 0700. Answer the new directory name."
+
+	"OSProcess accessor mkdtemp: 'foodir.XXXXXX' "
+
+	^self primMkdtemp: templateString
+
+]
+
+{ #category : #'temp files and directories' }
+UnixOSProcessAccessor >> mkstemp: templateString [
+
+	"Call mkstemp() to generate a unique temporary file from a template string.
+	The last six or more characters of template must be XXXXXX and these are
+	replaced with a string that make the filename unique. Contents of the template
+	string are modified. The file is created with permissions 0600, that is, read plus
+	write for owner only. Answer an opened file stream on the newly created file."
+
+	"OSProcess accessor mkstemp: 'foo.XXXXXX' "
+
+	" | s | { s := 'foo.XXXXXX' . OSProcess accessor mkstemp: s } "
+
+	| fileName sqFile |
+	fileName := templateString copy.
+	sqFile := self primMkstemp: fileName.
+	^ AttachableFileStream
+		name: fileName
+		attachTo: sqFile
+		writable: true
+
+]
+
+{ #category : #'temp files and directories' }
+UnixOSProcessAccessor >> mktemp: templateString [
+	"Call mktemp() to generate a unique temporary filename from a template string.
+	The last six or more characters of template must be XXXXXX and these are replaced
+	with a string that make the filename unique. The templateString must be a mutable
+	string, because the primitive will change its contents.
+	
+	Use primitiveMkstemp to avoid file creation race condition, see man 3 mktemp."
+
+	"OSProcess accessor mktemp: 'foo.XXXXXX' "
+	"OSProcess accessor mktemp: '/tmp/foo.XXXXXX' "
+
+	^ self primMktemp: templateString
+
+]
+
 { #category : #'fork and exec' }
 UnixOSProcessAccessor >> nice: inc [
 	"Change the scheduling priority of this OS process by the given nice increment.
@@ -1610,6 +1662,50 @@ UnixOSProcessAccessor >> primLockFileRegion: aSQFileStruct offset: begin length:
 
 	<primitive: 'primitiveLockFileRegion' module: 'UnixOSProcessPlugin'>
 	^ nil
+
+]
+
+{ #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primMkdtemp: templateString [
+	"Call mkdtemp() to generate a uniquely named temporary directory from a template
+	string. The last six characters of template must be XXXXXX and these are replaced
+	with characters that make the directory name unique. The directory is then created
+	with permissions 0700. Answer the new directory name."
+
+	<primitive: 'primitiveMkdtemp' module: 'UnixOSProcessPlugin'>
+	^ self primitiveFailed
+
+]
+
+{ #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primMkstemp: templateString [
+	"Call mkstemp() to generate a unique temporary file from a template string.
+	The last six characters of template must be XXXXXX and these are replaced with
+	a string that make the filename unique. Answer a SQFile descriptor for the file stream.
+	
+	Contents of the template string are modified, and provide the name of the newly
+	created file.
+
+	The  file  is  created  with permissions 0600, that is, read plus write for owner only.
+
+	Sender must convert the file descriptor to a FileStream before it can be used."
+
+	<primitive: 'primitiveMkstemp' module: 'UnixOSProcessPlugin'>
+	^ self primitiveFailed
+
+]
+
+{ #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primMktemp: templateString [
+	"Call mktemp() to generate a unique temporary filename from a template string.
+	The last six characters of template must be XXXXXX and these are replaced with
+	a string that make the filename unique. The templateString must be a mutable
+	string, because the primitive will change its contents.
+	
+	Use primitiveMkstemp to avoid file creation race condition, see man 3 mktemp."
+
+	<primitive: 'primitiveMktemp' module: 'UnixOSProcessPlugin'>
+	^ self primitiveFailed
 
 ]
 
