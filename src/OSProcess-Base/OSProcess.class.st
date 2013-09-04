@@ -273,6 +273,18 @@ OSProcess class >> isOS2 [
 
 ]
 
+{ #category : #'version dependent' }
+OSProcess class >> isPharo3AndLater [
+	"True if this image is a pharo of major version 3 or greater"
+
+	Smalltalk
+		at: #SystemVersion
+		ifPresent: [:cls | ((cls canUnderstand: #type) and: [ cls canUnderstand: #major ])
+			ifTrue: [^ cls current type = 'Pharo' and: [ cls current major >= 3 ]]].
+	^false
+
+]
+
 { #category : #'platform identification' }
 OSProcess class >> isResponsibleForThisPlatform [
 	"Answer true if this class has responsibilities for the platform on which the
@@ -400,8 +412,10 @@ OSProcess class >> platformName [
 	versions of Pharo move this to OSPlatform and issue deprecation warnings
 	about the other usages."
 
-	"self platformName"
+	"OSProcess platformName"
 
+	self isPharo3AndLater
+		ifTrue: [ ^ (Smalltalk perform: #os) name ].
 	^ (((Smalltalk hasClassNamed: #OSPlatform)
 			and: [(Smalltalk at: #OSPlatform)
 					respondsTo: #platformName])
@@ -414,6 +428,10 @@ OSProcess class >> platformName [
 OSProcess class >> platformSubtype [ 
 	"After Squeak version 3.6, #platformSubtype was moved to SmalltalkImage "
 
+	"OSProcess platformSubtype"
+
+	self isPharo3AndLater
+		ifTrue: [ ^ (Smalltalk perform: #os) perform: #subtype ].
 	^ ((Smalltalk classNamed: 'SmalltalkImage')
 		ifNil: [^ Smalltalk platformSubtype]) current platformSubtype
 ]
@@ -637,7 +655,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.5.6'
+	^'4.5.7'
 ]
 
 { #category : #'version dependent' }
