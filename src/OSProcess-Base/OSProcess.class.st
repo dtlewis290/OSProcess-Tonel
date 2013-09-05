@@ -164,9 +164,9 @@ OSProcess class >> deleteFileNamed: fileName [
 	self useFileSystem
 		ifTrue: [ | file |
 			file := fileName perform: #asFileReference.
-			(file respondsTo: #ensureDeleted)
-				ifTrue: [ file perform: #ensureDeleted ]
-				ifFalse: [ file perform: #delete ] ]
+			(file respondsTo: #ensureDelete)
+				ifTrue: [ file perform: #ensureDelete ]
+				ifFalse: [ file perform: #ensureDeleted ] ]
 		ifFalse: [ (Smalltalk at: #FileDirectory) default
 				deleteFileNamed: fileName ]
 
@@ -385,10 +385,12 @@ OSProcess class >> noAccessorAvailable [
 OSProcess class >> osVersion [
 	"After Squeak version 3.6, #osVersion was moved to SmalltalkImage. Some
 	versions of Pharo move this to OSPlatform and issue deprecation warnings
-	about the other usages."
+	about the other usages. Pharo3 deprecated OSPlatform direct access."
 
 	"self osVersion"
-
+	
+	self isPharo3AndLater
+		ifTrue: [ ^ (Smalltalk perform: #os) version ].
 	^ (((Smalltalk hasClassNamed: #OSPlatform)
 			and: [(Smalltalk at: #OSPlatform)
 					respondsTo: #osVersion])
@@ -660,8 +662,10 @@ OSProcess class >> versionString [
 
 { #category : #'version dependent' }
 OSProcess class >> vmVersion [ 
-	"After Squeak version 3.6, #vmVersion was moved to SmalltalkImage "
+	"After Squeak version 3.6, #vmVersion was moved to SmalltalkImage. Pharo3 deprecated vmVersion."
 
+	self isPharo3AndLater
+		ifTrue: [ ^ (Smalltalk perform: #vm) version ].
 	^ ((Smalltalk classNamed: 'SmalltalkImage')
 		ifNil: [^ Smalltalk vmVersion]) current vmVersion
 ]
