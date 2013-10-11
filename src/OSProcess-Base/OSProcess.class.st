@@ -43,7 +43,7 @@ OSProcess class >> allTestResults [
 	[fs := FileStream newFileNamed: resultsFileName.
 	problems := false.
 	writeStream := WriteStream on: String new.
-	writeStream nextPutAll: Utilities authorInitials , ' running OSProcess unit tests ' , TimeStamp now asString;
+	writeStream nextPutAll: self authorInitials , ' running OSProcess unit tests ' , TimeStamp now asString;
 		 cr.
 	writeStream nextPutAll: 'OSProcess platformName => ' , OSProcess platformName;
 		 cr.
@@ -110,6 +110,18 @@ OSProcess class >> arguments [
 
 	^ self thisOSProcess arguments
 
+]
+
+{ #category : #sUnit }
+OSProcess class >> authorInitials [
+	"Get the author initials from the system."
+
+	((Smalltalk respondsTo: #metacelloPlatformAttributes)
+		and: [ 
+			(Smalltalk metacelloPlatformAttributes includes: #'pharo3.x')
+				or: [ Smalltalk metacelloPlatformAttributes includes: #'pharo2.x' ] ])
+		ifTrue: [ ^ (Smalltalk at: #Author) fullName select: [ :c | c isUppercase ] ].
+	^ (Smalltalk at: #Utilities) authorInitials
 ]
 
 { #category : #private }
