@@ -43,32 +43,21 @@ OSProcess class >> allTestResults [
 	[fs := FileStream newFileNamed: resultsFileName.
 	problems := false.
 	writeStream := WriteStream on: String new.
-	writeStream nextPutAll: self authorInitials , ' running OSProcess unit tests ' , TimeStamp now asString;
-		 cr.
-	writeStream nextPutAll: 'OSProcess platformName => ' , OSProcess platformName;
-		 cr.
-	writeStream nextPutAll: 'OSProcess platformSubtype => ' , OSProcess platformSubtype;
-		 cr.
-	writeStream nextPutAll: 'OSProcess osVersion => ' , OSProcess osVersion;
-		 cr.
-	writeStream nextPutAll: 'OSProcess vmVersion => ' , OSProcess vmVersion;
-		 cr.
-	writeStream nextPutAll: 'size of C int: OSProcess accessor sizeOfInt ==> ' , OSProcess accessor sizeOfInt asString;
-		 cr.
-	writeStream nextPutAll: 'size of C pointer: OSProcess accessor sizeOfPointer ==> ' , OSProcess accessor sizeOfPointer asString;
-		 cr.
-	writeStream nextPutAll: 'OSProcess versionInformation asString => ' , OSProcess versionInformation asString;
-		 cr.
+	writeStream nextPutAll: self authorInitials , ' running OSProcess unit tests ' , TimeStamp now asString; cr.
+	writeStream nextPutAll: 'OSProcess platformName => ' , OSProcess platformName; cr.
+	writeStream nextPutAll: 'OSProcess platformSubtype => ' , OSProcess platformSubtype; cr.
+	writeStream nextPutAll: 'OSProcess osVersion => ' , OSProcess osVersion; cr.
+	writeStream nextPutAll: 'OSProcess vmVersion => ' , OSProcess vmVersion; cr.
+	writeStream nextPutAll: 'size of C int: OSProcess accessor sizeOfInt ==> ' , OSProcess accessor sizeOfInt asString; cr.
+	writeStream nextPutAll: 'size of C pointer: OSProcess accessor sizeOfPointer ==> ' , OSProcess accessor sizeOfPointer asString; cr.
+	writeStream nextPutAll: 'OSProcess versionInformation asString => ' , OSProcess versionInformation asString; cr.
 	Transcript show: writeStream contents.
-	(Class allSubInstances
-		select: [:class | #'Tests-OSProcess' == class category])
-		, (Class allSubInstances
-				select: [:class | #'Tests-CommandShell' == class category])
+	(((Class allSubInstances select: [:class | #'OSProcess-Tests' = class category]) ,
+		(Class allSubInstances select: [:class | #'CommandShell-Tests' = class category]))
+			reject: [:class | 'Abstract*' match: class name])
 		do: [:testCase | 
-			writeStream nextPutAll: 'running tests in ' , testCase name;
-				 cr.
-			Transcript show: 'running tests in ' , testCase name;
-				 cr.
+			writeStream nextPutAll: 'running tests in ' , testCase name; cr.
+			Transcript show: 'running tests in ' , testCase name; cr.
 			testCase allTestSelectors
 				do: [:testSelector |
 					OSProcess thisOSProcess stdOut nextPutAll:
@@ -79,27 +68,19 @@ OSProcess class >> allTestResults [
 										ifFalse: [problems := true].
 									result]
 										on: Error
-										do: [:ex | 
-											problems := true.
+										do: [:ex | problems := true.
 											'caught exception ' , ex printString])) printString.
-					writeStream nextPutAll: resultString;
-						 cr.
-					Transcript show: resultString;
-						 cr]].
+					writeStream nextPutAll: resultString; cr.
+					Transcript show: resultString; cr]].
 	problems
-		ifTrue: [writeStream nextPutAll: 'one or more problems found';
-				 cr.
-			Transcript show: 'one or more problems were found, see results file';
-				 cr]
-		ifFalse: [writeStream nextPutAll: 'all tests completed without problems';
-				 cr.
-			Transcript show: 'all tests completed without problems';
-				 cr].
+		ifTrue: [writeStream nextPutAll: 'one or more problems found'; cr.
+			Transcript show: 'one or more problems were found, see results file'; cr]
+		ifFalse: [writeStream nextPutAll: 'all tests completed without problems'; cr.
+			Transcript show: 'all tests completed without problems'; cr].
 	results := writeStream contents copyReplaceAll: String cr with: String lf.
 	fs nextPutAll: results]
 		ensure: [fs close].
-	Transcript show: 'tests results have been saved in a file named ''' , resultsFileName , '''';
-		 cr.
+	Transcript show: 'tests results have been saved in a file named ''' , resultsFileName , ''''; cr.
 	^ results
 ]
 
@@ -509,25 +490,6 @@ OSProcess class >> readFromStdIn [
 
 ]
 
-{ #category : #'initialize-release' }
-OSProcess class >> removeAllOSProcessAndCommandShellClassesFromSystem [
-	"Use this prior to loading a complete new release of OSProcess and CommandWindow.
-	Warning: this clobbers CommandShell as well as OSProcess."
-
-	"OSProcess removeAllOSProcessAndCommandShellClassesFromSystem"
-
-	(Smalltalk allClasses select: [:e | 'UnixOSProcessPlugin*' match: e name])
-		do: [:class | class removeFromSystem].
-	Smalltalk organization removeCategoriesMatching: 'OSProcess*'.
-	Smalltalk organization removeCategoriesMatching: 'CommandShell*'.
-	Smalltalk organization removeCategoriesMatching: 'Tests-OSProcess*'.
-	Smalltalk organization removeCategoriesMatching: 'Tests-CommandShell*'.
-	Smalltalk organization removeCategoriesMatching: 'VMConstruction-Plugins-OSProcess'.
-	Smalltalk organization removeCategoriesMatching: 'VMMaker-Plugins-OSProcess'
-
-
-]
-
 { #category : #'version dependent' }
 OSProcess class >> snapshot: save andQuit: quit [
 	"After Squeak version 3.6, #snapshot:andQuit: was moved to SmalltalkImage "
@@ -675,7 +637,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.5.7'
+	^'4.5.8'
 ]
 
 { #category : #'version dependent' }
