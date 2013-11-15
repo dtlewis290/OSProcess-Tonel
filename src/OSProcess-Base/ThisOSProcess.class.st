@@ -138,7 +138,7 @@ ThisOSProcess class >> thisOSProcess [
 ThisOSProcess >> = processProxy [
 	"True if this is a proxy that represents the same OS process as processProxy"
 
-	^ ((self isKindOf: ThisOSProcess)
+	^ ((processProxy isKindOf: ThisOSProcess)
 			and: [pid = processProxy pid])
 		and: [sessionID = processProxy sessionID]
 ]
