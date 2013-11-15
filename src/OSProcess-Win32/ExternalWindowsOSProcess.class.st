@@ -65,7 +65,7 @@ ExternalWindowsOSProcess class >> programName: executableFile arguments: arrayOf
 ExternalWindowsOSProcess >> = processProxy [
 	"True if this is a proxy that represents the same OS process as processProxy"
 
-	^ ((self isKindOf: ExternalWindowsOSProcess)
+	^ ((processProxy isKindOf: ExternalWindowsOSProcess)
 			and: [pid = processProxy pid])
 				and: [ppid = processProxy ppid]
 ]
