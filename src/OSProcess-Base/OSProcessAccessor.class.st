@@ -72,7 +72,7 @@ OSProcessAccessor class >> forThisOSProcess [
 					ifFalse:
 						["We are running on a different platform, so start a new accessor"
 						ThisOSProcessAccessor changed: #invalidProcessAccessor.
-						ThisOSProcessAccessor release; finalize]].
+						ThisOSProcessAccessor finalize]].
 	^ ThisOSProcessAccessor := self concreteClass basicNew initialize
 
 ]
@@ -85,7 +85,7 @@ OSProcessAccessor class >> initialize [
 	UseIOHandle := (Smalltalk hasClassNamed: #IOHandle).
 	ThisOSProcessAccessor := nil.
 	self emulateWin32FileLocking: false.
-	self allSubInstances do: [:e | e finalize; release]
+	self allSubInstances do: [:e | e finalize]
 
 ]
 

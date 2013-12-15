@@ -310,7 +310,7 @@ OSProcess class >> isUnix [
 
 	| numericOsVersion |
 
-	^ (self platformName = 'unix') or:
+	^ ({ 'unix' . 'linux' . 'linux-gnu' } includes: self platformName) or:
 		[numericOsVersion := self osVersion asInteger ifNil: [0].
 		(self platformName = 'Mac OS') and: [numericOsVersion >= 1000]]
 
@@ -495,7 +495,7 @@ OSProcess class >> snapshot: save andQuit: quit [
 	"After Squeak version 3.6, #snapshot:andQuit: was moved to SmalltalkImage "
 
 	^ ((Smalltalk classNamed: 'SmalltalkImage')
-		ifNil: [^ Smalltalk snapshot: save andQuit: quit]) current snapshot: save andQuit: quit
+		ifNil: [^ Smalltalk snapshot: save andQuit: quit embedded: false]) current snapshot: save andQuit: quit
 ]
 
 { #category : #'external command processing' }
@@ -637,7 +637,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.5.9'
+	^'4.5.10'
 ]
 
 { #category : #'version dependent' }
