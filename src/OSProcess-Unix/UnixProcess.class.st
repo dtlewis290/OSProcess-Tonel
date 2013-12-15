@@ -1203,13 +1203,13 @@ UnixProcess >> finalize [
 
 	super finalize.
 	stdIn := stdIn ifNotNil:
-		[[stdIn close; release] on: Error do: [:ex | ].
+		[[stdIn close] on: Error do: [:ex | ].
 		nil].
 	stdIn := stdOut ifNotNil:
-		[[stdOut close; release] on: Error do: [:ex | ].
+		[[stdOut close] on: Error do: [:ex | ].
 		nil].
 	stdIn := stdErr ifNotNil:
-		[[stdErr close; release] on: Error do: [:ex | ].
+		[[stdErr close] on: Error do: [:ex | ].
 		nil].
 	sessionID := nil.
 	ppid := nil.
