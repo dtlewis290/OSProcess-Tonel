@@ -81,7 +81,8 @@ AbstractUnixProcessFileLockingTestCase >> doRemote: remoteBlock doLocal: localBl
 				ensure:	[remoteProcess terminate.
 					[remoteProcess isComplete] whileFalse: [self delay wait].
 					self delay wait.
-					^ result]]
+					result]].
+	^ result
 
 ]
 
