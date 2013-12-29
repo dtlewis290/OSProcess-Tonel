@@ -38,6 +38,12 @@ ExternalWindowsOSProcess class >> commandNoEvaluate: aCommandString [
 
 ]
 
+{ #category : #shells }
+ExternalWindowsOSProcess class >> defaultShellPath [
+
+	^ 'C:\Windows\System32\cmd.exe'.
+]
+
 { #category : #'platform identification' }
 ExternalWindowsOSProcess class >> isResponsibleForThisPlatform [
 	"Answer true if, for the current platform, this class is responsible for representing
@@ -59,6 +65,12 @@ ExternalWindowsOSProcess class >> programName: executableFile arguments: arrayOf
 		[arrayOfStrings do: [:arg | commandLine nextPut: Character space; nextPutAll: arg]].
 	^ self commandNoEvaluate: commandLine contents
 
+]
+
+{ #category : #shell }
+ExternalWindowsOSProcess class >> shellFlags [
+
+	^ '/c'.
 ]
 
 { #category : #comparing }
