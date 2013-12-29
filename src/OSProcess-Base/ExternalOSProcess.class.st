@@ -39,6 +39,12 @@ ExternalOSProcess class >> exec: programName [
 
 ]
 
+{ #category : #shell }
+ExternalOSProcess class >> shellFlags [
+
+	^ '-c'.
+]
+
 { #category : #accessing }
 ExternalOSProcess >> accessor [
 	"Answer an OSProcessAccessor which may be used to obtain information about
