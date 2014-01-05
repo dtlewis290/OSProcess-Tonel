@@ -310,7 +310,7 @@ OSProcess class >> isUnix [
 
 	| numericOsVersion |
 
-	^ ({ 'unix' . 'linux' . 'linux-gnu' } includes: self platformName) or:
+	^ (self platformName = 'unix') or:
 		[numericOsVersion := self osVersion asInteger ifNil: [0].
 		(self platformName = 'Mac OS') and: [numericOsVersion >= 1000]]
 
@@ -411,10 +411,14 @@ OSProcess class >> pathSeparator [
 OSProcess class >> platformName [ 
 	"After Squeak version 3.6, #platformName was moved to SmalltalkImage Some
 	versions of Pharo move this to OSPlatform and issue deprecation warnings
-	about the other usages."
+	about the other usages. The original idiom (Squeak 3.6 and earlier) is the sensible
+	default, but here we attempt to support other implementations if the sensible
+	default is not available."
 
 	"OSProcess platformName"
 
+	(Smalltalk respondsTo: #platformName)
+		ifTrue: [^ Smalltalk platformName].
 	self isPharo3AndLater
 		ifTrue: [ ^ (Smalltalk perform: #os) name ].
 	^ (((Smalltalk hasClassNamed: #OSPlatform)
@@ -637,7 +641,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.5.11'
+	^'4.5.10'
 ]
 
 { #category : #'version dependent' }
