@@ -163,6 +163,11 @@ ExternalPipe >> cr [
 	self writer cr
 ]
 
+{ #category : #accessing }
+ExternalPipe >> flush [
+	^writer flush
+]
+
 { #category : #'initialize-release' }
 ExternalPipe >> initialize [
 
