@@ -641,7 +641,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.5.11'
+	^'4.5.12'
 ]
 
 { #category : #'version dependent' }

@@ -86,6 +86,16 @@ ThisOSProcess class >> initializeThisOSProcessWithNotifier [
 	ThisInstance initialize
 ]
 
+{ #category : #testing }
+ThisOSProcess class >> isHeadless [
+	"Answer true if the image is known to be headless, otherwise assume
+	that a user interface is present."
+
+	(Smalltalk respondsTo: #isHeadless)
+		ifTrue: [ ^Smalltalk perform: #isHeadless ].
+	^ false "assume that a UI is present"
+]
+
 { #category : #'instance creation' }
 ThisOSProcess class >> new [
 
