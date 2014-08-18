@@ -2422,6 +2422,7 @@ UnixOSProcessAccessor >> safeToForkSqueak [
 	parent Squeak, including VM crashes."
 
 	^self canControlXDisplay
+		or: [ ThisOSProcess isHeadless ]
 ]
 
 { #category : #'file control' }
