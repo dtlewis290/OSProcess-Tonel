@@ -216,7 +216,7 @@ ConfigurationOfOSProcess >> project [
 ConfigurationOfOSProcess >> stable: spec [
 	<symbolicVersion: #'stable'>
 
-	spec for: #'common' version: '4.5'.
+	spec for: #'common' version: '4.5.12'.
 	spec for: #'pharo1.4.x' version: '4.4.6'.
 ]
 
@@ -322,6 +322,94 @@ ConfigurationOfOSProcess >> version446: spec [
 			package: 'OSProcess-Mac' with: 'OSProcess-Mac-dtl.1';
 			package: 'OSProcess-AIO' with: 'OSProcess-AIO-dtl.4';
 			package: 'OSProcess-RiscOS' with: 'OSProcess-RiscOS-dtl.1'. ].
+
+]
+
+{ #category : #versions }
+ConfigurationOfOSProcess >> version4511: spec [
+	<version: '4.5.11' imports: #('4.4.6-baseline' )>
+
+	spec for: #'common' do: [
+		spec blessing: #'release'.
+		spec description: 'Update to latest package versions'.
+		spec author: 'ThierryGoubier'.
+		spec timestamp: '6/18/2014 16:42'.
+		spec project: 'Pipeability' with: [ spec version: '4.6.8' ].
+		spec 
+			package: 'OSProcess-Tests' with: 'OSProcess-Tests-dtl.11';
+			package: 'OSProcess-Base' with: 'OSProcess-Base-dtl.43';
+			package: 'OSProcess-OS2' with: 'OSProcess-OS2-dtl.2';
+			package: 'OSProcess-Win32' with: 'OSProcess-Win32-dtl.11';
+			package: 'OSProcess-Unix' with: 'OSProcess-Unix-dtl.19';
+			package: 'OSProcess-Mac' with: 'OSProcess-Mac-dtl.2';
+			package: 'OSProcess-AIO' with: 'OSProcess-AIO-dtl.8';
+			package: 'OSProcess-RiscOS' with: 'OSProcess-RiscOS-dtl.2'. ].
+
+]
+
+{ #category : #versions }
+ConfigurationOfOSProcess >> version4512: spec [
+	<version: '4.5.12' imports: #('4.4.6-baseline' )>
+
+	spec for: #'common' do: [
+		spec blessing: #'release'.
+		spec description: 'Update to latest package versions'.
+		spec author: 'ThierryGoubier'.
+		spec timestamp: '6/18/2014 16:42'.
+		spec project: 'Pipeability' with: [ spec version: '4.6.9' ].
+		spec 
+			package: 'OSProcess-Tests' with: 'OSProcess-Tests-dtl.11';
+			package: 'OSProcess-Base' with: 'OSProcess-Base-dtl.45';
+			package: 'OSProcess-OS2' with: 'OSProcess-OS2-dtl.2';
+			package: 'OSProcess-Win32' with: 'OSProcess-Win32-dtl.11';
+			package: 'OSProcess-Unix' with: 'OSProcess-Unix-dtl.20';
+			package: 'OSProcess-Mac' with: 'OSProcess-Mac-dtl.2';
+			package: 'OSProcess-AIO' with: 'OSProcess-AIO-dtl.8';
+			package: 'OSProcess-RiscOS' with: 'OSProcess-RiscOS-dtl.2'. ].
+
+]
+
+{ #category : #versions }
+ConfigurationOfOSProcess >> version457: spec [
+	<version: '4.5.7' imports: #('4.4.6-baseline' )>
+
+	spec for: #'common' do: [
+		spec blessing: #'release'.
+		spec description: 'Update to latest package versions'.
+		spec author: 'ThierryGoubier'.
+		spec timestamp: '9/23/2013 10:36'.
+		spec project: 'Pipeability' with: [ spec version: '4.6.7' ].
+		spec 
+			package: 'OSProcess-Tests' with: 'OSProcess-Tests-dtl.11';
+			package: 'OSProcess-Base' with: 'OSProcess-Base-dtl.37';
+			package: 'OSProcess-OS2' with: 'OSProcess-OS2-dtl.2';
+			package: 'OSProcess-Win32' with: 'OSProcess-Win32-dtl.9';
+			package: 'OSProcess-Unix' with: 'OSProcess-Unix-dtl.17';
+			package: 'OSProcess-Mac' with: 'OSProcess-Mac-dtl.2';
+			package: 'OSProcess-AIO' with: 'OSProcess-AIO-dtl.8';
+			package: 'OSProcess-RiscOS' with: 'OSProcess-RiscOS-dtl.2'. ].
+
+]
+
+{ #category : #versions }
+ConfigurationOfOSProcess >> version458: spec [
+	<version: '4.5.8' imports: #('4.4.6-baseline' )>
+
+	spec for: #'common' do: [
+		spec blessing: #'release'.
+		spec description: 'Update to latest package versions'.
+		spec author: 'ThierryGoubier'.
+		spec timestamp: '9/23/2013 10:36'.
+		spec project: 'Pipeability' with: [ spec version: '4.6.7' ].
+		spec 
+			package: 'OSProcess-Tests' with: 'OSProcess-Tests-dtl.11';
+			package: 'OSProcess-Base' with: 'OSProcess-Base-dtl.39';
+			package: 'OSProcess-OS2' with: 'OSProcess-OS2-dtl.2';
+			package: 'OSProcess-Win32' with: 'OSProcess-Win32-dtl.9';
+			package: 'OSProcess-Unix' with: 'OSProcess-Unix-dtl.17';
+			package: 'OSProcess-Mac' with: 'OSProcess-Mac-dtl.2';
+			package: 'OSProcess-AIO' with: 'OSProcess-AIO-dtl.8';
+			package: 'OSProcess-RiscOS' with: 'OSProcess-RiscOS-dtl.2'. ].
 
 ]
 
