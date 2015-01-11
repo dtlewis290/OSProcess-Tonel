@@ -10,6 +10,43 @@ Class {
 	#category : #'OSProcess-Tests'
 }
 
+{ #category : #failures }
+UnixProcessTestCase class >> expectedFailures [
+	^UnixOSProcessAccessor basicNew safeToForkSqueak
+		ifTrue: [#()]
+		ifFalse: [#(	testClassForkHeadlessSqueakAndDo
+					testClassForkHeadlessSqueakAndDoThenQuit
+					testClassForkSqueak
+					testClassForkSqueakAndDo
+					testClassForkSqueakAndDoThenQuit
+					testForkHeadlessSqueakAndDo
+					testForkHeadlessSqueakAndDoThenQuit
+					testForkSqueak
+					testForkSqueakAndDo
+					testForkSqueakAndDoThenQuit
+					testHeadlessChild
+					testSpawnTenHeadlessChildren)]
+]
+
+{ #category : #failures }
+UnixProcessTestCase >> expectedFailures [
+	^UnixOSProcessAccessor basicNew safeToForkSqueak
+		ifTrue: [#()]
+		ifFalse: [#(	testClassForkHeadlessSqueakAndDo
+					testClassForkHeadlessSqueakAndDoThenQuit
+					testClassForkSqueak
+					testClassForkSqueakAndDo
+					testClassForkSqueakAndDoThenQuit
+					testEightLeafSqueakTree
+					testForkHeadlessSqueakAndDo
+					testForkHeadlessSqueakAndDoThenQuit
+					testForkSqueak
+					testForkSqueakAndDo
+					testForkSqueakAndDoThenQuit
+					testHeadlessChild
+					testSpawnTenHeadlessChildren)]
+]
+
 { #category : #private }
 UnixProcessTestCase >> numberOfOpenFiles [
 	"Answer the number of files currently open for this OS process. This works

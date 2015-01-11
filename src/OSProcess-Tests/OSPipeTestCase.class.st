@@ -41,6 +41,7 @@ OSPipeTestCase >> testBlocking [
 	| p |
 	p := OSPipe blockingPipe.
 	(1 to: 10) do: [:i | p nextPutAll: 'this is line ', i printString; cr].
+	p flush. "protect against buggy clib that may never flush output"
 	self should: ['this is line 1*' match: (p next: 15)].
 	self should: ['this is line 2*' match: (p next: 15)].
 	self should: ['this is line 3*' match: (p next: 15)].
@@ -92,6 +93,7 @@ OSPipeTestCase >> testBlockingPeek [
 	| p |
 	p := OSPipe blockingPipe.
 	p nextPutAll: 'abc'.
+	p flush. "protect against buggy clib that may never flush output"
 	self assert: (p peek == $a).
 	self assert: (p next == $a).
 	self assert: (p peek == $b).

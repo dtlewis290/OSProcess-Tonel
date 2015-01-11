@@ -1018,9 +1018,16 @@ UnixProcessAccessorTestCase >> testSignalNumbers [
 	self assert: OSProcess accessor primSigPipeNumber = 13.
 	self assert: OSProcess accessor primSigQuitNumber = 3.
 	self assert: OSProcess accessor primSigTermNumber = 15.
-	self assert: OSProcess accessor primSigUsr1Number = 10. "architecture dependent"
-	self assert: OSProcess accessor primSigUsr2Number = 12. "architecture dependent"
-	self assert: OSProcess accessor primSigChldNumber = 17. "architecture dependent"
+	OSProcess platformName caseOf:
+		{ ['unix']		->
+			[self assert: OSProcess accessor primSigUsr1Number = 10.
+			 self assert: OSProcess accessor primSigUsr2Number = 12.
+			 self assert: OSProcess accessor primSigChldNumber = 17.].
+		   ['Mac OS']	->
+			[self assert: OSProcess accessor primSigUsr1Number = 30.
+			 self assert: OSProcess accessor primSigUsr2Number = 31.
+			 self assert: OSProcess accessor primSigChldNumber = 20.]}
+	
 	
 
 ]
