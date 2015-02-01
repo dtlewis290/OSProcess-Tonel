@@ -218,6 +218,7 @@ ConfigurationOfOSProcess >> stable: spec [
 
 	spec for: #'common' version: '4.5.13'.
 	spec for: #'pharo1.4.x' version: '4.4.6'.
+	spec for: #'pharo2.x' version: '4.5.8'.
 ]
 
 { #category : #versions }
@@ -369,7 +370,7 @@ ConfigurationOfOSProcess >> version4512: spec [
 
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #versions }
 ConfigurationOfOSProcess >> version4513: spec [
 	<version: '4.5.13' imports: #('4.4.6-baseline' )>
 
