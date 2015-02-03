@@ -242,8 +242,9 @@ ThisOSProcess >> discardExitedChildren [
 	"Remove entries for completed child processed from dictionary."
 
 	self updateAllMyChildren.
-	accessProtect
-		critical: [ allMyChildren := allMyChildren select: [ :p | p isComplete not ] ].
+	allMyChildren
+		select: [ :p | p isComplete ]
+		thenDo: [ :e | self unregisterChildProcess: e ].
 	^ allMyChildren
 
 ]
@@ -523,7 +524,7 @@ ThisOSProcess >> resetChildProcessDictionary [
 	probably no longer of any interest."
 
 	self updateAllMyChildren. "Ensure contents are up to date before releasing them."
-	self initializeAllMyChildren
+	allMyChildren do: [ :p | self unregisterChildProcess: p ]
 
 ]
 
