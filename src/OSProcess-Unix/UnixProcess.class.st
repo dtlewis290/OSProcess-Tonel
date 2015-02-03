@@ -1874,7 +1874,7 @@ UnixProcess >> unregisterChildProcess: anOSProcess [
 
 	accessProtect
 		critical: [allMyChildren
-				removeKey: self pid
+				removeKey: anOSProcess pid
 				ifAbsent: []].
 	^ anOSProcess
 
