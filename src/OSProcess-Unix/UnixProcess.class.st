@@ -1218,7 +1218,7 @@ UnixProcess >> finalize [
 	path := nil.
 	environment := nil.
 	self updateAllMyChildren.
-	allMyChildren := nil.
+	childProcessList := nil.
 	processAccessor
 		ifNotNil: 
 			[processAccessor removeDependent: self.
@@ -1506,13 +1506,6 @@ UnixProcess >> initialize [
 
 ]
 
-{ #category : #'initialize - release' }
-UnixProcess >> initializeAllMyChildren [
-
-	^ allMyChildren := Dictionary new
-
-]
-
 { #category : #'platform identification' }
 UnixProcess >> isResponsibleForThisPlatform [
 	"Answer true is this is an instance of the class which is responsible for representing
@@ -1531,7 +1524,7 @@ UnixProcess >> killCurrentChildrenAtExit [
 
 	"OSProcess thisOSProcess killCurrentChildrenAtExit"
 
-	self processAccessor killOnVmExit: allMyChildren withSignal: nil
+	self processAccessor killOnVmExit: self activeChildren withSignal: nil
 
 ]
 
@@ -1755,11 +1748,7 @@ UnixProcess >> registerChildProcess: anOSProcess [
 
 	self processAccessor sigChldSemaphore.
 	self processAccessor grimReaperProcess.	 "Start the reaper process if it is not running."
-	accessProtect
-		critical: [allMyChildren
-				at: anOSProcess pid
-				put: anOSProcess].
-	^ anOSProcess
+	^ super registerChildProcess: anOSProcess
 
 ]
 
@@ -1867,17 +1856,6 @@ UnixProcess >> squeak [
 		arguments: self arguments
 		environment: nil
 		descriptors: nil
-]
-
-{ #category : #'child process management' }
-UnixProcess >> unregisterChildProcess: anOSProcess [
-
-	accessProtect
-		critical: [allMyChildren
-				removeKey: anOSProcess pid
-				ifAbsent: []].
-	^ anOSProcess
-
 ]
 
 { #category : #updating }
