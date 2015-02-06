@@ -11,10 +11,11 @@ Class {
 		'stdOut',
 		'stdErr',
 		'processAccessor',
-		'allMyChildren',
+		'childProcessList',
 		'accessProtect'
 	],
 	#classVars : [
+		'ChildListSize',
 		'ThisInstance'
 	],
 	#category : #'OSProcess-Base'
@@ -55,6 +56,7 @@ ThisOSProcess class >> initialize [
 	OSProcess initialize. "required to ensure the change sets file in smoothly"
 	AttachableFileStream initialize.
 	OSProcessAccessor initialize.
+	ChildListSize := 20. "list will be pruned to this size, except for any children still running"
 	self initializeThisOSProcess.
 	Smalltalk addToStartUpList: ThisOSProcess.
 	Smalltalk addToShutDownList: ThisOSProcess
@@ -131,7 +133,7 @@ ThisOSProcess class >> startUp: resuming [
 	| aio |
 	(aio := Smalltalk at: #AioEventHandler)
 		ifNotNil: [ aio startUp: resuming ].
-	self initializeThisOSProcess
+	resuming ifTrue: [ self initializeThisOSProcess ]
 ]
 
 { #category : #'instance creation' }
@@ -159,17 +161,14 @@ ThisOSProcess >> activeChildren [
 
 	"OSProcess thisOSProcess activeChildren"
 
-	| children |
-	accessProtect
-		critical: [ children := allMyChildren select: [ :p | p isRunning ] ].
-	^children
+	^ accessProtect critical: [ childProcessList select: [ :p | p isRunning ] ].
 
 ]
 
 { #category : #'child process management' }
 ThisOSProcess >> allMyChildren [
 
-	^ allMyChildren
+	^ Dictionary withAll: (childProcessList collect: [ :e | e pid -> e ])
 ]
 
 { #category : #'display management' }
@@ -190,7 +189,7 @@ ThisOSProcess >> canConnectToXDisplay: xDisplayName [
 { #category : #'child process management' }
 ThisOSProcess >> childPids [
 
-	^ allMyChildren asArray asArray collect: [ :p | p pid ]
+	^ childProcessList collect: [ :p | p pid ]
 
 ]
 
@@ -242,10 +241,10 @@ ThisOSProcess >> discardExitedChildren [
 	"Remove entries for completed child processed from dictionary."
 
 	self updateAllMyChildren.
-	allMyChildren
+	childProcessList
 		select: [ :p | p isComplete ]
 		thenDo: [ :e | self unregisterChildProcess: e ].
-	^ allMyChildren
+	^ childProcessList
 
 ]
 
@@ -299,10 +298,7 @@ ThisOSProcess >> exitedChildren [
 
 	"OSProcess thisOSProcess exitedChildren"
 
-	| children |
-	accessProtect
-		critical: [ children := allMyChildren select: [ :p | p isComplete ]].
-	^ children
+	^ accessProtect critical: [ childProcessList select: [ :p | p isComplete ]].
 
 ]
 
@@ -393,7 +389,7 @@ ThisOSProcess >> initializeAllMyChildren [
 	"Use a Dictionary if process identifiers are unique. On Windows, the
 	process ID is not unique, so use an OrderedCollection instead."
 
-	self subclassResponsibility
+	^ childProcessList := OrderedCollection new
 
 ]
 
@@ -493,6 +489,19 @@ ThisOSProcess >> processAccessor [
 	^ processAccessor
 ]
 
+{ #category : #'child process management' }
+ThisOSProcess >> pruneExitedChildrenAfter: size [
+	"Limit the size of the child process registry. Select the last entries, and unregister
+	them if they are no longer active."
+
+	"OSProcess thisOSProcess pruneExitedChildrenAfter: 5"
+
+	(accessProtect critical: [childProcessList allButFirst: size])
+		do: [ :e |
+			e isComplete ifTrue: [ self unregisterChildProcess: e ]]
+
+]
+
 { #category : #'display management' }
 ThisOSProcess >> recapitate [
 	"Restore headful display opening the X session."
@@ -513,8 +522,13 @@ ThisOSProcess >> refreshFromProcessAccessor [
 
 { #category : #'child process management' }
 ThisOSProcess >> registerChildProcess: anOSProcess [
+	"Unregister anOSProcess, and trim the child process registry to prevent excessive
+	accumulation of exited children."
 
-	self subclassResponsibility
+	accessProtect critical: [ childProcessList addFirst: anOSProcess ].
+	self pruneExitedChildrenAfter: ChildListSize.
+	^ anOSProcess
+
 ]
 
 { #category : #updating }
@@ -524,7 +538,7 @@ ThisOSProcess >> resetChildProcessDictionary [
 	probably no longer of any interest."
 
 	self updateAllMyChildren. "Ensure contents are up to date before releasing them."
-	allMyChildren do: [ :p | self unregisterChildProcess: p ]
+	self allMyChildren do: [ :p | self unregisterChildProcess: p ]
 
 ]
 
@@ -625,7 +639,9 @@ ThisOSProcess >> stdOut [
 { #category : #'child process management' }
 ThisOSProcess >> unregisterChildProcess: anOSProcess [
 
-	self subclassResponsibility
+	accessProtect
+		critical: [childProcessList remove: anOSProcess ifAbsent: [] ].
+	^ anOSProcess
 
 ]
 
@@ -655,7 +671,7 @@ ThisOSProcess >> updateAllMyChildren [
 	running, check to see if it has exited, and update runState and exitStatus accordingly."
 
 	| children |
-	accessProtect critical: [children := allMyChildren asArray].
+	accessProtect critical: [children := self allMyChildren asArray].
 	children do:
 		[:child |
 		child update: #accessibility.
