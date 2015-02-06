@@ -156,15 +156,6 @@ WindowsProcess >> initialize [
 
 ]
 
-{ #category : #'initialize - release' }
-WindowsProcess >> initializeAllMyChildren [
-	"On Windows, the process ID is not unique. Use an OrderedCollection instead
-	of a Dictionary to keep track of the child processes."
-
-	^ allMyChildren := OrderedCollection new
-
-]
-
 { #category : #'platform identification' }
 WindowsProcess >> isResponsibleForThisPlatform [
 	"Answer true is this is an instance of the class which is responsible for representing
@@ -241,7 +232,7 @@ WindowsProcess >> registerChildProcess: anOSProcess [
 	"Register the external process and set an exit handler thread to signal when
 	the process exits."
 
-	accessProtect critical: [ allMyChildren add: anOSProcess ].
+	super registerChildProcess: anOSProcess.
 	self threads add: self restartChildWatcherThread.
 	^ anOSProcess
 
@@ -303,15 +294,6 @@ WindowsProcess >> threads [
 	child processes, so this collection grows as child processes are created."
 
 	^ threads ifNil: [threads := OrderedCollection new]
-
-]
-
-{ #category : #'child process management' }
-WindowsProcess >> unregisterChildProcess: anOSProcess [
-
-	| p |
-	accessProtect critical: [ p := allMyChildren remove: anOSProcess pid ].
-	^ p
 
 ]
 
