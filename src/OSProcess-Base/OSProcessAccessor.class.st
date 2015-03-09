@@ -11,8 +11,8 @@ Class {
 	#superclass : #Model,
 	#instVars : [
 		'sessionIdentifier',
-		'canObtainSessionIdentifierFromPlugin',
-		'hasTestEof'
+		'grimReaper',
+		'canObtainSessionIdentifierFromPlugin'
 	],
 	#classVars : [
 		'EmulateWin32FileLocking',
@@ -265,6 +265,20 @@ OSProcessAccessor >> getStdOutHandle [
 
 ]
 
+{ #category : #accessing }
+OSProcessAccessor >> grimReaper [
+	"Answer the value of grimReaper"
+
+	^ grimReaper
+]
+
+{ #category : #accessing }
+OSProcessAccessor >> grimReaper: anObject [
+	"Set the value of grimReaper"
+
+	grimReaper := anObject
+]
+
 { #category : #'private - IOHandle' }
 OSProcessAccessor >> handleFromAccessor: aByteArrayOrIOAccessor [
 
@@ -297,7 +311,6 @@ OSProcessAccessor >> initialize [
 	canObtainSessionIdentifierFromPlugin := nil.
 	self canObtainSessionIdentifierFromPlugin.
 	sessionIdentifier := nil.
-	hasTestEof := nil.
 	self sessionIdentifier.
 
 ]
@@ -344,6 +357,17 @@ OSProcessAccessor >> makePipeHandles [
 	^self primCreatePipe
 		ifNotNilDo: [:p | ^ p collect: [:e | self ioAccessorFromSQFile: e]]
 
+]
+
+{ #category : #'initialize - release' }
+OSProcessAccessor >> newPid [
+	"This image is now being run in a new VM process with different pid. Pause the handling
+	of child processes, and remove references to child processes that no longer pertain to
+	the current VM process."
+
+	grimReaper ifNotNilDo: [ :p | p terminate. grimReaper := nil ].
+	self changed: #pid.
+	self restartChildWatcherProcess
 ]
 
 { #category : #'plugin identification' }
@@ -408,6 +432,11 @@ OSProcessAccessor >> removeInactiveLocks [
 	behind after their streams were closed."
 
 	^ self fileLockRegistry copy do: [:ea | ea isActive ifFalse: [self fileLockCache remove: ea]]
+]
+
+{ #category : #'initialize - release' }
+OSProcessAccessor >> restartChildWatcherProcess [
+	self subclassResponsibility
 ]
 
 { #category : #accessing }
