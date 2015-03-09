@@ -7,7 +7,6 @@ Class {
 	#instVars : [
 		'sigChldSemaphore',
 		'semaIndex',
-		'grimReaper',
 		'childWatcherThread'
 	],
 	#category : #'OSProcess-Win32'
@@ -686,6 +685,13 @@ WindowsOSProcessAccessor >> primTestEndOfFileFlag: aSqFileStruct [
 	self flag: 'FIXME'. "not yet implemented in OSPP for Windows"
 	^ self primitiveFailed
 
+]
+
+{ #category : #'child process management' }
+WindowsOSProcessAccessor >> restartChildWatcherProcess [
+
+	grimReaper ifNotNilDo: [ :p | p terminate. grimReaper := nil ].
+	self grimReaperProcess
 ]
 
 { #category : #'child process management' }
