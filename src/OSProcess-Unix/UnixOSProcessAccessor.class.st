@@ -9,7 +9,6 @@ Class {
 	#name : #UnixOSProcessAccessor,
 	#superclass : #OSProcessAccessor,
 	#instVars : [
-		'grimReaper',
 		'sigChldSemaphore'
 	],
 	#classVars : [
@@ -479,20 +478,6 @@ UnixOSProcessAccessor >> getThreadID [
 		ifTrue: [^ self primGetThreadID]
 		ifFalse: [^ nil]
 
-]
-
-{ #category : #accessing }
-UnixOSProcessAccessor >> grimReaper [
-	"Answer the value of grimReaper"
-
-	^ grimReaper
-]
-
-{ #category : #accessing }
-UnixOSProcessAccessor >> grimReaper: anObject [
-	"Set the value of grimReaper"
-
-	grimReaper := anObject
 ]
 
 { #category : #'initialize - release' }

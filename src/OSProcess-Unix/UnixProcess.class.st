@@ -1255,7 +1255,7 @@ UnixProcess >> forkHeadlessSqueak [
 		childPid == 0
 			ifTrue:
 				[connected ifTrue: [self disconnectXDisplay].
-				OSProcess thisOSProcess processAccessor changed: #pid.
+				OSProcess thisOSProcess processAccessor newPid.
 				^ self]
 			ifFalse:
 				[child := ExternalUnixOSProcess new.
@@ -1372,7 +1372,7 @@ UnixProcess >> forkSqueak [
 		childPid == 0
 			ifTrue:
 				[connected ifTrue: [self disconnectXDisplay; recapitate].
-				OSProcess thisOSProcess processAccessor changed: #pid.
+				OSProcess thisOSProcess processAccessor newPid.
 				^ self]
 			ifFalse:
 				[child := ExternalUnixOSProcess new.
