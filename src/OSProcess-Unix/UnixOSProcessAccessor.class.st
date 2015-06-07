@@ -486,16 +486,18 @@ UnixOSProcessAccessor >> grimReaperProcess [
 	informs any dependents of the change. Use SIGCHLD events if possible,
 	otherwise a Delay to poll for exiting child processes."
 
-	| event processSynchronizationDelay |
+	| eventWaiter processSynchronizationDelay |
 	^ self canAccessSystem
 		ifTrue:
-			[event := (self canAccessSystem and: [self canForwardExternalSignals])
-				ifTrue: [self sigChldSemaphore]
-				ifFalse: [Delay forMilliseconds: 200].
+			[eventWaiter := (self canAccessSystem and: [self canForwardExternalSignals])
+				ifTrue: [self sigChldSemaphore "semaphore signaled by SIGCHLD" ]
+				ifFalse: [Delay forMilliseconds: 200 "simple polling loop" ].
 			processSynchronizationDelay := Delay forMilliseconds: 20.
 			grimReaper ifNil:
 				[grimReaper :=
-					[[event wait.
+					[[(eventWaiter respondsTo: #waitTimeoutMSecs: )
+						ifTrue: [eventWaiter waitTimeoutMSecs: 1000 "semaphore with timeout"]
+						ifFalse: [eventWaiter wait].
 					processSynchronizationDelay wait. "Avoids lost signals in heavy process switching"
 					self changed: #childProcessStatus] repeat] newProcess.
 					grimReaper resume.
