@@ -217,7 +217,7 @@ UnixProcessAccessorTestCase >> testDupTo [
 	result := OSProcess accessor primDup: fd1 to: fd2.
 	"f1 and f2 now both refer to the same IO stream"
 	self assert: result = fd2.
-	f2 nextPutAll: 'write something to the original f2 file stream that will appear in duped f1 instead'.
+	f2 nextPutAll: 'write something to the original f2 file stream that will appear in duped f1 instead'; flush.
 	f1 reset.
 	contents1 := f1 upToEnd.
 	self deny: contents1 isEmpty.
@@ -945,18 +945,18 @@ UnixProcessAccessorTestCase >> testRedirectStdOutTo [
 	aFileStream reset.
 	self assert: aFileStream upToEnd isEmpty.
 	"note - do not close aFileStream as this affects actual stdout"
-	out nextPutAll: 'foo'.
+	out nextPutAll: 'foo'; flush.
 	aFileStream reset.
 	self assert: aFileStream upToEnd isEmpty.
 	OSProcess thisOSProcess redirectStdOutTo: aFileStream.
-	out nextPutAll: 'foo'.
+	out nextPutAll: 'foo'; flush.
 	aFileStream reset.
 	contents := aFileStream upToEnd.
 	self deny: contents isEmpty.
 	self assert: contents = 'foo'. "assume noone else is using stdout right now"
 	"ensure the we can still find the real stdout"
 	self deny: OSProcess thisOSProcess stdOut closed.
-	OSProcess thisOSProcess stdOut nextPutAll: 'bar'.
+	OSProcess thisOSProcess stdOut nextPutAll: 'bar'; flush.
 	aFileStream reset.
 	contents := aFileStream upToEnd.
 	self deny: contents isEmpty.

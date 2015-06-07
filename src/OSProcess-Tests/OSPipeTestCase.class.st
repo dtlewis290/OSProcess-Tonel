@@ -66,7 +66,7 @@ OSPipeTestCase >> testBlockingBufferedPipe [
 
 	| p |
 	p := ExternalPipe bufferedBlockingPipe.
-	[(1 to: 10) do: [:i | p nextPutAll: 'this is line ', i printString; cr].
+	[(1 to: 10) do: [:i | p nextPutAll: 'this is line ', i printString; cr; flush].
 	(Delay forMilliseconds: 100) wait. "allow pipe reads to complete"
 	self should: ['this is line 1*' match: (p next: 15)].
 	self should: ['this is line 2*' match: (p next: 15)].
@@ -115,7 +115,7 @@ OSPipeTestCase >> testBlockingPeekBufferedPipe [
 
 	| p |
 	p := ExternalPipe bufferedBlockingPipe.
-	[p nextPutAll: 'abc'.
+	[p nextPutAll: 'abc'; flush.
 	(Delay forMilliseconds: 100) wait. "allow pipe reads to complete"
 	self assert: (p peek == $a).
 	self assert: (p next == $a).
@@ -166,7 +166,7 @@ OSPipeTestCase >> testIsAtEndOfFile [
 	self deny: (OSProcess accessor isAtEndOfFile: p reader fileID).
 	self deny: p reader atEnd.
 	self deny: p atEnd.
-	p writer nextPut: $X.
+	p writer nextPut: $X; flush.
 	self assert: (p reader basicNext == $X).
 	self deny: (OSProcess accessor isAtEndOfFile: p reader fileID).
 	self deny: p reader atEnd.
@@ -198,7 +198,7 @@ OSPipeTestCase >> testIsAtEndOfFile2 [
 
 	| p s |
 	p := OSPipe new.
-	[p nextPutAll: 'hello'.
+	[p nextPutAll: 'hello'; flush.
 	s := p next: 100.
 	self assert: s = 'hello'.
 	self deny: p atEndOfFile.
@@ -250,7 +250,7 @@ OSPipeTestCase >> testNonBlockingPeek [
 
 	| p |
 	p := OSPipe nonBlockingPipe.
-	p nextPutAll: 'abc'.
+	p nextPutAll: 'abc'; flush.
 	self assert: (p peek == $a).
 	self assert: (p next == $a).
 	self assert: (p peek == $b).
@@ -272,7 +272,7 @@ OSPipeTestCase >> testNonBlockingPeekBufferedPipe [
 
 	| p |
 	p := ExternalPipe bufferedNonBlockingPipe.
-	[p nextPutAll: 'abc'.
+	[p nextPutAll: 'abc'; flush.
 	self assert: (p peek == nil).
 	(Delay forMilliseconds: 100) wait. "allow pipe reads to complete"
 	self assert: (p peek == $a).
