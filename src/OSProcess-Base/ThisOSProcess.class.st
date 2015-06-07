@@ -161,7 +161,7 @@ ThisOSProcess >> activeChildren [
 
 	"OSProcess thisOSProcess activeChildren"
 
-	^ accessProtect critical: [ childProcessList select: [ :p | p isRunning ] ].
+	^ accessProtect critical: [ childProcessList select: [ :p | p isComplete not ] ].
 
 ]
 
