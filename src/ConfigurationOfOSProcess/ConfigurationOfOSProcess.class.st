@@ -216,7 +216,7 @@ ConfigurationOfOSProcess >> project [
 ConfigurationOfOSProcess >> stable: spec [
 	<symbolicVersion: #'stable'>
 
-	spec for: #'common' version: '4.6.2'.
+	spec for: #'common' version: '4.6.3'.
 	spec for: #'pharo1.4.x' version: '4.4.6'.
 	spec for: #'pharo2.x' version: '4.5.8'.
 ]
@@ -476,6 +476,28 @@ ConfigurationOfOSProcess >> version462: spec [
 			package: 'OSProcess-RiscOS' with: 'OSProcess-RiscOS-dtl.2';
 			package: 'OSProcess-Tests' with: 'OSProcess-Tests-dtl.13';
 			package: 'OSProcess-Unix' with: 'OSProcess-Unix-dtl.23';
+			package: 'OSProcess-Win32' with: 'OSProcess-Win32-dtl.14'. ].
+
+]
+
+{ #category : #versions }
+ConfigurationOfOSProcess >> version463: spec [
+	<version: '4.6.3' imports: #('4.4.6-baseline' )>
+
+	spec for: #'common' do: [
+		spec blessing: #'release'.
+		spec description: 'Update to latest package versions'.
+		spec author: 'ThierryGoubier'.
+		spec timestamp: '6/17/2015 20:06'.
+		spec project: 'Pipeability' with: [ spec version: '4.6.12' ].
+		spec 
+			package: 'OSProcess-AIO' with: 'OSProcess-AIO-dtl.8';
+			package: 'OSProcess-Base' with: 'OSProcess-Base-dtl.50';
+			package: 'OSProcess-Mac' with: 'OSProcess-Mac-dtl.2';
+			package: 'OSProcess-OS2' with: 'OSProcess-OS2-dtl.2';
+			package: 'OSProcess-RiscOS' with: 'OSProcess-RiscOS-dtl.2';
+			package: 'OSProcess-Tests' with: 'OSProcess-Tests-dtl.14';
+			package: 'OSProcess-Unix' with: 'OSProcess-Unix-dtl.24';
 			package: 'OSProcess-Win32' with: 'OSProcess-Win32-dtl.14'. ].
 
 ]
