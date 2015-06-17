@@ -43,7 +43,7 @@ OSProcess class >> allTestResults [
 	[fs := FileStream newFileNamed: resultsFileName.
 	problems := false.
 	writeStream := WriteStream on: String new.
-	writeStream nextPutAll: self authorInitials , ' running OSProcess unit tests ' , TimeStamp now asString; cr.
+	writeStream nextPutAll: self authorInitials , ' running OSProcess unit tests ' , DateAndTime now asString; cr.
 	writeStream nextPutAll: 'OSProcess platformName => ' , OSProcess platformName; cr.
 	writeStream nextPutAll: 'OSProcess platformSubtype => ' , OSProcess platformSubtype; cr.
 	writeStream nextPutAll: 'OSProcess osVersion => ' , OSProcess osVersion; cr.
@@ -641,7 +641,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.6.3'
+	^'4.6.4'
 ]
 
 { #category : #'version dependent' }
