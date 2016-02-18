@@ -59,7 +59,7 @@ ThisOSProcess class >> initialize [
 	self initializeThisOSProcess.
 	(SystemVersion current perform: #highestUpdate) >= 50558
 		ifTrue:
-			[ (Smalltalk at: SessionManager) default
+			[ (Smalltalk at: #SessionManager) default
 				perform: #registerToolClassNamed:
 				with: ThisOSProcess ]
 		ifFalse: [ Smalltalk addToStartUpList: ThisOSProcess.
