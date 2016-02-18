@@ -61,7 +61,7 @@ ThisOSProcess class >> initialize [
 		ifTrue:
 			[ (Smalltalk at: #SessionManager) default
 				perform: #registerToolClassNamed:
-				with: ThisOSProcess ]
+				with: ThisOSProcess name ]
 		ifFalse: [ Smalltalk addToStartUpList: ThisOSProcess.
 			Smalltalk addToShutDownList: ThisOSProcess ]
 ]
