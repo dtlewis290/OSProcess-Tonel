@@ -4,7 +4,7 @@ I represent a Macintosh operating system process, such as the process in which t
 Class {
 	#name : #MacProcess,
 	#superclass : #ThisOSProcess,
-	#category : #'OSProcess-Mac'
+	#category : 'OSProcess-Mac'
 }
 
 { #category : #'platform identification' }

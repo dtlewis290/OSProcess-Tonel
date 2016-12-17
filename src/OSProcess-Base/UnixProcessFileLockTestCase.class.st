@@ -7,7 +7,7 @@ Class {
 	#instVars : [
 		'fileStream'
 	],
-	#category : #'OSProcess-Tests'
+	#category : 'OSProcess-Tests'
 }
 
 { #category : #asserting }
@@ -18,12 +18,12 @@ UnixProcessFileLockTestCase >> assertLock: lock1 lock: lock2 conflicts: aBoolean
 
 { #category : #data }
 UnixProcessFileLockTestCase >> entireExclusiveLock [
-	^ OSFileLock onFile: self fileStream exclusive: true
+	^ OSFileLock onFile: fileStream exclusive: true
 ]
 
 { #category : #data }
 UnixProcessFileLockTestCase >> entireSharedLock [
-	^ OSFileLock onFile: self fileStream exclusive: false
+	^ OSFileLock onFile: fileStream exclusive: false
 ]
 
 { #category : #accessing }
@@ -38,7 +38,7 @@ UnixProcessFileLockTestCase >> regionExclusiveLock [
 
 { #category : #data }
 UnixProcessFileLockTestCase >> regionLockFrom: from to: to exclusive: exclusive [
-	^ OSFileRegionLock onFile: self fileStream from: from to: to exclusive: exclusive
+	^ OSFileRegionLock onFile: fileStream from: from to: to exclusive: exclusive
 ]
 
 { #category : #data }
@@ -48,6 +48,7 @@ UnixProcessFileLockTestCase >> regionSharedLock [
 
 { #category : #running }
 UnixProcessFileLockTestCase >> setUp [
+	FileDirectory default deleteFileNamed: 'junkfile'.
 	fileStream := FileStream fileNamed: 'junkfile'.
 ]
 

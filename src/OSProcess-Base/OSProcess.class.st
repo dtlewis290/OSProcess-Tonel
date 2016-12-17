@@ -11,7 +11,7 @@ Class {
 	#classVars : [
 		'UseIOHandle'
 	],
-	#category : #'OSProcess-Base'
+	#category : 'OSProcess-Base'
 }
 
 { #category : #'external process access' }
@@ -656,7 +656,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.6.5'
+	^'4.6.6'
 ]
 
 { #category : #'version dependent' }

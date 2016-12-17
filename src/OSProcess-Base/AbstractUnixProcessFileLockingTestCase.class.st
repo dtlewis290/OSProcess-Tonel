@@ -13,7 +13,7 @@ Class {
 		'remoteProcess',
 		'initialCompatibilitySetting'
 	],
-	#category : #'OSProcess-Tests'
+	#category : 'OSProcess-Tests'
 }
 
 { #category : #testing }
@@ -25,31 +25,10 @@ AbstractUnixProcessFileLockingTestCase class >> isAbstract [
 ]
 
 { #category : #accessing }
-AbstractUnixProcessFileLockingTestCase >> accessor [
-	"Answer the value of accessor"
-
-	^ accessor
-]
-
-{ #category : #accessing }
-AbstractUnixProcessFileLockingTestCase >> accessor: anObject [
-	"Set the value of accessor"
-
-	accessor := anObject
-]
-
-{ #category : #accessing }
 AbstractUnixProcessFileLockingTestCase >> delay [
 	"Answer the value of delay"
 
 	^ delay
-]
-
-{ #category : #accessing }
-AbstractUnixProcessFileLockingTestCase >> delay: anObject [
-	"Set the value of delay"
-
-	delay := anObject
 ]
 
 { #category : #'remote image commands' }
@@ -120,39 +99,11 @@ AbstractUnixProcessFileLockingTestCase >> expectedFailures [
 					testNoFailLockOnDifferentLockedRegion)]
 ]
 
-{ #category : #accessing }
-AbstractUnixProcessFileLockingTestCase >> fileStream [
-	"Answer the value of fileStream"
-
-	^ fileStream
-]
-
-{ #category : #accessing }
-AbstractUnixProcessFileLockingTestCase >> fileStream: anObject [
-	"Set the value of fileStream"
-
-	fileStream := anObject
-]
-
-{ #category : #accessing }
-AbstractUnixProcessFileLockingTestCase >> initialCompatibilitySetting [
-	"Answer the value of initialCompatibilitySetting"
-
-	^ initialCompatibilitySetting
-]
-
-{ #category : #accessing }
-AbstractUnixProcessFileLockingTestCase >> initialCompatibilitySetting: anObject [
-	"Set the value of initialCompatibilitySetting"
-
-	initialCompatibilitySetting := anObject
-]
-
 { #category : #initialize }
 AbstractUnixProcessFileLockingTestCase >> initialize [
 
 	initialCompatibilitySetting
-		ifNil: [self initialCompatibilitySetting: OSProcess accessor emulateWin32FileLocking]
+		ifNil: [initialCompatibilitySetting := OSProcess accessor emulateWin32FileLocking]
 ]
 
 { #category : #'testing - platform specific' }
@@ -175,9 +126,10 @@ AbstractUnixProcessFileLockingTestCase >> setUp [
 
 	(self respondsTo: #timeout: ) "Recent Squeak images with test case timeout"
 		ifTrue: [self perform: #timeout: with: 30].
-	self delay: (Delay forMilliseconds: 150).
-	self accessor: ThisOSProcess accessor.
-	self fileStream: (FileStream fileNamed: 'junkfile').
+	delay := Delay forMilliseconds: 150.
+	accessor := ThisOSProcess accessor.
+	FileDirectory default deleteFileNamed: 'junkfile'.
+	fileStream := FileStream fileNamed: 'junkfile'.
 	1000 timesRepeat: (fileStream nextPutAll: 'hello world ').
 
 ]
@@ -186,9 +138,9 @@ AbstractUnixProcessFileLockingTestCase >> setUp [
 AbstractUnixProcessFileLockingTestCase >> tearDown [
 
 	| d |
-	OSProcessAccessor emulateWin32FileLocking: self initialCompatibilitySetting.
+	OSProcessAccessor emulateWin32FileLocking: initialCompatibilitySetting.
 	d := Delay forMilliseconds: 50.
-	self fileStream close.
+	fileStream close.
 	remoteProcess ifNotNil:
 		[remoteProcess terminate.
 		[remoteProcess isComplete] whileFalse: [d wait].
@@ -208,31 +160,31 @@ AbstractUnixProcessFileLockingTestCase >> testCooperatingProcesses01 [
 		doRemote:
 			[(self tryUntil: [(accessor lockFile: fileStream from: 100 to: 120) notNil]) ifNil: [self quitImage].
 			fileStream position: 100.
-			fileStream nextPutAll: 'THIS '.
+			fileStream nextPutAll: 'THIS '; flush.
 			accessor unlockFile: fileStream from: 100 to: 120.
 			delay wait.
 			self tryUntil: [(accessor lockFile: fileStream from: 108 to: 120) notNil].
 			fileStream position: 108.
-			fileStream nextPutAll: 'A '.
+			fileStream nextPutAll: 'A '; flush.
 			accessor unlockFile: fileStream from: 108 to: 120.
 			delay wait.
 			self quitImage]
 		doLocal:
 			[self assert: (self tryUntil: [(accessor lockFile: fileStream from: 104 to: 120) notNil]).
 			fileStream position: 105.
-			fileStream nextPutAll: 'IS '.
+			fileStream nextPutAll: 'is '; flush.
 			accessor unlockFile: fileStream from: 104 to: 120.
 			delay wait.
 			self tryUntil: [(accessor lockFile: fileStream from: 108 to: 120) notNil].
 			fileStream position: 110.
-			fileStream nextPutAll: 'TEST '.
+			fileStream nextPutAll: 'test '; flush.
 			accessor unlockFile: fileStream from: 108 to: 120.
 			delay wait].
 	self tryUntil: [(accessor lockFile: fileStream from: 100 to: 140) notNil].
 	fileStream position: 100.
 	result := fileStream next: 14.
 	accessor unlockFile: fileStream from: 100 to: 140.
-	self assert: result = 'THIS IS A TEST'
+	self assert: result = 'THIS is A test'
 
 ]
 
@@ -248,23 +200,23 @@ AbstractUnixProcessFileLockingTestCase >> testCooperatingProcesses02 [
 		doRemote:
 			[(self tryUntil: [(accessor lockFile: fileStream from: 100 to: 120) notNil]) ifNil: [self quitImage].
 			fileStream position: 100.
-			fileStream nextPutAll: 'THIS 11111111111111111111111'.
+			fileStream nextPutAll: 'THIS 11111111111111111111111'; flush.
 			accessor unlockFile: fileStream from: 100 to: 120.
 			delay wait; wait; wait.
 			self tryUntil: [(accessor lockFile: fileStream from: 108 to: 120) notNil].
 			fileStream position: 108.
-			fileStream nextPutAll: 'A 3333333333333333333333333'.
+			fileStream nextPutAll: 'A 3333333333333333333333333'; flush.
 			accessor unlockFile: fileStream from: 108 to: 120.
 			self quitImage]
 		doLocal:
 			[self assert: (self tryUntil: [(accessor lockFile: fileStream from: 104 to: 120) notNil]).
 			fileStream position: 105.
-			fileStream nextPutAll: 'IS 2222222222222222222222222'.
+			fileStream nextPutAll: 'IS 2222222222222222222222222'; flush.
 			accessor unlockFile: fileStream from: 104 to: 120.
 			delay wait; wait; wait.
 			self tryUntil: [(accessor lockFile: fileStream from: 108 to: 120) notNil].
 			fileStream position: 110.
-			fileStream nextPutAll: 'TEST 4444444444444444444444'.
+			fileStream nextPutAll: 'TEST 4444444444444444444444'; flush.
 			accessor unlockFile: fileStream from: 108 to: 120].
 	self tryUntil: [(accessor lockFile: fileStream from: 100 to: 140) notNil].
 	fileStream position: 100.
@@ -286,22 +238,22 @@ AbstractUnixProcessFileLockingTestCase >> testCooperatingProcesses03 [
 		doRemote:
 			[(self tryUntil: [(accessor lockFile: fileStream from: 100 to: 120) notNil]) ifNil: [self quitImage].
 			fileStream position: 100.
-			fileStream nextPutAll: 'THIS 11111111111111111111111'.
+			fileStream nextPutAll: 'THIS 11111111111111111111111'; flush.
 			accessor unlockFile: fileStream from: 100 to: 120.
 			delay wait; wait; wait.
 			self tryUntil: [(accessor lockFile: fileStream from: 108 to: 120) notNil].
 			fileStream position: 108.
-			fileStream nextPutAll: 'A 3333333333333333333333333'.
+			fileStream nextPutAll: 'A 3333333333333333333333333'; flush.
 			accessor unlockFile: fileStream from: 108 to: 120.
 			self quitImage]
 		doLocal:
 			[self assert: (self tryUntil: [(accessor lockFile: fileStream from: 104 to: 120) notNil]).
 			fileStream position: 105.
-			fileStream nextPutAll: 'IS 2222222222222222222222222'.
+			fileStream nextPutAll: 'IS 2222222222222222222222222'; flush.
 			accessor unlockFile: fileStream from: 104 to: 120.
 			self tryUntil: [(accessor lockFile: fileStream from: 108 to: 120) notNil].
 			fileStream position: 110.
-			fileStream nextPutAll: 'TEST 4444444444444444444444'.
+			fileStream nextPutAll: 'TEST 4444444444444444444444'; flush.
 			accessor unlockFile: fileStream from: 108 to: 120].
 	self tryUntil: [(accessor lockFile: fileStream from: 100 to: 140) notNil].
 	fileStream position: 100.
@@ -324,13 +276,13 @@ AbstractUnixProcessFileLockingTestCase >> testCooperatingProcesses04 [
 			[(self tryUntil: [(accessor lockFile: fileStream from: 100 to: 120) notNil]) ifNil: [self quitImage].
 			delay wait.
 			fileStream position: 100.
-			fileStream nextPutAll: 'THIS 11111111111111111111111'.
+			fileStream nextPutAll: 'THIS 11111111111111111111111'; flush.
 			accessor unlockFile: fileStream from: 100 to: 120.
 			delay wait.
 			self tryUntil: [(accessor lockFile: fileStream from: 108 to: 120) notNil].
 			delay wait.
 			fileStream position: 108.
-			fileStream nextPutAll: 'A 3333333333333333333333333'.
+			fileStream nextPutAll: 'A 3333333333333333333333333'; flush.
 			accessor unlockFile: fileStream from: 108 to: 120.
 			delay wait.
 			self quitImage]
@@ -338,12 +290,12 @@ AbstractUnixProcessFileLockingTestCase >> testCooperatingProcesses04 [
 			[self assert: (self tryUntil: [(accessor lockFile: fileStream from: 104 to: 120) notNil]).
 			delay wait.
 			fileStream position: 105.
-			fileStream nextPutAll: 'IS 2222222222222222222222222'.
+			fileStream nextPutAll: 'IS 2222222222222222222222222'; flush.
 			accessor unlockFile: fileStream from: 104 to: 120.
 			delay wait.
 			self tryUntil: [(accessor lockFile: fileStream from: 108 to: 120) notNil].
 			fileStream position: 110.
-			fileStream nextPutAll: 'TEST 4444444444444444444444'.
+			fileStream nextPutAll: 'TEST 4444444444444444444444; flush'.
 			accessor unlockFile: fileStream from: 108 to: 120].
 	self tryUntil: [(accessor lockFile: fileStream from: 100 to: 140) notNil].
 	fileStream position: 100.
@@ -366,42 +318,42 @@ AbstractUnixProcessFileLockingTestCase >> testCooperatingProcesses05 [
 			[OSProcess thisOSProcess stdOut nextPutAll: 'starting remote squeak requesting lock on 100 to 120';
 				nextPut: Character lf.
 			(self tryUntil: [(accessor lockFile: fileStream from: 100 to: 120) notNil]) ifNil: [self quitImage].
-			OSProcess thisOSProcess stdOut nextPutAll: 'remote squeak lock acquired on 100 to 120'; nextPut: Character lf.
+			OSProcess thisOSProcess stdOut nextPutAll: 'remote squeak lock acquired on 100 to 120'; nextPut: Character lf; flush.
 			fileStream position: 100.
-			fileStream nextPutAll: 'THIS '.
-			OSProcess thisOSProcess stdOut nextPutAll: 'remote squeak releasing lock on 100 to 120'; nextPut: Character lf.
+			fileStream nextPutAll: 'THIS '; flush.
+			OSProcess thisOSProcess stdOut nextPutAll: 'remote squeak releasing lock on 100 to 120'; nextPut: Character lf; flush.
 			accessor unlockFile: fileStream from: 100 to: 120.
-			OSProcess thisOSProcess stdOut nextPutAll: 'remote squeak lock released on 100 to 120'; nextPut: Character lf.
+			OSProcess thisOSProcess stdOut nextPutAll: 'remote squeak lock released on 100 to 120'; nextPut: Character lf; flush.
 			delay wait.
-			OSProcess thisOSProcess stdOut nextPutAll: 'remote squeak requesting lock on 108 to: 120'; nextPut: Character lf.
+			OSProcess thisOSProcess stdOut nextPutAll: 'remote squeak requesting lock on 108 to: 120'; nextPut: Character lf; flush.
 			self tryUntil: [(accessor lockFile: fileStream from: 108 to: 120) notNil].
-			OSProcess thisOSProcess stdOut nextPutAll: 'remote squeak lock acquired on 108 to: 120'; nextPut: Character lf.
+			OSProcess thisOSProcess stdOut nextPutAll: 'remote squeak lock acquired on 108 to: 120'; nextPut: Character lf; flush.
 			fileStream position: 108.
-			fileStream nextPutAll: 'A '.
-			OSProcess thisOSProcess stdOut nextPutAll: 'remote squeak releasing lock on 108 to: 120'; nextPut: Character lf.
+			fileStream nextPutAll: 'A '; flush.
+			OSProcess thisOSProcess stdOut nextPutAll: 'remote squeak releasing lock on 108 to: 120'; nextPut: Character lf; flush.
 			accessor unlockFile: fileStream from: 108 to: 120.
-			OSProcess thisOSProcess stdOut nextPutAll: 'remote squeak lock released on 108 to: 120'; nextPut: Character lf.
+			OSProcess thisOSProcess stdOut nextPutAll: 'remote squeak lock released on 108 to: 120'; nextPut: Character lf; flush.
 			delay wait.
 			self quitImage]
 		doLocal:
 			[OSProcess thisOSProcess stdOut nextPutAll: 'starting local squeak requesting lock on 104 to: 120';
 				nextPut: Character lf.
 			self assert: (self tryUntil: [(accessor lockFile: fileStream from: 104 to: 120) notNil]).
-			OSProcess thisOSProcess stdOut nextPutAll: 'local squeak lock acquired on 104 to: 120'; nextPut: Character lf.
+			OSProcess thisOSProcess stdOut nextPutAll: 'local squeak lock acquired on 104 to: 120'; nextPut: Character lf; flush.
 			fileStream position: 105.
-			fileStream nextPutAll: 'IS '.
-			OSProcess thisOSProcess stdOut nextPutAll: 'local squeak releasing lock on 104 to: 120'; nextPut: Character lf.
+			fileStream nextPutAll: 'IS '; flush.
+			OSProcess thisOSProcess stdOut nextPutAll: 'local squeak releasing lock on 104 to: 120'; nextPut: Character lf; flush.
 			accessor unlockFile: fileStream from: 104 to: 120.
-			OSProcess thisOSProcess stdOut nextPutAll: 'local squeak lock released on 104 to: 120'; nextPut: Character lf.
+			OSProcess thisOSProcess stdOut nextPutAll: 'local squeak lock released on 104 to: 120'; nextPut: Character lf; flush.
 			delay wait.
-			OSProcess thisOSProcess stdOut nextPutAll: 'local squeak requesting lock on 108 to: 120'; nextPut: Character lf.
+			OSProcess thisOSProcess stdOut nextPutAll: 'local squeak requesting lock on 108 to: 120'; nextPut: Character lf; flush.
 			self tryUntil: [(accessor lockFile: fileStream from: 108 to: 120) notNil].
-			OSProcess thisOSProcess stdOut nextPutAll: 'local squeak lock acquired on 108 to: 120'; nextPut: Character lf.
+			OSProcess thisOSProcess stdOut nextPutAll: 'local squeak lock acquired on 108 to: 120'; nextPut: Character lf; flush.
 			fileStream position: 110.
-			fileStream nextPutAll: 'TEST '.
-			OSProcess thisOSProcess stdOut nextPutAll: 'local squeak releasing lock on 108 to: 120'; nextPut: Character lf.
+			fileStream nextPutAll: 'TEST '; flush.
+			OSProcess thisOSProcess stdOut nextPutAll: 'local squeak releasing lock on 108 to: 120'; nextPut: Character lf; flush.
 			accessor unlockFile: fileStream from: 108 to: 120.
-			OSProcess thisOSProcess stdOut nextPutAll: 'local squeak lock released on 108 to: 120'; nextPut: Character lf.
+			OSProcess thisOSProcess stdOut nextPutAll: 'local squeak lock released on 108 to: 120'; nextPut: Character lf; flush.
 			delay wait].
 	self tryUntil: [(accessor lockFile: fileStream from: 100 to: 140) notNil].
 	fileStream position: 100.

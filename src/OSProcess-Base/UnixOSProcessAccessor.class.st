@@ -14,7 +14,7 @@ Class {
 	#classVars : [
 		'ThisProcessPid'
 	],
-	#category : #'OSProcess-Unix'
+	#category : 'OSProcess-Unix'
 }
 
 { #category : #'platform identification' }

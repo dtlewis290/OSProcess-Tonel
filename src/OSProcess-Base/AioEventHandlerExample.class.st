@@ -8,7 +8,7 @@ Class {
 		'handler',
 		'ioStream'
 	],
-	#category : #'OSProcess-AIO'
+	#category : 'OSProcess-AIO'
 }
 
 { #category : #examples }

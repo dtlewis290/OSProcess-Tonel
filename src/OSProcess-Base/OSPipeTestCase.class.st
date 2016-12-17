@@ -4,7 +4,7 @@ Test operation of OSPipe in blocking and nonBlocking mode.
 Class {
 	#name : #OSPipeTestCase,
 	#superclass : #TestCase,
-	#category : #'OSProcess-Tests'
+	#category : 'OSProcess-Tests'
 }
 
 { #category : #private }

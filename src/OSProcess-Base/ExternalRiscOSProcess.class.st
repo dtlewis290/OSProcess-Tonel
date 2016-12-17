@@ -9,7 +9,7 @@ Class {
 		'ppid',
 		'exitStatus'
 	],
-	#category : #'OSProcess-RiscOS'
+	#category : 'OSProcess-RiscOS'
 }
 
 { #category : #'platform identification' }

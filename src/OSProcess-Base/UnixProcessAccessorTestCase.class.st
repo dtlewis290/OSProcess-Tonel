@@ -7,7 +7,7 @@ Class {
 	#instVars : [
 		'accessor'
 	],
-	#category : #'OSProcess-Tests'
+	#category : 'OSProcess-Tests'
 }
 
 { #category : #'testing - C string arrays' }

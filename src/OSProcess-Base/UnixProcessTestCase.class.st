@@ -7,7 +7,7 @@ Class {
 	#instVars : [
 		'thisOSProcess'
 	],
-	#category : #'OSProcess-Tests'
+	#category : 'OSProcess-Tests'
 }
 
 { #category : #failures }

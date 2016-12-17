@@ -13,7 +13,7 @@ Class {
 	#classVars : [
 		'AioPluginPresent'
 	],
-	#category : #'OSProcess-AIO'
+	#category : 'OSProcess-AIO'
 }
 
 { #category : #testing }

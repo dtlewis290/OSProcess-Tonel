@@ -12,7 +12,7 @@ Class {
 		'commandLine',
 		'pwd'
 	],
-	#category : #'OSProcess-Win32'
+	#category : 'OSProcess-Win32'
 }
 
 { #category : #'instance creation' }

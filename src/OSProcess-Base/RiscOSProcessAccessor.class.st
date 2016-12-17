@@ -5,7 +5,7 @@ I provide access to the operating system process in which the Squeak VM is curre
 Class {
 	#name : #RiscOSProcessAccessor,
 	#superclass : #OSProcessAccessor,
-	#category : #'OSProcess-RiscOS'
+	#category : 'OSProcess-RiscOS'
 }
 
 { #category : #'platform identification' }

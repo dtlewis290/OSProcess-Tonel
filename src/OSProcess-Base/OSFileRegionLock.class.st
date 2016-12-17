@@ -8,7 +8,7 @@ Class {
 	#instVars : [
 		'interval'
 	],
-	#category : #'OSProcess-Base'
+	#category : 'OSProcess-Base'
 }
 
 { #category : #'instance creation' }

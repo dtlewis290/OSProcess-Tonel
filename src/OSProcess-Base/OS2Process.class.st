@@ -4,7 +4,7 @@ I represent an OS2 operating system process, such as the process in which the Sq
 Class {
 	#name : #OS2Process,
 	#superclass : #ThisOSProcess,
-	#category : #'OSProcess-OS2'
+	#category : 'OSProcess-OS2'
 }
 
 { #category : #'platform identification' }

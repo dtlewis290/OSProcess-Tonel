@@ -4,7 +4,7 @@ Test AioEventHandler and AioPlugin. Provides fair coverage of IO readable events
 Class {
 	#name : #AioEventHandlerTestCase,
 	#superclass : #TestCase,
-	#category : #'OSProcess-Tests'
+	#category : 'OSProcess-Tests'
 }
 
 { #category : #testing }

@@ -4,7 +4,7 @@ I provide access to an operating system process, such as the process in which th
 Class {
 	#name : #MacOSProcessAccessor,
 	#superclass : #OSProcessAccessor,
-	#category : #'OSProcess-Mac'
+	#category : 'OSProcess-Mac'
 }
 
 { #category : #'platform identification' }

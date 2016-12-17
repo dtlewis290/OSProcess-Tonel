@@ -12,7 +12,7 @@ Class {
 	#instVars : [
 		'intValue'
 	],
-	#category : #'OSProcess-Unix'
+	#category : 'OSProcess-Unix'
 }
 
 { #category : #'instance creation' }

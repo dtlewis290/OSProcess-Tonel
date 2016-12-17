@@ -20,7 +20,7 @@ Class {
 		'mainThread',
 		'threads'
 	],
-	#category : #'OSProcess-Win32'
+	#category : 'OSProcess-Win32'
 }
 
 { #category : #'platform identification' }

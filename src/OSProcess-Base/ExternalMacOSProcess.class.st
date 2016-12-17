@@ -8,7 +8,7 @@ Class {
 		'ppid',
 		'exitStatus'
 	],
-	#category : #'OSProcess-Mac'
+	#category : 'OSProcess-Mac'
 }
 
 { #category : #'platform identification' }

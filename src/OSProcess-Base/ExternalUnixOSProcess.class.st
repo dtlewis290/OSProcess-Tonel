@@ -12,7 +12,7 @@ Class {
 		'arguments',
 		'initialEnvironment'
 	],
-	#category : #'OSProcess-Unix'
+	#category : 'OSProcess-Unix'
 }
 
 { #category : #shells }

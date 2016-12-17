@@ -13,7 +13,7 @@ Class {
 		'arguments',
 		'environment'
 	],
-	#category : #'OSProcess-Unix'
+	#category : 'OSProcess-Unix'
 }
 
 { #category : #utility }

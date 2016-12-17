@@ -5,7 +5,7 @@ I represent an Acorn RiscOS operating system task, such as the task in which the
 Class {
 	#name : #RiscOSProcess,
 	#superclass : #ThisOSProcess,
-	#category : #'OSProcess-RiscOS'
+	#category : 'OSProcess-RiscOS'
 }
 
 { #category : #'platform identification' }

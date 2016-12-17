@@ -6,7 +6,7 @@ These tests rely on a remote Squeak image to test file locks between cooperating
 Class {
 	#name : #UnixProcessWin32FileLockingTestCase,
 	#superclass : #AbstractUnixProcessFileLockingTestCase,
-	#category : #'OSProcess-Tests'
+	#category : 'OSProcess-Tests'
 }
 
 { #category : #testing }

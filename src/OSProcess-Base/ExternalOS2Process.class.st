@@ -8,7 +8,7 @@ Class {
 		'ppid',
 		'exitStatus'
 	],
-	#category : #'OSProcess-OS2'
+	#category : 'OSProcess-OS2'
 }
 
 { #category : #'platform identification' }
