@@ -117,8 +117,10 @@ ThisOSProcess class >> shutDown: quitting [
 	instance is created and the old instance could still have an unwanted
 	dependency on an OSProcessAccessor."
 
-	quitting ifTrue: [OSProcess accessor
-				ifNotNilDo: [:acc | acc breakDependents]]
+	quitting
+		ifTrue: [OSProcess thisOSProcess
+				ifNotNilDo: [:osp | osp processAccessor
+						ifNotNilDo: [:acc | acc breakDependents]]]
 ]
 
 { #category : #'system startup' }
