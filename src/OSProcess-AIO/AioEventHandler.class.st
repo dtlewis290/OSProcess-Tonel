@@ -13,7 +13,7 @@ Class {
 	#classVars : [
 		'AioPluginPresent'
 	],
-	#category : #'OSProcess-AIO'
+	#category : 'OSProcess-AIO'
 }
 
 { #category : #testing }
@@ -28,7 +28,7 @@ AioEventHandler class >> aioPluginPresent [
 	^ AioPluginPresent
 		ifNil: [AioPluginPresent := self basicNew primAioModuleVersionString notNil.
 			AioPluginPresent ifFalse:
-				[self notify: 'AioPlugin not present, AioEventHandler will use polling input'].
+				[OSProcess trace: ' AioPlugin not present, AioEventHandler will use polling input'].
 			^ AioPluginPresent]
 ]
 

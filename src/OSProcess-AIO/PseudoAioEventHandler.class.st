@@ -7,7 +7,7 @@ Class {
 	#instVars : [
 		'eventGenerator'
 	],
-	#category : #'OSProcess-AIO'
+	#category : 'OSProcess-AIO'
 }
 
 { #category : #'initialize-release' }
