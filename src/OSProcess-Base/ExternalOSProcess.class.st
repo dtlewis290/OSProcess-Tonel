@@ -10,7 +10,7 @@ Class {
 		'initialStdOut',
 		'initialStdErr'
 	],
-	#category : 'OSProcess-Base'
+	#category : #'OSProcess-Base'
 }
 
 { #category : #'concrete subclasses' }

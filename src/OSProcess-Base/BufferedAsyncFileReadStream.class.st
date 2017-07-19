@@ -14,7 +14,7 @@ Class {
 		'readSyncSemaphore',
 		'dataAvailableSemaphore'
 	],
-	#category : 'OSProcess-Base'
+	#category : #'OSProcess-Base'
 }
 
 { #category : #examples }
@@ -170,14 +170,21 @@ BufferedAsyncFileReadStream >> moveAvailableDataFrom: sqFile [
 			^(Delay forSeconds: 2) wait].
 	bufferSize := self readAheadChunkSize.
 	buffer := String new: bufferSize.
-	count := self readAvailableDataFrom: sqFile into: buffer.
-	count > 0
+	[count := self primRead: sqFile
+				into: buffer
+				startingAt: 1
+				count: bufferSize]
+		on: Error	"Could fail if closed"
+		do: [count := 0].
+	(count notNil and: [count > 0])
 		ifTrue:
 			[count == bufferSize
 				ifTrue:
 					[self appendAllToBuffer: buffer]
 				ifFalse:
-					[self appendAllToBuffer: (buffer copyFrom: 1 to: count)]]
+					[count > 0
+						ifTrue:
+							[self appendAllToBuffer: (buffer copyFrom: 1 to: count)]]]
 		ifFalse:
 			[(self closed or: [OSProcess accessor isAtEndOfFile: self ioHandle])
 				ifTrue:
@@ -256,27 +263,6 @@ BufferedAsyncFileReadStream >> readAheadChunkSize [
 	behavior."
 
 	^ 1000
-]
-
-{ #category : #'read ahead buffer' }
-BufferedAsyncFileReadStream >> readAvailableDataFrom: sqFile into: buffer [
-	"Some implementations of the read primitive may read character by character
-	from standard input. Handle that case by looping while data available. Answer
-	the number of bytes read into the buffer."
-
-	| bytesRead |
-	bytesRead := 0.
-	[ | count |
-		[count := self primRead: sqFile
-				into: buffer
-				startingAt: 1 + bytesRead
-				count: self readAheadChunkSize - bytesRead]
-			on: Error	"Could fail if closed"
-			do: [count := 0].
-	bytesRead := bytesRead + count.
-	count > 0] whileTrue.
-	^ bytesRead.
-
 ]
 
 { #category : #accessing }

@@ -11,7 +11,7 @@ Class {
 	#classVars : [
 		'UseIOHandle'
 	],
-	#category : 'OSProcess-Base'
+	#category : #'OSProcess-Base'
 }
 
 { #category : #'external process access' }
@@ -280,21 +280,6 @@ OSProcess class >> isPharo3AndLater [
 		at: #SystemVersion
 		ifPresent: [:cls | ((cls canUnderstand: #type) and: [ cls canUnderstand: #major ])
 			ifTrue: [^ cls current type = 'Pharo' and: [ cls current major >= 3 ]]].
-	^false
-
-]
-
-{ #category : #'version dependent' }
-OSProcess class >> isPharo5Update50558AndLater [
-	"True if this image is a pharo of major version 5 at upldate 50558 or greater"
-	
-	"OSProcess isPharo5Update50558AndLater"
-
-	Smalltalk
-		at: #SystemVersion
-		ifPresent: [:cls | ((cls canUnderstand: #type) and: [ cls canUnderstand: #major ])
-			ifTrue: [ ^ (cls current type = 'Pharo' and: [ cls current major >= 5 ])
-						and: [ cls current  highestUpdate >= 50558]]].
 	^false
 
 ]
@@ -656,7 +641,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.6.8'
+	^'4.6.4'
 ]
 
 { #category : #'version dependent' }

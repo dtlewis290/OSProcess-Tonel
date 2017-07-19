@@ -9,7 +9,7 @@ Class {
 	#instVars : [
 		'nextChar'
 	],
-	#category : 'OSProcess-Base'
+	#category : #'OSProcess-Base'
 }
 
 { #category : #accessing }

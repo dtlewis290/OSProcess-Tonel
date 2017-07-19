@@ -20,7 +20,7 @@ Class {
 		'ThisOSProcessAccessor',
 		'UseIOHandle'
 	],
-	#category : 'OSProcess-Base'
+	#category : #'OSProcess-Base'
 }
 
 { #category : #'concrete subclasses' }
@@ -354,9 +354,11 @@ OSProcessAccessor >> makePipeHandles [
 
 	"OSProcess accessor makePipeHandles"
 
-	^self primCreatePipe
-		ifNotNilDo: [:p | ^ p collect: [:e | self ioAccessorFromSQFile: e]]
-
+	| p |
+	p := self primCreatePipe.
+	p isNil
+		ifFalse: [ ^ p collect: [ :e | self ioAccessorFromSQFile: e ] ].
+	^ nil
 ]
 
 { #category : #'initialize - release' }
