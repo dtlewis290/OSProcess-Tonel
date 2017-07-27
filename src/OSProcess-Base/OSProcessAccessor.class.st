@@ -367,7 +367,9 @@ OSProcessAccessor >> newPid [
 	of child processes, and remove references to child processes that no longer pertain to
 	the current VM process."
 
-	grimReaper ifNotNilDo: [ :p | p terminate. grimReaper := nil ].
+	grimReaper notNil
+		ifTrue: [ grimReaper terminate.
+			grimReaper := nil ].
 	self changed: #pid.
 	self restartChildWatcherProcess
 ]

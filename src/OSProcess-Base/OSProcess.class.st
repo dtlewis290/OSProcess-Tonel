@@ -155,20 +155,17 @@ OSProcess class >> deleteFileNamed: fileName [
 	"Delete the file with the given name."
 
 	self useFileSystem
-		ifTrue: [ | file |
+		ifTrue: [ | file sel |
 			file := fileName perform: #asFileReference.
-			( {	#ensureDelete "preferred selector" .
-				#ensureDeleted "pharo 2, now deprecated in favor of ensureDelete" .
-				#delete "fallback (earlier pharo versions?)" }
-					detect: [ :e | file respondsTo: e ]
-					ifNone: [ self error: 'do not know how to ensureDelete' ] )
-				ifNotNilDo: [ :sel | file perform: sel ].
+			(sel := {#ensureDelete . #ensureDeleted . #delete}
+				detect: [ :e | file respondsTo: e ]
+				ifNone: [ self error: 'do not know how to ensureDelete' ]) notNil
+				ifTrue: [ file perform: sel ].
 			(file respondsTo: #ensureDelete)
 				ifTrue: [ file perform: #ensureDelete ]
 				ifFalse: [ file perform: #ensureDeleted ] ]
-		ifFalse: [ (Smalltalk at: #FileDirectory) default
-				deleteFileNamed: fileName ]
-
+		ifFalse:
+			[ (Smalltalk at: #FileDirectory) default deleteFileNamed: fileName ]
 ]
 
 { #category : #'version dependent' }
@@ -280,6 +277,21 @@ OSProcess class >> isPharo3AndLater [
 		at: #SystemVersion
 		ifPresent: [:cls | ((cls canUnderstand: #type) and: [ cls canUnderstand: #major ])
 			ifTrue: [^ cls current type = 'Pharo' and: [ cls current major >= 3 ]]].
+	^false
+
+]
+
+{ #category : #'version dependent' }
+OSProcess class >> isPharo5Update50558AndLater [
+	"True if this image is a pharo of major version 5 at upldate 50558 or greater"
+	
+	"OSProcess isPharo5Update50558AndLater"
+
+	Smalltalk
+		at: #SystemVersion
+		ifPresent: [:cls | ((cls canUnderstand: #type) and: [ cls canUnderstand: #major ])
+			ifTrue: [ ^ (cls current type = 'Pharo' and: [ cls current major >= 5 ])
+						and: [ cls current  highestUpdate >= 50558]]].
 	^false
 
 ]
@@ -641,7 +653,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.6.4'
+	^'4.6.9'
 ]
 
 { #category : #'version dependent' }

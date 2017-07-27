@@ -50,16 +50,20 @@ ThisOSProcess class >> concreteClassOrNil [
 
 { #category : #'initialize-release' }
 ThisOSProcess class >> initialize [
-
 	"ThisOSProcess initialize"
 
-	OSProcess initialize. "required to ensure the change sets file in smoothly"
+	OSProcess initialize.	"required to ensure the change sets file in smoothly"
 	AttachableFileStream initialize.
 	OSProcessAccessor initialize.
-	ChildListSize := 20. "list will be pruned to this size, except for any children still running"
+	ChildListSize := 20.	"list will be pruned to this size, except for any children still running"
 	self initializeThisOSProcess.
-	Smalltalk addToStartUpList: ThisOSProcess.
-	Smalltalk addToShutDownList: ThisOSProcess
+	self isPharo5Update50558AndLater
+		ifFalse: [ Smalltalk addToStartUpList: ThisOSProcess.
+			Smalltalk addToShutDownList: ThisOSProcess ]
+		ifTrue:
+			[ (Smalltalk at: #SessionManager) default
+				perform: #registerToolClassNamed:
+				with: ThisOSProcess name ]
 
 ]
 
@@ -114,10 +118,11 @@ ThisOSProcess class >> shutDown: quitting [
 	dependency on an OSProcessAccessor."
 
 	quitting
-		ifTrue: [ | acc |
-			acc := OSProcess accessor.
-			acc isNil
-				ifFalse: [ acc breakDependents ] ]
+		ifTrue: [ | osp |
+			(osp := OSProcess thisOSProcess) notNil
+				ifTrue: [ | acc |
+					(acc := osp processAccessor) notNil
+						ifTrue: [ acc breakDependents ] ] ]
 ]
 
 { #category : #'system startup' }
