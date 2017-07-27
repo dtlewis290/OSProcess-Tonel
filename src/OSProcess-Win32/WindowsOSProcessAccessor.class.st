@@ -689,8 +689,9 @@ WindowsOSProcessAccessor >> primTestEndOfFileFlag: aSqFileStruct [
 
 { #category : #'child process management' }
 WindowsOSProcessAccessor >> restartChildWatcherProcess [
-
-	grimReaper ifNotNilDo: [ :p | p terminate. grimReaper := nil ].
+	grimReaper notNil
+		ifTrue: [ grimReaper terminate.
+			grimReaper := nil ].
 	self grimReaperProcess
 ]
 

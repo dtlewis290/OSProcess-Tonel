@@ -241,7 +241,7 @@ ExternalWindowsOSProcess >> value [
 		[procInfo := OSProcess accessor primCommand: self commandLine.
 		procInfo isNil
 			ifTrue:
-				[self initialStdErr ifNotNilDo: [ :err |
+				[ | err | (err := self initialStdErr) notNil ifTrue: [
 					err nextPutAll: 'cannot execute ', self commandLine; cr ].
 				self exitStatus: #cannotExecuteCommandLine.
 				"FIXME: Close the OSPipes now, otherwise the image will block on a read"
