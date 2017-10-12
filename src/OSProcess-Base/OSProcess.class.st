@@ -11,7 +11,7 @@ Class {
 	#classVars : [
 		'UseIOHandle'
 	],
-	#category : #'OSProcess-Base'
+	#category : 'OSProcess-Base'
 }
 
 { #category : #'external process access' }

@@ -20,7 +20,7 @@ Class {
 		'ThisOSProcessAccessor',
 		'UseIOHandle'
 	],
-	#category : #'OSProcess-Base'
+	#category : 'OSProcess-Base'
 }
 
 { #category : #'concrete subclasses' }
