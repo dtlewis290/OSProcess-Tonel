@@ -7,7 +7,7 @@ Class {
 	#instVars : [
 		'thisOSProcess'
 	],
-	#category : 'OSProcess-Tests'
+	#category : #'OSProcess-Tests'
 }
 
 { #category : #failures }
@@ -57,9 +57,12 @@ UnixProcessTestCase >> numberOfOpenFiles [
 
 	| path |
 	path := '/proc/' , OSProcess thisOSProcess pid printString, '/fd'.
-	^ (OSProcess directoryExists: path)
-		ifTrue: [(OSProcess directoryEntryNames: path) size]
-		ifFalse: [0]
+	(OSProcess directoryExists: path) ifFalse: [ ^ 0].
+	^ OSProcess useFileMan
+		ifTrue: [((Smalltalk at: #DirectoryEntry) pathName: path) children size]
+		ifFalse: [OSProcess useFileSystem
+			ifTrue: [ (path perform: #asFileReference) children size ]
+			ifFalse: [ ((Smalltalk at: #FileDirectory) on: path) entries size ]]
 
 ]
 
@@ -147,10 +150,10 @@ UnixProcessTestCase >> testCatFromFileToFiles [
 	self should: [p initialStdIn closed].
 	self should: [p initialStdOut closed].
 	self should: [p initialStdErr closed].
-	f := FileStream oldFileNamed: '/tmp/deleteMe.out'.
+	f := OSProcess oldFileNamed: '/tmp/deleteMe.out'.
 	self shouldnt: [f upToEnd isEmpty].
 	f close.
-	f := FileStream oldFileNamed: '/tmp/deleteMe.err'.
+	f := OSProcess oldFileNamed: '/tmp/deleteMe.err'.
 	self should: [f upToEnd isEmpty].
 	f close.
 	self assert: self numberOfOpenFiles == openFileCount
@@ -476,10 +479,10 @@ UnixProcessTestCase >> testRunCommand [
 	"but the output and error streams should have been closed."
 	self should: [p initialStdOut closed].
 	self should: [p initialStdErr closed].
-	f := FileStream oldFileNamed: '/tmp/deleteMe.out'.
+	f := OSProcess oldFileNamed: '/tmp/deleteMe.out'.
 	self shouldnt: [f upToEnd isEmpty].
 	f close.
-	f := FileStream oldFileNamed: '/tmp/deleteMe.err'.
+	f := OSProcess oldFileNamed: '/tmp/deleteMe.err'.
 	self shouldnt: [f upToEnd isEmpty].
 	f close.
 	self assert: self numberOfOpenFiles == openFileCount

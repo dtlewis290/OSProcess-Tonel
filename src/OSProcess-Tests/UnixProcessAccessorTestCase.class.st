@@ -7,7 +7,7 @@ Class {
 	#instVars : [
 		'accessor'
 	],
-	#category : 'OSProcess-Tests'
+	#category : #'OSProcess-Tests'
 }
 
 { #category : #'testing - C string arrays' }
@@ -210,8 +210,8 @@ UnixProcessAccessorTestCase >> testDupTo [
 	| f1 f2 fd1 fd2 result contents1 contents2 |
 	OSProcess deleteFileNamed: '/tmp/delete-1.me'.	
 	OSProcess deleteFileNamed: '/tmp/delete-2.me'.	
-	f1 := FileStream newFileNamed: '/tmp/delete-1.me'.
-	f2 := FileStream newFileNamed: '/tmp/delete-2.me'.
+	f1 := OSProcess newFileNamed: '/tmp/delete-1.me'.
+	f2 := OSProcess newFileNamed: '/tmp/delete-2.me'.
 	fd1 := OSProcess accessor primUnixFileNumber: f1 fileID.
 	fd2 := OSProcess accessor primUnixFileNumber: f2 fileID.
 	result := OSProcess accessor primDup: fd1 to: fd2.
@@ -229,9 +229,9 @@ UnixProcessAccessorTestCase >> testDupTo [
 	f1 close.
 	f2 close.
 	"check the contents of the actual files"
-	contents1 := (FileStream fileNamed: '/tmp/delete-1.me') contentsOfEntireFile.
+	contents1 := (OSProcess fileNamed: '/tmp/delete-1.me') contentsOfEntireFile.
 	self assert: ('write something*' match: contents1).
-	contents2 := (FileStream fileNamed: '/tmp/delete-2.me') contentsOfEntireFile.
+	contents2 := (OSProcess fileNamed: '/tmp/delete-2.me') contentsOfEntireFile.
 	self assert: contents2 isEmpty.
 	OSProcess deleteFileNamed: '/tmp/delete-1.me'.	
 	OSProcess deleteFileNamed: '/tmp/delete-2.me'.	
@@ -472,7 +472,7 @@ UnixProcessAccessorTestCase >> testIsLockableFile [
 	"(UnixProcessAccessorTestCase selector: #testIsLockableFile) debug"
 
 	| fs result |
-	fs := FileStream fileNamed: 'junkfile'.
+	fs := OSProcess fileNamed: 'junkfile'.
 	[fs nextPutAll: 'ABCDEFG'.
 
 	result := OSProcess accessor isLockableFile: fs.
@@ -578,7 +578,7 @@ UnixProcessAccessorTestCase >> testLockFile [
 	"(UnixProcessAccessorTestCase selector: #testLockFile) debug"
 
 	| fs result |
-	fs := FileStream fileNamed: 'junkfile'.
+	fs := OSProcess fileNamed: 'junkfile'.
 	[fs nextPutAll: 'ABCDEFG'.
 	result := OSProcess accessor lockFile: fs.
 	self should: (result isKindOf: OSFileLock).
@@ -607,7 +607,7 @@ UnixProcessAccessorTestCase >> testOSFileLockLock [
 	"(UnixProcessAccessorTestCase selector: #testOSFileLockLock) debug"
 
 	| fs fileLock result |
-	fs := FileStream fileNamed: 'junkfile'.
+	fs := OSProcess fileNamed: 'junkfile'.
 	[fs nextPutAll: 'ABCDEFG'.
 	fileLock := OSFileLock onFile: fs exclusive: true.
 	result := fileLock lock.
@@ -627,7 +627,7 @@ UnixProcessAccessorTestCase >> testOSFileLockTest [
 	"(UnixProcessAccessorTestCase selector: #testOSFileLockTest) debug"
 
 	| fs fileLock result |
-	fs := FileStream fileNamed: 'junkfile'.
+	fs := OSProcess fileNamed: 'junkfile'.
 	[fs nextPutAll: 'ABCDEFG'.
 	fileLock := OSFileLock onFile: fs exclusive: true.
 	result := fileLock test.
@@ -653,7 +653,7 @@ UnixProcessAccessorTestCase >> testOSFileLockUnlock [
 	"(UnixProcessAccessorTestCase selector: #testOSFileLockUnlock) debug"
 
 	| fs fileLock result |
-	fs := FileStream fileNamed: 'junkfile'.
+	fs := OSProcess fileNamed: 'junkfile'.
 	[fs nextPutAll: 'ABCDEFG'.
 	fileLock := OSFileLock onFile: fs exclusive: true.
 	result := fileLock unlock.
@@ -675,7 +675,7 @@ UnixProcessAccessorTestCase >> testOSFileRegionLockLock [
 	"(UnixProcessAccessorTestCase selector: #testOSFileRegionLockLock) debug"
 
 	| fs fileLock result |
-	fs := FileStream fileNamed: 'junkfile'.
+	fs := OSProcess fileNamed: 'junkfile'.
 	[fs nextPutAll: 'ABCDEFG'.
 	fileLock := OSFileRegionLock onFile: fs from: 2 to: 4 exclusive: true.
 	result := fileLock lock.
@@ -695,7 +695,7 @@ UnixProcessAccessorTestCase >> testOSFileRegionLockTest [
 	"(UnixProcessAccessorTestCase selector: #testOSFileRegionLockTest) debug"
 
 	| fs fileLock result |
-	fs := FileStream fileNamed: 'junkfile'.
+	fs := OSProcess fileNamed: 'junkfile'.
 	[fs nextPutAll: 'ABCDEFG'.
 	fileLock := OSFileRegionLock onFile: fs from: 2 to: 4 exclusive: true.
 	result := fileLock test.
@@ -721,7 +721,7 @@ UnixProcessAccessorTestCase >> testOSFileRegionLockUnlock [
 	"(UnixProcessAccessorTestCase selector: #testOSFileRegionLockUnlock) debug"
 
 	| fs fileLock result |
-	fs := FileStream fileNamed: 'junkfile'.
+	fs := OSProcess fileNamed: 'junkfile'.
 	[fs nextPutAll: 'ABCDEFG'.
 	fileLock := OSFileRegionLock onFile: fs from: 2 to: 4 exclusive: true.
 	result := fileLock unlock.
@@ -933,14 +933,14 @@ UnixProcessAccessorTestCase >> testRedirectStdOutTo [
 	out := OSProcess thisOSProcess stdOut.
 	"save file number to allow cleanup at end of test"
 	OSProcess deleteFileNamed: '/tmp/delete.2.me'.	
-	saveFs := FileStream newFileNamed: '/tmp/delete.2.me'.
+	saveFs := OSProcess newFileNamed: '/tmp/delete.2.me'.
 	outFd := OSProcess accessor primUnixFileNumber: out fileID.
 	saveFd := OSProcess accessor primUnixFileNumber: saveFs fileID.
 	OSProcess accessor primDup: outFd to: saveFd.
 	"Original stdout file descriptor is saved as safeFd, to be restored at end of test"
 
 	OSProcess deleteFileNamed: '/tmp/delete.me'.	
-	aFileStream := FileStream newFileNamed: '/tmp/delete.me'.
+	aFileStream := OSProcess newFileNamed: '/tmp/delete.me'.
 	"nb - #contentsOfEntireFile closes the file, do not use"
 	aFileStream reset.
 	self assert: aFileStream upToEnd isEmpty.
@@ -1048,7 +1048,7 @@ UnixProcessAccessorTestCase >> testUnixFileNumber [
 	inHandle := in fileID.
 	inFileNo := OSProcess accessor unixFileNumber: inHandle.
 	self assert: inFileNo == 0.
-	aFileStream := FileStream fileNamed: '/tmp/delete.me'.
+	aFileStream := OSProcess fileNamed: '/tmp/delete.me'.
 	fHandle := aFileStream fileID.
 	fFileNo := OSProcess accessor unixFileNumber: fHandle.
 	self assert: fFileNo notNil.
@@ -1066,7 +1066,7 @@ UnixProcessAccessorTestCase >> testUnlockFileUnixCompatible [
 	| mode fs result |
 	mode := OSProcess accessor emulateWin32FileLocking. "remember setting"
 
-	fs := FileStream fileNamed: 'junkfile'.
+	fs := OSProcess fileNamed: 'junkfile'.
 	[OSProcessAccessor emulateWin32FileLocking: false. "unix mode"
 	fs nextPutAll: 'ABCDEFG'.
 	result := OSProcess accessor unlockFile: fs.
@@ -1095,7 +1095,7 @@ UnixProcessAccessorTestCase >> testUnlockFileWin32Compatible [
 	| mode fs result |
 	mode := OSProcess accessor emulateWin32FileLocking. "remember setting"
 
-	fs := FileStream fileNamed: 'junkfile'.
+	fs := OSProcess fileNamed: 'junkfile'.
 	[OSProcessAccessor emulateWin32FileLocking: true. "win32 mode"
 	fs nextPutAll: 'ABCDEFG'.
 	result := OSProcess accessor unlockFile: fs.

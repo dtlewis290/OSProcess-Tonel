@@ -7,7 +7,7 @@ Class {
 	#instVars : [
 		'fileStream'
 	],
-	#category : 'OSProcess-Tests'
+	#category : #'OSProcess-Tests'
 }
 
 { #category : #asserting }
@@ -48,8 +48,8 @@ UnixProcessFileLockTestCase >> regionSharedLock [
 
 { #category : #running }
 UnixProcessFileLockTestCase >> setUp [
-	FileDirectory default deleteFileNamed: 'junkfile'.
-	fileStream := FileStream fileNamed: 'junkfile'.
+	OSProcess deleteFileNamed: 'junkfile'.
+	fileStream := OSProcess fileNamed: 'junkfile'.
 ]
 
 { #category : #running }

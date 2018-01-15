@@ -13,7 +13,7 @@ Class {
 		'remoteProcess',
 		'initialCompatibilitySetting'
 	],
-	#category : 'OSProcess-Tests'
+	#category : #'OSProcess-Tests'
 }
 
 { #category : #testing }
@@ -128,8 +128,8 @@ AbstractUnixProcessFileLockingTestCase >> setUp [
 		ifTrue: [self perform: #timeout: with: 30].
 	delay := Delay forMilliseconds: 150.
 	accessor := ThisOSProcess accessor.
-	FileDirectory default deleteFileNamed: 'junkfile'.
-	fileStream := FileStream fileNamed: 'junkfile'.
+	OSProcess deleteFileNamed: 'junkfile'.
+	fileStream := OSProcess fileNamed: 'junkfile'.
 	1000 timesRepeat: (fileStream nextPutAll: 'hello world ').
 
 ]
@@ -1018,7 +1018,7 @@ AbstractUnixProcessFileLockingTestCase >> testWin32LockEmulation03 [
 	result := accessor lockFile: fileStream from: 100 to: 199 exclusive: true.
 	self assert: (result isKindOf: OSFileRegionLock).
 	self assert: (result interval = (100 to: 199)).
-	stream2 := FileStream fileNamed: 'junkfile'.
+	stream2 := OSProcess fileNamed: 'junkfile'.
 	[result := accessor lockFile: stream2 from: 100 to: 199 exclusive: true.
 	self assert: result isNil]
 		ensure: [stream2 close].
@@ -1037,7 +1037,7 @@ AbstractUnixProcessFileLockingTestCase >> testWin32LockEmulation04 [
 
 	| result stream2 |
 	accessor class emulateWin32FileLocking: true.
-	stream2 := FileStream fileNamed: 'junkfile'.
+	stream2 := OSProcess fileNamed: 'junkfile'.
 	[result := accessor lockFile: stream2 from: 100 to: 199 exclusive: true.
 	self assert: (result isKindOf: OSFileRegionLock).
 	self assert: (result interval = (100 to: 199))]
