@@ -107,8 +107,8 @@ UnixProcess class >> catFromFileToFiles [
 
 	| in out err proc |
 	in := FileStream readOnlyFileNamed: '/etc/hosts'.
-	out := FileStream newFileNamed: '/tmp/deleteMe.out'.
-	err := FileStream newFileNamed: '/tmp/deleteMe.err'.
+	out := OSProcess newFileNamed: '/tmp/deleteMe.out'.
+	err := OSProcess newFileNamed: '/tmp/deleteMe.err'.
 	proc := UnixProcess
 				forkJob: '/bin/cat'
 				arguments: nil
@@ -947,8 +947,8 @@ UnixProcess class >> testRunCommand [
 	"UnixProcess testRunCommand"
 
 	| out err desc args proc |
-	out := FileStream newFileNamed: '/tmp/deleteMe.out'.
-	err := FileStream newFileNamed: '/tmp/deleteMe.err'.
+	out := OSProcess newFileNamed: '/tmp/deleteMe.out'.
+	err := OSProcess newFileNamed: '/tmp/deleteMe.err'.
 	desc := Array
 				with: nil
 				with: out
