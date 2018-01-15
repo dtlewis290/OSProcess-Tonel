@@ -11,7 +11,7 @@ Class {
 	#classVars : [
 		'UseIOHandle'
 	],
-	#category : 'OSProcess-Base'
+	#category : #'OSProcess-Base'
 }
 
 { #category : #'external process access' }
@@ -40,7 +40,7 @@ OSProcess class >> allTestResults [
 	resultsFileName := 'OSProcessTestResults-' , OSProcess platformName , '-' ,
 		(wordSize * 8) asString , 'bitImage-' ,
 		(OSProcess accessor sizeOfPointer * 8) asString , 'bitHw.txt'.
-	[fs := FileStream newFileNamed: resultsFileName.
+	[fs := self newFileNamed: resultsFileName.
 	problems := false.
 	writeStream := WriteStream on: String new.
 	writeStream nextPutAll: self authorInitials , ' running OSProcess unit tests ' , DateAndTime now asString; cr.
@@ -144,37 +144,32 @@ OSProcess class >> debugMessage: aString [
 { #category : #'version dependent' }
 OSProcess class >> defaultPathString [
 
-	^ self useFileSystem
-		ifTrue: [(((Smalltalk at: #Path) perform: #workingDirectory) perform: #asFileReference) pathString]
-		ifFalse: [(Smalltalk at: #FileDirectory) default pathName]
+	^ self useFileMan
+		ifTrue: [((Smalltalk at: #DirectoryEntry) perform: #currentDirectory) printString]
+		ifFalse: [self useFileSystem
+			ifTrue: [(((Smalltalk at: #Path) perform: #workingDirectory) perform: #asFileReference) pathString]
+			ifFalse: [(Smalltalk at: #FileDirectory) default pathName]]
 
 ]
 
 { #category : #'version dependent' }
 OSProcess class >> deleteFileNamed: fileName [
 	"Delete the file with the given name."
-
-	self useFileSystem
-		ifTrue: [ | file sel |
-			file := fileName perform: #asFileReference.
-			(sel := {#ensureDelete . #ensureDeleted . #delete}
-				detect: [ :e | file respondsTo: e ]
-				ifNone: [ self error: 'do not know how to ensureDelete' ]) notNil
-				ifTrue: [ file perform: sel ].
-			(file respondsTo: #ensureDelete)
-				ifTrue: [ file perform: #ensureDelete ]
-				ifFalse: [ file perform: #ensureDeleted ] ]
-		ifFalse:
-			[ (Smalltalk at: #FileDirectory) default deleteFileNamed: fileName ]
-]
-
-{ #category : #'version dependent' }
-OSProcess class >> directoryEntryNames: path [
-
-	^ self useFileSystem
-		ifTrue: [ (path perform: #asFileReference) children collect: [:e | e perform: #basename] ]
-		ifFalse: [ ((Smalltalk at: #FileDirectory) on: path) entries collect: [:e | e name] ]
-
+	
+	self useFileMan
+		ifTrue: [((Smalltalk at: #FileEntry) pathName: fileName) delete]
+		ifFalse: [self useFileSystem
+			ifTrue: [ | file sel |
+				file := fileName perform: #asFileReference.
+				(sel := {#ensureDelete . #ensureDeleted . #delete}
+					detect: [ :e | file respondsTo: e ]
+					ifNone: [ self error: 'do not know how to ensureDelete' ]) notNil
+						ifTrue: [ file perform: sel ].
+				(file respondsTo: #ensureDelete)
+					ifTrue: [ file perform: #ensureDelete ]
+					ifFalse: [ file perform: #ensureDeleted ] ]
+			ifFalse:
+				[ (Smalltalk at: #FileDirectory) default deleteFileNamed: fileName ] ]
 ]
 
 { #category : #'version dependent' }
@@ -182,9 +177,11 @@ OSProcess class >> directoryExists: path [
 	"Answer true if a directory of the given name exists. The given name may
 	be either a full path name or a local directory within this directory."
 
-	^ self useFileSystem
-		ifTrue: [ (path perform: #asFileReference) exists ]
-		ifFalse: [ (Smalltalk at: #FileDirectory) default directoryExists: path ]
+	^ self useFileMan
+		ifTrue: [((Smalltalk at: #DirectoryEntry) pathName: path) exists]
+		ifFalse: [self useFileSystem
+			ifTrue: [ (path perform: #asFileReference) exists ]
+			ifFalse: [ (Smalltalk at: #FileDirectory) default directoryExists: path ]]
 
 ]
 
@@ -193,9 +190,21 @@ OSProcess class >> fileExists: path [
 	"Answer true if a file of the given name exists. The given name may be
 	either a full path name or a local file within this directory."
 
-	^ self useFileSystem
-		ifTrue: [ (path perform: #asFileReference) exists ]
-		ifFalse: [ (Smalltalk at: #FileDirectory) default fileExists: path ]
+	^ self useFileMan
+		ifTrue: [((Smalltalk at: #FileEntry) pathName: path) exists]
+		ifFalse: [self useFileSystem
+			ifTrue: [ (path perform: #asFileReference) exists ]
+			ifFalse: [ (Smalltalk at: #FileDirectory) default fileExists: path ]]
+
+]
+
+{ #category : #'version dependent' }
+OSProcess class >> fileNamed: path [
+	^ self useFileMan
+		ifTrue: [ | entry |
+			entry := (FileEntry pathName: path) assureExistence.
+			entry fileAccessor privateWriteableFile: entry]
+		ifFalse: [ FileStream fileNamed: path ]
 
 ]
 
@@ -386,10 +395,28 @@ OSProcess class >> makeVmIn: buildDirectoryPathName [
 
 ]
 
+{ #category : #'version dependent' }
+OSProcess class >> newFileNamed: path [
+	^ self useFileMan
+		ifTrue: [ (FileEntry pathName: path) writeStream ]
+		ifFalse: [ FileStream fileNamed: path ]
+
+]
+
 { #category : #private }
 OSProcess class >> noAccessorAvailable [
 
 	self notify: 'process accessor module not available'
+]
+
+{ #category : #'version dependent' }
+OSProcess class >> oldFileNamed: path [
+	^ self useFileMan
+		ifTrue: [ | entry |
+			entry := FileEntry pathName: path.
+			entry fileAccessor privateWriteableFile: entry]
+		ifFalse: [ FileStream fileNamed: path ]
+
 ]
 
 { #category : #'version dependent' }
@@ -413,9 +440,11 @@ OSProcess class >> osVersion [
 { #category : #'version dependent' }
 OSProcess class >> pathSeparator [
 
-	^ self useFileSystem
-		ifTrue: [((Smalltalk at: #DiskStore) current perform: #delimiter) asString]
-		ifFalse: [(Smalltalk at: #FileDirectory) slash]
+	^ self useFileMan
+		ifTrue: [(Smalltalk at: #FileIOAccessor) default slash]
+		ifFalse: [self useFileSystem
+			ifTrue: [((Smalltalk at: #DiskStore) current perform: #delimiter) asString]
+			ifFalse: [(Smalltalk at: #FileDirectory) slash]]
 
 ]
 
@@ -615,6 +644,14 @@ OSProcess class >> trace: debugMessageString [
 ]
 
 { #category : #'version dependent' }
+OSProcess class >> useFileMan [
+	"If true use FileMan for directory and file access. See senders for methods with file
+	system dependencies."
+
+	^ Smalltalk hasClassNamed: #FileIOAccessor
+]
+
+{ #category : #'version dependent' }
 OSProcess class >> useFileSystem [
 	"If true use FileSystem, otherwise use traditional FileDirectory. See senders
 	for methods with file system dependencies."
@@ -653,7 +690,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.6.9'
+	^'4.6.10'
 ]
 
 { #category : #'version dependent' }

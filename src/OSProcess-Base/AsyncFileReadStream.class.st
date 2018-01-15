@@ -9,7 +9,7 @@ Class {
 	#instVars : [
 		'eventHandler'
 	],
-	#category : 'OSProcess-Base'
+	#category : #'OSProcess-Base'
 }
 
 { #category : #examples }

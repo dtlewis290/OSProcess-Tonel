@@ -11,7 +11,7 @@ Class {
 		'reader',
 		'blocking'
 	],
-	#category : 'OSProcess-Base'
+	#category : #'OSProcess-Base'
 }
 
 { #category : #'instance creation' }

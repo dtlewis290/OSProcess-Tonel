@@ -14,7 +14,7 @@ Class {
 		'readSyncSemaphore',
 		'dataAvailableSemaphore'
 	],
-	#category : 'OSProcess-Base'
+	#category : #'OSProcess-Base'
 }
 
 { #category : #examples }

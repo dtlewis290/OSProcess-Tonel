@@ -10,7 +10,7 @@ Class {
 	#classVars : [
 		'UseIOHandle'
 	],
-	#category : 'OSProcess-Base'
+	#category : #'OSProcess-Base'
 }
 
 { #category : #'file creation' }

@@ -9,7 +9,7 @@ Class {
 		'fileStream',
 		'exclusive'
 	],
-	#category : 'OSProcess-Base'
+	#category : #'OSProcess-Base'
 }
 
 { #category : #'instance creation' }
