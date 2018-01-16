@@ -141,7 +141,7 @@ OSProcess class >> debugMessage: aString [
 			do: []
 ]
 
-{ #category : #'version dependent' }
+{ #category : #compatibility }
 OSProcess class >> defaultPathString [
 
 	^ self useFileMan
@@ -152,7 +152,7 @@ OSProcess class >> defaultPathString [
 
 ]
 
-{ #category : #'version dependent' }
+{ #category : #compatibility }
 OSProcess class >> deleteFileNamed: fileName [
 	"Delete the file with the given name."
 	
@@ -172,7 +172,7 @@ OSProcess class >> deleteFileNamed: fileName [
 				[ (Smalltalk at: #FileDirectory) default deleteFileNamed: fileName ] ]
 ]
 
-{ #category : #'version dependent' }
+{ #category : #compatibility }
 OSProcess class >> directoryExists: path [
 	"Answer true if a directory of the given name exists. The given name may
 	be either a full path name or a local directory within this directory."
@@ -185,7 +185,7 @@ OSProcess class >> directoryExists: path [
 
 ]
 
-{ #category : #'version dependent' }
+{ #category : #compatibility }
 OSProcess class >> fileExists: path [
 	"Answer true if a file of the given name exists. The given name may be
 	either a full path name or a local file within this directory."
@@ -198,11 +198,11 @@ OSProcess class >> fileExists: path [
 
 ]
 
-{ #category : #'version dependent' }
+{ #category : #compatibility }
 OSProcess class >> fileNamed: path [
 	^ self useFileMan
 		ifTrue: [ | entry |
-			entry := (FileEntry pathName: path) assureExistence.
+			entry := ((Smalltalk at: #FileEntry) pathName: path) assureExistence.
 			entry fileAccessor privateWriteableFile: entry]
 		ifFalse: [ FileStream fileNamed: path ]
 
@@ -395,10 +395,10 @@ OSProcess class >> makeVmIn: buildDirectoryPathName [
 
 ]
 
-{ #category : #'version dependent' }
+{ #category : #compatibility }
 OSProcess class >> newFileNamed: path [
 	^ self useFileMan
-		ifTrue: [ (FileEntry pathName: path) writeStream ]
+		ifTrue: [ ((Smalltalk at: #FileEntry) pathName: path) writeStream ]
 		ifFalse: [ FileStream fileNamed: path ]
 
 ]
@@ -409,11 +409,11 @@ OSProcess class >> noAccessorAvailable [
 	self notify: 'process accessor module not available'
 ]
 
-{ #category : #'version dependent' }
+{ #category : #compatibility }
 OSProcess class >> oldFileNamed: path [
 	^ self useFileMan
 		ifTrue: [ | entry |
-			entry := FileEntry pathName: path.
+			entry := (Smalltalk at: #FileEntry) pathName: path.
 			entry fileAccessor privateWriteableFile: entry]
 		ifFalse: [ FileStream fileNamed: path ]
 
@@ -437,7 +437,7 @@ OSProcess class >> osVersion [
 				ifNil: [^ Smalltalk osVersion]) current]) osVersion
 ]
 
-{ #category : #'version dependent' }
+{ #category : #compatibility }
 OSProcess class >> pathSeparator [
 
 	^ self useFileMan
@@ -532,6 +532,16 @@ OSProcess class >> readFromStdIn [
 	resultString := self thisOSProcess stdIn next: 10000.
 	self accessor setBlocking: ioHandle.
 	^ resultString
+
+]
+
+{ #category : #compatibility }
+OSProcess class >> readOnlyFileNamed: path [
+	^ self useFileMan
+		ifTrue: [ | entry |
+			entry := (Smalltalk at: #FileEntry) pathName: path.
+			entry fileAccessor privateReadOnlyFile: entry]
+		ifFalse: [ FileStream fileNamed: path ]
 
 ]
 
