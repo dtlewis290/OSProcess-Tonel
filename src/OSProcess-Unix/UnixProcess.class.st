@@ -88,7 +88,7 @@ UnixProcess class >> catAFile [
 	"UnixProcess catAFile"
 
 	| in proc |
-	in := FileStream readOnlyFileNamed: '/etc/hosts'.
+	in := OSProcess readOnlyFileNamed: '/etc/hosts'.
 	proc := self forkJob: '/bin/cat'
 			arguments: nil
 			environment: nil
@@ -106,7 +106,7 @@ UnixProcess class >> catFromFileToFiles [
 	"UnixProcess catFromFileToFiles"
 
 	| in out err proc |
-	in := FileStream readOnlyFileNamed: '/etc/hosts'.
+	in := OSProcess readOnlyFileNamed: '/etc/hosts'.
 	out := OSProcess newFileNamed: '/tmp/deleteMe.out'.
 	err := OSProcess newFileNamed: '/tmp/deleteMe.err'.
 	proc := UnixProcess
