@@ -246,12 +246,12 @@ ThisOSProcess >> decapitate [
 
 { #category : #'child process management' }
 ThisOSProcess >> discardExitedChildren [
-	"Remove entries for completed child processed from dictionary."
+	"Remove entries for completed child processed from dictionary.
+	nb Cuis does not have #select:thenDo:"
 
 	self updateAllMyChildren.
-	childProcessList
-		select: [ :p | p isComplete ]
-		thenDo: [ :e | self unregisterChildProcess: e ].
+	(childProcessList select: [ :p | p isComplete ])
+		do: [ :e | self unregisterChildProcess: e ].
 	^ childProcessList
 
 ]
@@ -352,7 +352,7 @@ ThisOSProcess >> handleFromAccessor: aByteArrayOrIOAccessor [
 	UseIOHandle
 		ifTrue: [aByteArrayOrIOAccessor isNil
 			ifTrue: [^ nil]
-			ifFalse: [^ aByteArrayOrIOAccessor asSQFileStruct]]
+			ifFalse: [^ aByteArrayOrIOAccessor perform: #asSQFileStruct]]
 		ifFalse: [^ aByteArrayOrIOAccessor]
 
 ]
@@ -361,7 +361,7 @@ ThisOSProcess >> handleFromAccessor: aByteArrayOrIOAccessor [
 ThisOSProcess >> handleFromFileStream: aFileStream [
 
 	UseIOHandle
-		ifTrue: [^ aFileStream ioHandle asSQFileStruct]
+		ifTrue: [^ aFileStream ioHandle perform: #asSQFileStruct]
 		ifFalse: [^ aFileStream fileID]
 
 ]

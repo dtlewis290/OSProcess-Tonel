@@ -150,7 +150,7 @@ AttachableFileStream >> close [
 		[UseIOHandle
 			ifTrue:
 				[h close.
-				self ioHandle: nil]
+				self perform: #ioHandle: with: nil]
 			ifFalse:
 				[self primCloseNoError: h.
 				self unregister.
@@ -213,7 +213,7 @@ AttachableFileStream >> name: aSymbolOrString attachTo: anIOHandle writable: rea
 
 	name := aSymbolOrString.
 	UseIOHandle
-		ifTrue: [self ioHandle: anIOHandle]
+		ifTrue: [self perform: #ioHandle: with: anIOHandle]
 		ifFalse: [fileID := anIOHandle].
 	readWriteFlag ifTrue: [self readWrite] ifFalse: [self readOnly].
 	self ascii.

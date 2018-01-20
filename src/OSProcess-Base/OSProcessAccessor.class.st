@@ -205,7 +205,7 @@ OSProcessAccessor >> getSessionIdentifierFromSourcesFile [
 	s := SourceFiles first.
 	s ifNil: [^ nil].
 	^ (Smalltalk hasClassNamed: #IOHandle)
-		ifTrue: [s ioHandle getHandle copyFrom: 5 to: 8]
+		ifTrue: [(s ioHandle perform: #getHandle) copyFrom: 5 to: 8]
 		ifFalse: [(id := s fileID) ifNotNil: [id copyFrom: 5 to: 8]]
 
 ]
@@ -257,7 +257,7 @@ OSProcessAccessor >> handleFromAccessor: aByteArrayOrIOAccessor [
 	UseIOHandle
 		ifTrue: [aByteArrayOrIOAccessor isNil
 			ifTrue: [^ nil]
-			ifFalse: [^ aByteArrayOrIOAccessor asSQFileStruct]]
+			ifFalse: [^ aByteArrayOrIOAccessor perform: #asSQFileStruct]]
 		ifFalse: [^ aByteArrayOrIOAccessor]
 ]
 
@@ -293,7 +293,7 @@ OSProcessAccessor >> ioAccessorFromSQFile: aByteArray [
 	this image, use it; otherwise just answer aByteArray."
 
 	UseIOHandle
-		ifTrue: [^ (Smalltalk at: #IOHandle) newFromSqFileStruct: aByteArray]
+		ifTrue: [^ (Smalltalk at: #IOHandle) perform: #newFromSqFileStruct: with: aByteArray]
 		ifFalse: [^ aByteArray]
 ]
 
@@ -407,7 +407,7 @@ OSProcessAccessor >> removeInactiveLocks [
 	"Go through the lock cache and remove any that have been left
 	behind after their streams were closed."
 
-	^ self fileLockRegistry copy do: [:ea | ea isActive ifFalse: [self fileLockCache remove: ea]]
+	^ self fileLockRegistry copy do: [:ea | ea isActive ifFalse: [self fileLockRegistry remove: ea]]
 ]
 
 { #category : #'initialize - release' }

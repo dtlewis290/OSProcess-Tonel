@@ -99,8 +99,8 @@ OSProcess class >> authorInitials [
 
 	((Smalltalk respondsTo: #metacelloPlatformAttributes)
 		and: [ 
-			(Smalltalk metacelloPlatformAttributes includes: #'pharo3.x')
-				or: [ Smalltalk metacelloPlatformAttributes includes: #'pharo2.x' ] ])
+			((Smalltalk perform: #metacelloPlatformAttributes) includes: #'pharo3.x')
+				or: [ (Smalltalk perform: #metacelloPlatformAttributes) includes: #'pharo2.x' ] ])
 		ifTrue: [ ^ (Smalltalk at: #Author) fullName select: [ :c | c isUppercase ] ].
 	^ (Smalltalk at: #Utilities) authorInitials
 ]
@@ -285,7 +285,7 @@ OSProcess class >> isPharo3AndLater [
 	Smalltalk
 		at: #SystemVersion
 		ifPresent: [:cls | ((cls canUnderstand: #type) and: [ cls canUnderstand: #major ])
-			ifTrue: [^ cls current type = 'Pharo' and: [ cls current major >= 3 ]]].
+			ifTrue: [^ (cls current perform: #type) = 'Pharo' and: [ (cls current perform: #major) >= 3 ]]].
 	^false
 
 ]
@@ -299,7 +299,7 @@ OSProcess class >> isPharo5Update50558AndLater [
 	Smalltalk
 		at: #SystemVersion
 		ifPresent: [:cls | ((cls canUnderstand: #type) and: [ cls canUnderstand: #major ])
-			ifTrue: [ ^ (cls current type = 'Pharo' and: [ cls current major >= 5 ])
+			ifTrue: [ ^ ((cls current perform: #type) = 'Pharo' and: [ (cls current perform: #major) >= 5 ])
 						and: [ cls current  highestUpdate >= 50558]]].
 	^false
 
@@ -545,12 +545,37 @@ OSProcess class >> readOnlyFileNamed: path [
 
 ]
 
+{ #category : #compatibility }
+OSProcess class >> saveChangesInFileNamed: aString [
+
+	self useFileMan
+		ifTrue: [ | newChangesName |
+			Smalltalk currentChangesName ifNotNil: [ :oldChangesName |
+			Smalltalk closeSourceFiles. "so copying the changes file will always work"
+			newChangesName _ self fullNameForChangesNamed: aString.
+			(Smalltalk at: #FileIOAccessor) default
+				copy: (oldChangesName perform: #asFileEntry) to: (newChangesName perform: #asFileEntry) ] ]
+		ifFalse:
+			[Smalltalk saveChangesInFileNamed: aString ]
+]
+
 { #category : #'version dependent' }
 OSProcess class >> snapshot: save andQuit: quit [
-	"After Squeak version 3.6, #snapshot:andQuit: was moved to SmalltalkImage "
-
+	"After Squeak version 3.6, #snapshot:andQuit: was moved to SmalltalkImage. Cuis has a
+	different but distinct method signature so check for that first."
+	
+	"self snapshot: false andQuit: true"
+	
+	(Smalltalk respondsTo: #snapshot:andQuit:embedded:clearAllClassState:)
+		ifTrue: [ "Cuis image"
+			^ Smalltalk
+				perform: #snapshot:andQuit:embedded:clearAllClassState:
+				withArguments: { save . quit . false . false } ].
 	^ ((Smalltalk classNamed: 'SmalltalkImage')
-		ifNil: [^ Smalltalk snapshot: save andQuit: quit embedded: false]) current snapshot: save andQuit: quit
+		ifNil: [^ Smalltalk
+				perform: #snapshot:andQuit:embedded:
+				withArguments: { save . quit . false } ])
+			current snapshot: save andQuit: quit
 ]
 
 { #category : #'external command processing' }
@@ -700,7 +725,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.6.10'
+	^'4.6.11'
 ]
 
 { #category : #'version dependent' }
