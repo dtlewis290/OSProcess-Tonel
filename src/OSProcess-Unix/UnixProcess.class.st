@@ -725,7 +725,7 @@ UnixProcess class >> saveImageInBackground: savedImageName nice: niceFlag [
 		(SourceFiles at: 2) ifNotNil:
 			["ensure that copying the changes file will always work"
 			st closeSourceFiles.
-			st saveChangesInFileNamed: (st fullNameForChangesNamed: savedImageName)].
+			OSProcess saveChangesInFileNamed: (st fullNameForChangesNamed: savedImageName)].
 		st changeImageNameTo: savedImageName,'.image';
 			closeSourceFiles;
 			openSourceFiles;  "so SNAPSHOT appears in new changes file"
@@ -1123,7 +1123,7 @@ UnixProcess >> command: aCommandString input: aStreamOrString [
 			[proc := (Smalltalk at: #PipeableOSProcess) command: aCommandString.
 			proc ifNil: [^ nil].
 			proc nextPutAll: aStreamOrString contents.
-			proc pipeToInput close.
+			(proc perform: #pipeToInput) close.
 			^ proc]
 		ifFalse:
 			[self notify: 'the #command:input: method requires CommandShell, using #command: instead'.
@@ -1911,7 +1911,7 @@ UnixProcess >> waitForCommandOutput: aCommandString [
 
 	(Smalltalk hasClassNamed: #PipeableOSProcess)
 		ifTrue:
-			[^ ((Smalltalk at: #PipeableOSProcess) command: aCommandString) output]
+			[^ ((Smalltalk at: #PipeableOSProcess) command: aCommandString) perform: #output]
 		ifFalse:
 			[self notify: 'the #waitForCommandOutput: method requires CommandShell'.
 			^ '']
@@ -1930,9 +1930,9 @@ UnixProcess >> waitForCommandOutputArray: aCommandString [
 		ifTrue:
 			[proc := (Smalltalk at: #PipeableOSProcess) command: aCommandString.
 			^ Array
-				with: proc output
-				with: proc errorUpToEnd
-				with: proc processProxy exitStatus]
+				with: (proc perform: #output)
+				with: (proc perform: #errorUpToEnd)
+				with: (proc perform: #processProxy) exitStatus]
 		ifFalse:
 			[self notify: 'the #waitForCommandOutputArray: method requires CommandShell'.
 			^ Array with: '' with: '' with: nil]
