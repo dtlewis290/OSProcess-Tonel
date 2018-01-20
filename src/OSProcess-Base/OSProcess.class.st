@@ -541,7 +541,7 @@ OSProcess class >> readOnlyFileNamed: path [
 		ifTrue: [ | entry |
 			entry := (Smalltalk at: #FileEntry) pathName: path.
 			entry fileAccessor privateReadOnlyFile: entry]
-		ifFalse: [ FileStream fileNamed: path ]
+		ifFalse: [ FileStream readOnlyFileNamed: path ]
 
 ]
 
