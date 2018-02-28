@@ -441,7 +441,7 @@ UnixOSProcessAccessor >> getStdErrHandle [
 	OS process in which I am currently executing."
 
 	^ self primGetStdErrHandle
-		ifNotNilDo: [:handle | self ioAccessorFromSQFile: handle]
+		ifNotNil: [:handle | self ioAccessorFromSQFile: handle]
 ]
 
 { #category : #'standard IO handles' }
@@ -450,7 +450,7 @@ UnixOSProcessAccessor >> getStdInHandle [
 	OS process in which I am currently executing."
 
 	^ self primGetStdInHandle
-		ifNotNilDo: [:handle | self ioAccessorFromSQFile: handle]
+		ifNotNil: [:handle | self ioAccessorFromSQFile: handle]
 ]
 
 { #category : #'standard IO handles' }
@@ -459,7 +459,7 @@ UnixOSProcessAccessor >> getStdOutHandle [
 	OS process in which I am currently executing."
 
 	^ self primGetStdOutHandle
-		ifNotNilDo: [:handle | self ioAccessorFromSQFile: handle]
+		ifNotNil: [:handle | self ioAccessorFromSQFile: handle]
 ]
 
 { #category : #pthreads }
