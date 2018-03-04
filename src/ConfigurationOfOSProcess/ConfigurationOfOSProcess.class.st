@@ -38,10 +38,10 @@ ConfigurationOfOSProcess class >> ensureMetacello [
 	Smalltalk at: #MetacelloProject ifAbsent: [
 		Smalltalk at: #Gofer ifAbsent: [
 			"Current version of Gofer from which to bootstrap - as of 1.0-beta.15"
-			self bootstrapPackage: 'Gofer-lr.83' from: 'http://seaside.gemstone.com/ss/metacello' ].
+			self bootstrapPackage: 'Gofer-lr.83' from: 'http://seaside.gemtalksystems.com/ss/metacello' ].
 		Smalltalk at: #Gofer ifPresent: [:goferClass | | gofer |
 			gofer := goferClass new
-				url: 'http://seaside.gemstone.com/ss/metacello';
+				url: 'http://seaside.gemtalksystems.com/ss/metacello';
 				yourself.
 			[ gofer addPackage: 'ConfigurationOfMetacello' ] on: Warning do: [:ex | ex resume ].
 			gofer load ].
@@ -68,9 +68,10 @@ ConfigurationOfOSProcess class >> lastMetacelloVersionLoad [
 ConfigurationOfOSProcess class >> load [
 	"self load"
 
-	| r |
+	| r osp |
 	r := self project latestVersion load.
-	(Smalltalk at: #ThisOSProcess) ifNotNilDo: [ :osp | osp startUp: true ] "initialize"
+	(osp := Smalltalk at: #ThisOSProcess) notNil
+		ifTrue: [ "initialize" osp startUp: true ]
 ]
 
 { #category : #'metacello tool support' }
@@ -216,7 +217,7 @@ ConfigurationOfOSProcess >> project [
 ConfigurationOfOSProcess >> stable: spec [
 	<symbolicVersion: #'stable'>
 
-	spec for: #'common' version: '4.6.4'.
+	spec for: #'common' version: '4.6.12'.
 	spec for: #'pharo1.4.x' version: '4.4.6'.
 	spec for: #'pharo2.x' version: '4.5.8'.
 ]
@@ -459,6 +460,28 @@ ConfigurationOfOSProcess >> version45: spec [
 ]
 
 { #category : #versions }
+ConfigurationOfOSProcess >> version4612: spec [
+	<version: '4.6.12' imports: #('4.4.6-baseline' )>
+
+	spec for: #'common' do: [
+		spec blessing: #'release'.
+		spec description: 'Updated to version 4.6.9'.
+		spec author: 'ThierryGoubier'.
+		spec timestamp: '7/27/2017 22:24'.
+		spec project: 'Pipeability' with: [ spec version: '4.6.24' ].
+		spec 
+			package: 'OSProcess-AIO' with: 'OSProcess-AIO-dtl.9';
+			package: 'OSProcess-Base' with: 'OSProcess-Base-dtl.63';
+			package: 'OSProcess-Mac' with: 'OSProcess-Mac-dtl.2';
+			package: 'OSProcess-OS2' with: 'OSProcess-OS2-dtl.2';
+			package: 'OSProcess-RiscOS' with: 'OSProcess-RiscOS-dtl.2';
+			package: 'OSProcess-Tests' with: 'OSProcess-Tests-dtl.16';
+			package: 'OSProcess-Unix' with: 'OSProcess-Unix-dtl.28';
+			package: 'OSProcess-Win32' with: 'OSProcess-Win32-ThierryGoubier.15'. ].
+
+]
+
+{ #category : #versions }
 ConfigurationOfOSProcess >> version462: spec [
 	<version: '4.6.2' imports: #('4.4.6-baseline' )>
 
@@ -521,5 +544,27 @@ ConfigurationOfOSProcess >> version464: spec [
 			package: 'OSProcess-Tests' with: 'OSProcess-Tests-dtl.14';
 			package: 'OSProcess-Unix' with: 'OSProcess-Unix-dtl.24';
 			package: 'OSProcess-Win32' with: 'OSProcess-Win32-dtl.14'. ].
+
+]
+
+{ #category : #versions }
+ConfigurationOfOSProcess >> version469: spec [
+	<version: '4.6.9' imports: #('4.4.6-baseline' )>
+
+	spec for: #'common' do: [
+		spec blessing: #'release'.
+		spec description: 'Updated to version 4.6.9'.
+		spec author: 'ThierryGoubier'.
+		spec timestamp: '7/27/2017 22:24'.
+		spec project: 'Pipeability' with: [ spec version: '4.6.20' ].
+		spec 
+			package: 'OSProcess-AIO' with: 'OSProcess-AIO-dtl.9';
+			package: 'OSProcess-Base' with: 'OSProcess-Base-ThierryGoubier.58';
+			package: 'OSProcess-Mac' with: 'OSProcess-Mac-dtl.2';
+			package: 'OSProcess-OS2' with: 'OSProcess-OS2-dtl.2';
+			package: 'OSProcess-RiscOS' with: 'OSProcess-RiscOS-dtl.2';
+			package: 'OSProcess-Tests' with: 'OSProcess-Tests-dtl.15';
+			package: 'OSProcess-Unix' with: 'OSProcess-Unix-dtl.24';
+			package: 'OSProcess-Win32' with: 'OSProcess-Win32-ThierryGoubier.15'. ].
 
 ]
