@@ -488,25 +488,25 @@ UnixOSProcessAccessor >> grimReaperProcess [
 
 	| eventWaiter processSynchronizationDelay |
 	^ self canAccessSystem
-		ifTrue:
-			[eventWaiter := (self canAccessSystem and: [self canForwardExternalSignals])
-				ifTrue: [self sigChldSemaphore "semaphore signaled by SIGCHLD" ]
-				ifFalse: [Delay forMilliseconds: 200 "simple polling loop" ].
+		ifTrue: [ eventWaiter := (self canAccessSystem
+				and: [ self canForwardExternalSignals ])
+				ifTrue: [ self sigChldSemaphore	"semaphore signaled by SIGCHLD" ]
+				ifFalse: [ Delay forMilliseconds: 200	"simple polling loop" ].
 			processSynchronizationDelay := Delay forMilliseconds: 20.
-			grimReaper ifNil:
-				[grimReaper :=
-					[[(eventWaiter respondsTo: #waitTimeoutMSecs: )
-						ifTrue: [eventWaiter waitTimeoutMSecs: 1000 "semaphore with timeout"]
-						ifFalse: [eventWaiter wait].
-					processSynchronizationDelay wait. "Avoids lost signals in heavy process switching"
-					self changed: #childProcessStatus] repeat] newProcess.
+			grimReaper
+				ifNil: [ grimReaper := [ [ (eventWaiter respondsTo: #waitTimeoutMSecs:)
+						ifTrue: [ eventWaiter waitTimeoutMSecs: 1000	"semaphore with timeout" ]
+						ifFalse: [ eventWaiter wait ].
+					processSynchronizationDelay wait.	"Avoids lost signals in heavy process switching"
+					self changed: #childProcessStatus ] repeat ] newProcess.
+					grimReaper priority: 40.
 					grimReaper resume.
 					"name selected to look reasonable in the process browser"
-					grimReaper name: ((ReadStream on: grimReaper hash asString) next: 5)
-							, ': the child OSProcess watcher']]
-		ifFalse:
-			[nil]
-
+					grimReaper
+						name:
+							((ReadStream on: grimReaper hash asString) next: 5)
+								, ': the child OSProcess watcher' ] ]
+		ifFalse: [ grimReaper priority: 40 ]
 ]
 
 { #category : #testing }
