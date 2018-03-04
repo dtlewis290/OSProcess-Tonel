@@ -1260,15 +1260,6 @@ UnixOSProcessAccessor >> primCreatePipe [
 	^ nil
 ]
 
-{ #category : #'private - primitive access' }
-UnixOSProcessAccessor >> primCreatePipeWithSessionIdentifier: aByteArray [
-	"Create a pipe, and answer an array of two file handles (SQFile data structures in interp.c)
-	for the pipe reader and writer."
-
-	<primitive: 'primitiveCreatePipeWithSessionIdentifier' module: 'UnixOSProcessPlugin'>
-	^ nil
-]
-
 { #category : #'display handling' }
 UnixOSProcessAccessor >> primDisconnectDisplay [
 	"Disconnect the X display session. The actual Squeak window on the X server is not
