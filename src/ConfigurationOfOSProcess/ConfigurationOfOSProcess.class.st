@@ -476,7 +476,29 @@ ConfigurationOfOSProcess >> version4612: spec [
 			package: 'OSProcess-OS2' with: 'OSProcess-OS2-dtl.2';
 			package: 'OSProcess-RiscOS' with: 'OSProcess-RiscOS-dtl.2';
 			package: 'OSProcess-Tests' with: 'OSProcess-Tests-dtl.16';
-			package: 'OSProcess-Unix' with: 'OSProcess-Unix-dtl.28';
+			package: 'OSProcess-Unix' with: 'OSProcess-Unix-ThierryGoubier.29';
+			package: 'OSProcess-Win32' with: 'OSProcess-Win32-ThierryGoubier.15'. ].
+
+]
+
+{ #category : #versions }
+ConfigurationOfOSProcess >> version4613: spec [
+	<version: '4.6.13' imports: #('4.4.6-baseline' )>
+
+	spec for: #'common' do: [
+		spec blessing: #'release'.
+		spec description: 'Updated to version 4.6.13'.
+		spec author: 'ThierryGoubier'.
+		spec timestamp: '7/27/2017 22:24'.
+		spec project: 'Pipeability' with: [ spec version: '4.6.25' ].
+		spec 
+			package: 'OSProcess-AIO' with: 'OSProcess-AIO-dtl.9';
+			package: 'OSProcess-Base' with: 'OSProcess-Base-ThierryGoubier.64';
+			package: 'OSProcess-Mac' with: 'OSProcess-Mac-dtl.2';
+			package: 'OSProcess-OS2' with: 'OSProcess-OS2-dtl.2';
+			package: 'OSProcess-RiscOS' with: 'OSProcess-RiscOS-dtl.2';
+			package: 'OSProcess-Tests' with: 'OSProcess-Tests-dtl.16';
+			package: 'OSProcess-Unix' with: 'OSProcess-Unix-ThierryGoubier.29';
 			package: 'OSProcess-Win32' with: 'OSProcess-Win32-ThierryGoubier.15'. ].
 
 ]
