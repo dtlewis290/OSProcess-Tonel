@@ -408,15 +408,6 @@ WindowsOSProcessAccessor >> primCreatePipe [
 	^ nil
 ]
 
-{ #category : #'pipe open' }
-WindowsOSProcessAccessor >> primCreatePipeWithSessionIdentifier: aByteArray [
-	"Create a pipe, and answer an array of two file handles (SQFile data structures in interp.c)
-	for the pipe reader and writer."
-
-	<primitive: 'primitiveCreatePipeWithSessionIdentifier' module: 'Win32OSProcessPlugin'>
-	^ nil
-]
-
 { #category : #console }
 WindowsOSProcessAccessor >> primFreeConsole [
 	"Deallocate the console if allocated."
