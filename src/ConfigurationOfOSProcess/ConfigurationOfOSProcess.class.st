@@ -217,7 +217,7 @@ ConfigurationOfOSProcess >> project [
 ConfigurationOfOSProcess >> stable: spec [
 	<symbolicVersion: #'stable'>
 
-	spec for: #'common' version: '4.6.12'.
+	spec for: #'common' version: '4.6.13'.
 	spec for: #'pharo1.4.x' version: '4.4.6'.
 	spec for: #'pharo2.x' version: '4.5.8'.
 ]
