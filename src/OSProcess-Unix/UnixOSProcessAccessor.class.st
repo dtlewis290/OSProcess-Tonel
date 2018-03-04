@@ -499,14 +499,14 @@ UnixOSProcessAccessor >> grimReaperProcess [
 						ifFalse: [ eventWaiter wait ].
 					processSynchronizationDelay wait.	"Avoids lost signals in heavy process switching"
 					self changed: #childProcessStatus ] repeat ] newProcess.
-					grimReaper priority: 40.
+					grimReaper priority: Processor userSchedulingPriority.
 					grimReaper resume.
 					"name selected to look reasonable in the process browser"
 					grimReaper
 						name:
 							((ReadStream on: grimReaper hash asString) next: 5)
 								, ': the child OSProcess watcher' ] ]
-		ifFalse: [ grimReaper priority: 40 ]
+		ifFalse: [ grimReaper priority: Processor userSchedulingPriority ]
 ]
 
 { #category : #testing }
