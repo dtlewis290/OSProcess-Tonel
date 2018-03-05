@@ -498,8 +498,8 @@ ConfigurationOfOSProcess >> version4613: spec [
 			package: 'OSProcess-OS2' with: 'OSProcess-OS2-dtl.2';
 			package: 'OSProcess-RiscOS' with: 'OSProcess-RiscOS-dtl.2';
 			package: 'OSProcess-Tests' with: 'OSProcess-Tests-dtl.16';
-			package: 'OSProcess-Unix' with: 'OSProcess-Unix-ThierryGoubier.29';
-			package: 'OSProcess-Win32' with: 'OSProcess-Win32-ThierryGoubier.15'. ].
+			package: 'OSProcess-Unix' with: 'OSProcess-Unix-dtl.31';
+			package: 'OSProcess-Win32' with: 'OSProcess-Win32-dtl.16'. ].
 
 ]
 
