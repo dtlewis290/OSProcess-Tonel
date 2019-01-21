@@ -1203,6 +1203,18 @@ UnixOSProcessAccessor >> primAioPluginVersionString [
 ]
 
 { #category : #'external process access' }
+UnixOSProcessAccessor >> primArgumentAsBytesAt: index [
+	"Answer the argument string in the argument OS process argument list at position index.
+	In Unix, the first element of the list is the program name, and any additional elements
+	of the list are optional command line arguments passed to the program. This convention
+	may be simulated by the C runtime libraries on other operating systems, but argument
+	list handling should be assumed to be operating system dependent."
+
+	<primitive: 'primitiveArgumentAtAsBytes' module: 'UnixOSProcessPlugin'>
+	self primitiveFailed
+]
+
+{ #category : #'external process access' }
 UnixOSProcessAccessor >> primArgumentAt: index [
 	"Answer the argument string in the argument OS process argument list at position index.
 	In Unix, the first element of the list is the program name, and any additional elements
@@ -1291,6 +1303,25 @@ UnixOSProcessAccessor >> primDup: oldFileDescriptor to: newFileDescriptor [
 	<primitive: 'primitiveDupTo' module: 'UnixOSProcessPlugin'>
 	^ self primitiveFailed
 
+]
+
+{ #category : #'external process access' }
+UnixOSProcessAccessor >> primEnvironmentAsBytesAt: index [
+	"Answer the environment string at index position in the OS process environment list.
+	This returns a 'KEY=value' string, which the caller is expected to parse into #KEY
+	and 'value' to be stored an environment dictionary."
+
+	<primitive: 'primitiveEnvironmentAtAsBytes' module: 'UnixOSProcessPlugin'>
+	self primitiveFailed
+]
+
+{ #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primEnvironmentAsBytesAtSymbol: aSymbol [
+	"Answer a ByteArray with the value of an environment variable in
+	the external OS process."
+
+	<primitive: 'primitiveEnvironmentAtSymbolAsBytes' module: 'UnixOSProcessPlugin'>
+	self primitiveFailed
 ]
 
 { #category : #'external process access' }
@@ -1452,6 +1483,17 @@ UnixOSProcessAccessor >> primGetCurrentWorkingDirectory [
 
 	<primitive: 'primitiveGetCurrentWorkingDirectory' module: 'UnixOSProcessPlugin'>
 	^ nil
+
+]
+
+{ #category : #'external process access' }
+UnixOSProcessAccessor >> primGetCurrentWorkingDirectoryAsBytes [
+	"Call getcwd() to get the current working directory."
+
+	"OSProcess thisOSProcess processAccessor primGetCurrentWorkingDirectoryAsBytes"
+
+	<primitive: 'primitiveGetCurrentWorkingDirectoryAsBytes' module: 'UnixOSProcessPlugin'>
+	self primitiveFailed
 
 ]
 
@@ -1762,6 +1804,14 @@ UnixOSProcessAccessor >> primRealpath: pathString [
 
 	<primitive: 'primitiveRealpath' module: 'UnixOSProcessPlugin'>
 	^ nil
+]
+
+{ #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primRealpathAsBytes: pathString [
+	"Resolve pathString into a real path if possible, or answer nil."
+
+	<primitive: 'primitiveRealpathAsBytes' module: 'UnixOSProcessPlugin'>
+	self primitiveFailed
 ]
 
 { #category : #'private - primitive access' }
