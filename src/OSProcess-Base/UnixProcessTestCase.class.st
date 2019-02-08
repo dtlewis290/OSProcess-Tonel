@@ -59,7 +59,7 @@ UnixProcessTestCase >> numberOfOpenFiles [
 	path := '/proc/' , OSProcess thisOSProcess pid printString, '/fd'.
 	(OSProcess directoryExists: path) ifFalse: [ ^ 0].
 	^ OSProcess useFileMan
-		ifTrue: [((Smalltalk at: #DirectoryEntry) pathName: path) children size]
+		ifTrue: [((Smalltalk at: #DirectoryEntry) perform: #withPathName: with: path) children size]
 		ifFalse: [OSProcess useFileSystem
 			ifTrue: [ (path perform: #asFileReference) children size ]
 			ifFalse: [ ((Smalltalk at: #FileDirectory) on: path) entries size ]]

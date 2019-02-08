@@ -157,7 +157,7 @@ OSProcess class >> deleteFileNamed: fileName [
 	"Delete the file with the given name."
 	
 	self useFileMan
-		ifTrue: [((Smalltalk at: #FileEntry) pathName: fileName) delete]
+		ifTrue: [((Smalltalk at: #FileEntry) perform: #withPathName: with: fileName) delete]
 		ifFalse: [self useFileSystem
 			ifTrue: [ | file sel |
 				file := fileName perform: #asFileReference.
@@ -178,7 +178,7 @@ OSProcess class >> directoryExists: path [
 	be either a full path name or a local directory within this directory."
 
 	^ self useFileMan
-		ifTrue: [((Smalltalk at: #DirectoryEntry) pathName: path) exists]
+		ifTrue: [((Smalltalk at: #DirectoryEntry) perform: #withPathName: with: path) exists]
 		ifFalse: [self useFileSystem
 			ifTrue: [ (path perform: #asFileReference) exists ]
 			ifFalse: [ (Smalltalk at: #FileDirectory) default directoryExists: path ]]
@@ -191,7 +191,7 @@ OSProcess class >> fileExists: path [
 	either a full path name or a local file within this directory."
 
 	^ self useFileMan
-		ifTrue: [((Smalltalk at: #FileEntry) pathName: path) exists]
+		ifTrue: [((Smalltalk at: #FileEntry) perform: #withPathName: with: path) exists]
 		ifFalse: [self useFileSystem
 			ifTrue: [ (path perform: #asFileReference) exists ]
 			ifFalse: [ (Smalltalk at: #FileDirectory) default fileExists: path ]]
@@ -202,7 +202,7 @@ OSProcess class >> fileExists: path [
 OSProcess class >> fileNamed: path [
 	^ self useFileMan
 		ifTrue: [ | entry |
-			entry := ((Smalltalk at: #FileEntry) pathName: path) assureExistence.
+			entry := ((Smalltalk at: #FileEntry) perform: #withPathName: with: path) assureExistence.
 			entry fileAccessor privateWriteableFile: entry]
 		ifFalse: [ FileStream fileNamed: path ]
 
@@ -398,7 +398,7 @@ OSProcess class >> makeVmIn: buildDirectoryPathName [
 { #category : #compatibility }
 OSProcess class >> newFileNamed: path [
 	^ self useFileMan
-		ifTrue: [ ((Smalltalk at: #FileEntry) pathName: path) writeStream ]
+		ifTrue: [ ((Smalltalk at: #FileEntry) perform: #withPathName: with: path) writeStream ]
 		ifFalse: [ FileStream fileNamed: path ]
 
 ]
@@ -413,7 +413,7 @@ OSProcess class >> noAccessorAvailable [
 OSProcess class >> oldFileNamed: path [
 	^ self useFileMan
 		ifTrue: [ | entry |
-			entry := (Smalltalk at: #FileEntry) pathName: path.
+			entry := (Smalltalk at: #FileEntry) perform: #withPathName: with: path.
 			entry fileAccessor privateWriteableFile: entry]
 		ifFalse: [ FileStream fileNamed: path ]
 
@@ -539,7 +539,7 @@ OSProcess class >> readFromStdIn [
 OSProcess class >> readOnlyFileNamed: path [
 	^ self useFileMan
 		ifTrue: [ | entry |
-			entry := (Smalltalk at: #FileEntry) pathName: path.
+			entry := (Smalltalk at: #FileEntry) perform: #withPathName: with: path.
 			entry fileAccessor privateReadOnlyFile: entry]
 		ifFalse: [ FileStream readOnlyFileNamed: path ]
 
