@@ -12,7 +12,7 @@ BaselineOfOSProcess >> baseline: spec [
 		spec postLoadDoIt: #'postload:package:'.
 		spec baseline: 'CommandShell' with: [ 
 			spec 
-				repository: 'github://akgrant43/CommandShell:akgmerge/src';
+				repository: 'github://akgrant43/CommandShell/src';
 				loads: #('Piping') ].
 
 		spec
