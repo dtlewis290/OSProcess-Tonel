@@ -10,7 +10,7 @@ To load (the in-development version) in Pharo 7 and later:
 
 ```smalltalk
 Metacello new
-	repository: 'github://akgrant43/OSProcess:akgmerge/src';
+	repository: 'github://akgrant43/OSProcess/src';
 	baseline: 'OSProcess';
 	load.
 ```
