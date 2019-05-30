@@ -10,7 +10,7 @@ To load (the in-development version) in Pharo 7 and later:
 
 ```smalltalk
 Metacello new
-	repository: 'github://akgrant43/OSProcess/src';
+	repository: 'github://dtlewis290/OSProcess-Tonel/src';
 	baseline: 'OSProcess';
 	load.
 ```
