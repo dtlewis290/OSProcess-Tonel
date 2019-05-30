@@ -12,7 +12,7 @@ BaselineOfOSProcess >> baseline: spec [
 		spec postLoadDoIt: #'postload:package:'.
 		spec baseline: 'CommandShell' with: [ 
 			spec 
-				repository: 'github://akgrant43/CommandShell/src';
+				repository: 'github://dtlewis290/CommandShell-Tonel/src';
 				loads: #('Piping') ].
 
 		spec
