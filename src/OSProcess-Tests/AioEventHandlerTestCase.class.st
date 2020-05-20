@@ -4,15 +4,33 @@ Test AioEventHandler and AioPlugin. Provides fair coverage of IO readable events
 Class {
 	#name : #AioEventHandlerTestCase,
 	#superclass : #TestCase,
+	#instVars : [
+		'temporaryFileStream'
+	],
 	#category : #'OSProcess-Tests'
 }
+
+{ #category : #running }
+AioEventHandlerTestCase >> tearDown [
+	temporaryFileStream ifNotNil: [
+		temporaryFileStream close.
+		temporaryFileStream file delete ].
+	
+	super tearDown
+]
+
+{ #category : #accessing }
+AioEventHandlerTestCase >> temporaryFileStream [
+	^ temporaryFileStream ifNil: [
+		temporaryFileStream := (FileLocator temp / UUID new asString) unbufferedBinaryWriteStream ].
+]
 
 { #category : #testing }
 AioEventHandlerTestCase >> testEnableHandleAndDisable [
 
 	| eventHandler anOpenFile fileHandle aioHandleResult sema semaIndex aioEnableResult aioDisableResult |
 	eventHandler := AioEventHandler new.
-	anOpenFile := SourceFiles at: 1.
+	anOpenFile := self temporaryFileStream.
 	fileHandle := eventHandler handleForFile: anOpenFile.
 	sema := Semaphore new.
 	[semaIndex := Smalltalk registerExternalObject: sema.
@@ -229,7 +247,7 @@ AioEventHandlerTestCase >> testHandleForFile [
 
 	| eventHandler anOpenFile fileHandle |
 	eventHandler := AioEventHandler new.
-	anOpenFile := SourceFiles at: 1.
+	anOpenFile := self temporaryFileStream.
 	fileHandle := eventHandler handleForFile: anOpenFile.
 	self assert: fileHandle notNil.
 	self assert: (fileHandle isKindOf: Integer)
