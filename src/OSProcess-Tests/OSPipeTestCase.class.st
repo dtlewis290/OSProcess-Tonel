@@ -179,7 +179,7 @@ OSPipeTestCase >> testIsAtEndOfFile [
 	p writer close.
 	self deny: (OSProcess accessor isAtEndOfFile: p reader fileID).
 	self deny: p atEndOfFile. "no read yet, so flag has not been set"
-	self deny: p reader atEnd.
+	self deny: p reader atEnd description: 'Failure here is likely caused by stdio hacks in sqFileAtEnd() support code. Don''t do that.'.
 	self assert: p atEnd. "writer closed and read gives nil"
 
 	self assert: (p reader basicNext == nil). "read operation should set flag"

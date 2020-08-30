@@ -440,8 +440,11 @@ UnixOSProcessAccessor >> getStdErrHandle [
 	"Answer the handle (a SQFile data structure in interp.c) for the standard error for the
 	OS process in which I am currently executing."
 
-	^ self primGetStdErrHandle
-		ifNotNil: [:handle | self ioAccessorFromSQFile: handle]
+	| handle |
+	(handle := self primGetStdErrHandle)
+		ifNotNil: [^self ioAccessorFromSQFile: handle].
+	^nil
+
 ]
 
 { #category : #'standard IO handles' }
@@ -449,8 +452,11 @@ UnixOSProcessAccessor >> getStdInHandle [
 	"Answer the handle (a SQFile data structure in interp.c) for the standard input for the
 	OS process in which I am currently executing."
 
-	^ self primGetStdInHandle
-		ifNotNil: [:handle | self ioAccessorFromSQFile: handle]
+	| handle |
+	(handle := self primGetStdInHandle)
+		ifNotNil: [^self ioAccessorFromSQFile: handle].
+	^nil
+
 ]
 
 { #category : #'standard IO handles' }
@@ -458,8 +464,11 @@ UnixOSProcessAccessor >> getStdOutHandle [
 	"Answer the handle (a SQFile data structure in interp.c) for the standard output for the
 	OS process in which I am currently executing."
 
-	^ self primGetStdOutHandle
-		ifNotNil: [:handle | self ioAccessorFromSQFile: handle]
+	| handle |
+	(handle := self primGetStdOutHandle)
+		ifNotNil: [^self ioAccessorFromSQFile: handle].
+	^nil
+
 ]
 
 { #category : #pthreads }
@@ -1027,16 +1036,13 @@ UnixOSProcessAccessor >> mkstemp: templateString [
 { #category : #'temp files and directories' }
 UnixOSProcessAccessor >> mktemp: templateString [
 	"Call mktemp() to generate a unique temporary filename from a template string.
-	The last six or more characters of template must be XXXXXX and these are replaced
-	with a string that make the filename unique. The templateString must be a mutable
-	string, because the primitive will change its contents.
-	
+	No longer supported in OSProcess because mktemp() is considered a security risk.
 	Use primitiveMkstemp to avoid file creation race condition, see man 3 mktemp."
 
 	"OSProcess accessor mktemp: 'foo.XXXXXX' "
 	"OSProcess accessor mktemp: '/tmp/foo.XXXXXX' "
 
-	^ self primMktemp: templateString
+	^ self error: 'mktemp: support has been removed for security reasons, use mkstemp or mkdtemp: instead'
 
 ]
 
@@ -2151,6 +2157,13 @@ UnixOSProcessAccessor >> primSizeOfPointer [
 	<primitive: 'primitiveSizeOfPointer' module: 'UnixOSProcessPlugin'>
 	^ self primitiveFailed
 
+]
+
+{ #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primSpaceFor: byteSize InDirectoryPath: dirPath [
+
+	<primitive: 'primitiveSpaceForByteSizeInDirectoryPath' module: 'UnixOSProcessPlugin'>
+	^ self primitiveFailed
 ]
 
 { #category : #'private - primitive access' }

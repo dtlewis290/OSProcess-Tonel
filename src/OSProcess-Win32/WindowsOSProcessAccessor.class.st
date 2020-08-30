@@ -674,6 +674,14 @@ WindowsOSProcessAccessor >> primSetWaitForAnyProcessExit: arrayOfProcessHandleOb
 	^ nil
 ]
 
+{ #category : #'private - primitive access' }
+WindowsOSProcessAccessor >> primSpaceFor: byteSize InDirectoryPath: dirPath [
+
+	<primitive: 'primitiveSpaceForByteSizeInDirectoryPath' module: 'Win32OSProcessPlugin'>
+	self flag: 'FIXME'. "not yet implemented in OSPP for Windows"
+	^ self primitiveFailed
+]
+
 { #category : #'child process management' }
 WindowsOSProcessAccessor >> primTerminateThread: aThreadHandle [
 	"Kill the thread. No cleanup is performed, so use with caution for a thread which

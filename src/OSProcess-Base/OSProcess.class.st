@@ -18,7 +18,7 @@ Class {
 OSProcess class >> accessor [
 	"Answer an OSProcessAccessor for this OS process."
 
-	^ self thisOSProcess processAccessor
+	^ self thisOSProcess ifNotNil: [ :osp | osp processAccessor ]
 
 ]
 
@@ -182,6 +182,36 @@ OSProcess class >> directoryExists: path [
 		ifFalse: [self useFileSystem
 			ifTrue: [ (path perform: #asFileReference) exists ]
 			ifFalse: [ (Smalltalk at: #FileDirectory) default directoryExists: path ]]
+
+]
+
+{ #category : #'external command processing' }
+OSProcess class >> editOutputOf: aCommandString [
+	"Evaluate aCommandString and display the output in an editor"
+
+	"OSProcess editOutputOf: 'ls -l' "
+	"OSProcess editOutputOf: 'ps -axjf' "
+ 
+	^ self outputOf: aCommandString, ' | edit'
+]
+
+{ #category : #'external command processing' }
+OSProcess class >> evaluate: aCommandString [
+	"Evaluate a command pipeline created from aCommandString. Answer a
+	ProxyPipeline that evaluated the command string. Use #upToEndOfFile
+	and #errorUpToEnd to read the standard output and standard error
+	respectively. Open file handles will be closed after sending #upToEndOfFile,
+	or may be closed explicitly with #closePipes for #finalize."
+
+	"OSProcess evaluate: 'ls | cat | wc' "
+	"OSProcess evaluate: 'ls -ldt * | edit' "
+	"OSProcess evaluate: 'ls NOSUCHFILE * | cat | wc' "
+	"OSProcess evaluate: 'ls | copyToOutput | wc' "
+	"OSProcess evaluate: ''"
+
+	Smalltalk at: #CommandShell
+		ifPresent: [ :cls | ^ (Smalltalk at: #ProxyPipeline) command: aCommandString shell: cls new ].
+	self notify: 'CommandShell not found'
 
 ]
 
@@ -437,6 +467,26 @@ OSProcess class >> osVersion [
 				ifNil: [^ Smalltalk osVersion]) current]) osVersion
 ]
 
+{ #category : #'external command processing' }
+OSProcess class >> outputOf: aCommandString [
+	"Evaluate a command pipeline created from aCommandString. Answer a
+	the output of the evaluation. If the command string resulted in error outputs,
+	then raise an error before answering the output result."
+
+	"OSProcess outputOf: 'ls | cat | wc' "
+	"OSProcess outputOf: 'ls * NOSUCHFILE' "
+	"OSProcess outputOf: 'ls -ldt * | edit' "
+	"OSProcess outputOf: 'ls | copyToOutput | wc' "
+
+	|pipeline out err|
+	pipeline := self evaluate: aCommandString.
+	out := pipeline upToEndOfFile.
+	err := pipeline errorUpToEnd.
+	err isEmpty ifFalse: [self error: err].
+	^ out
+
+]
+
 { #category : #compatibility }
 OSProcess class >> pathSeparator [
 
@@ -549,14 +599,16 @@ OSProcess class >> readOnlyFileNamed: path [
 OSProcess class >> saveChangesInFileNamed: aString [
 
 	self useFileMan
-		ifTrue: [ | newChangesName |
-			Smalltalk currentChangesName ifNotNil: [ :oldChangesName |
-			Smalltalk closeSourceFiles. "so copying the changes file will always work"
-			newChangesName _ self fullNameForChangesNamed: aString.
-			(Smalltalk at: #FileIOAccessor) default
-				copy: (oldChangesName perform: #asFileEntry) to: (newChangesName perform: #asFileEntry) ] ]
+		ifTrue: [ | oldChangesName newChangesName |
+			(oldChangesName := Smalltalk currentChangesName) ifNotNil: [
+				Smalltalk closeSourceFiles. "so copying the changes file will always work"
+				newChangesName := self fullNameForChangesNamed: aString.
+				(Smalltalk at: #FileIOAccessor) default
+					copy: (oldChangesName perform: #asFileEntry) to: (newChangesName perform: #asFileEntry) ] ]
 		ifFalse:
-			[Smalltalk saveChangesInFileNamed: aString ]
+			[(Smalltalk respondsTo: #saveChangesInFileNamed:)
+				ifTrue: [Smalltalk saveChangesInFileNamed: aString].
+			(Smalltalk classNamed: #SmalltalkImage) current perform: #saveChangesInFileNamed: with: aString]
 ]
 
 { #category : #'version dependent' }
@@ -725,7 +777,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^'4.6.14'
+	^ '4.6.21'
 ]
 
 { #category : #'version dependent' }

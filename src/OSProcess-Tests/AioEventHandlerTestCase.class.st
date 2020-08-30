@@ -4,9 +4,6 @@ Test AioEventHandler and AioPlugin. Provides fair coverage of IO readable events
 Class {
 	#name : #AioEventHandlerTestCase,
 	#superclass : #TestCase,
-	#instVars : [
-		'temporaryFileStream'
-	],
 	#category : #'OSProcess-Tests'
 }
 
@@ -30,7 +27,7 @@ AioEventHandlerTestCase >> testEnableHandleAndDisable [
 
 	| eventHandler anOpenFile fileHandle aioHandleResult sema semaIndex aioEnableResult aioDisableResult |
 	eventHandler := AioEventHandler new.
-	anOpenFile := self temporaryFileStream.
+	anOpenFile := OSProcess fileNamed: 'delete.me'.
 	fileHandle := eventHandler handleForFile: anOpenFile.
 	sema := Semaphore new.
 	[semaIndex := Smalltalk registerExternalObject: sema.
@@ -75,7 +72,10 @@ AioEventHandlerTestCase >> testEnableHandleAndDisable [
 	self assert: aioDisableResult == fileHandle]
 		ensure:
 			[Smalltalk unregisterExternalObject: sema.
-			(fileHandle isKindOf: Integer) ifTrue: [eventHandler aioDisable: fileHandle]]
+			(fileHandle isKindOf: Integer) ifTrue: [eventHandler aioDisable: fileHandle]].
+	anOpenFile close.
+	OSProcess deleteFileNamed: 'delete.me'.
+
 ]
 
 { #category : #testing }
@@ -247,8 +247,10 @@ AioEventHandlerTestCase >> testHandleForFile [
 
 	| eventHandler anOpenFile fileHandle |
 	eventHandler := AioEventHandler new.
-	anOpenFile := self temporaryFileStream.
+	anOpenFile := OSProcess fileNamed: 'delete.me'.
 	fileHandle := eventHandler handleForFile: anOpenFile.
+	anOpenFile close.
+	OSProcess deleteFileNamed: 'delete.me'.
 	self assert: fileHandle notNil.
 	self assert: (fileHandle isKindOf: Integer)
 

@@ -118,11 +118,10 @@ ThisOSProcess class >> shutDown: quitting [
 	dependency on an OSProcessAccessor."
 
 	quitting
-		ifTrue: [ | osp |
-			(osp := OSProcess thisOSProcess) notNil
-				ifTrue: [ | acc |
-					(acc := osp processAccessor) notNil
-						ifTrue: [ acc breakDependents ] ] ]
+		ifTrue: [ self thisOSProcess ifNotNil: [ :osp |
+			osp processAccessor ifNotNil: [ :acc |
+				acc breakDependents ] ] ]
+
 ]
 
 { #category : #'system startup' }

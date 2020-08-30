@@ -124,8 +124,7 @@ UnixProcessAccessorTestCase >> testArgsAsFlatArrayAndOffsets [
 
 	| a pointerSize lengthOfCStrings totalLength stringsAndOffsets rs s arrayWithMachineDependentPointers |
 	pointerSize := OSProcess accessor sizeOfPointer.
-	a := { 'one ' . 'two ' . 'three ' }.
-	a do: [:e | e at: e size put: (Character value: 0)].
+	a := { 'one' . 'two' . 'three' } collect: [ :e | e , (Character value: 0) ].
 	stringsAndOffsets := OSProcess thisOSProcess argsAsFlatArrayAndOffsets: a.
 	self assert: stringsAndOffsets size == 2.
 	self assert: stringsAndOffsets second size == 3.

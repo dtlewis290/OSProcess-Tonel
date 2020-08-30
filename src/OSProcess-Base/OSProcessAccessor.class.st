@@ -430,6 +430,23 @@ OSProcessAccessor >> setNonBlocking: anIOHandle [
 
 ]
 
+{ #category : #'file testing' }
+OSProcessAccessor >> spaceFor: bytesRequired inDirectoryPath: dirPath [
+	"Given a file size requirement in bytes, and a path specifying a location
+	within a file system, answer true if that file system has sufficient free
+	space to save a file of that size. The file size parameter must be a
+	SmallInteger (not LargePositiveInteger) and the directory path is a string.
+	This primitive is entended as a guard to protect against saving an image
+	file when the file system is full."
+
+	"OSProcess accessor spaceFor: 16000000 inDirectoryPath: '/home' "
+	"OSProcess accessor spaceFor: 16000000 inDirectoryPath: '/proc' "
+	"OSProcess accessor spaceFor: 16000000 inDirectoryPath: 'INVALID PATH' "
+
+	^ self primSpaceFor: bytesRequired InDirectoryPath: dirPath
+
+]
+
 { #category : #'file lock registry' }
 OSProcessAccessor >> unregister: fileRegionLock [
 	"If an object equal to fileRegionLock exists in the registry, remove it and
