@@ -81,17 +81,6 @@ ThisOSProcess class >> initializeThisOSProcess [
 	ThisInstance initialize
 ]
 
-{ #category : #'initialize-release' }
-ThisOSProcess class >> initializeThisOSProcessWithNotifier [
-	"Initialize the singleton instance, creating a new instance only if the
-	platform type has changed since shutdown (running on a different
-	type of computer). Warn if no implementation is available for this platform."
-
-	(ThisInstance isNil or: [ThisInstance isResponsibleForThisPlatform not])
-		ifTrue: [ThisInstance := self concreteClass basicNew].
-	ThisInstance initialize
-]
-
 { #category : #testing }
 ThisOSProcess class >> isHeadless [
 	"Answer true if the image is known to be headless, otherwise assume
@@ -409,6 +398,12 @@ ThisOSProcess >> isConnectedToXServer [
 	^ self processAccessor primIsConnectedToXServer
 
 
+]
+
+{ #category : #testing }
+ThisOSProcess >> isExternalProcess [
+
+	^ false
 ]
 
 { #category : #'platform identification' }

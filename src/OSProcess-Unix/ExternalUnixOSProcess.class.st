@@ -194,6 +194,15 @@ ExternalUnixOSProcess >> arguments: arrayOfArgumentStrings [
 ]
 
 { #category : #accessing }
+ExternalUnixOSProcess >> exitCode [
+	"Return the exit code as expected in POSIX systems.  A number between 0 and 255.
+	See notes in UnixProcessExitStatus. "
+	^ (UnixProcessExitStatus for: exitStatus) exitStatus 
+	
+
+]
+
+{ #category : #accessing }
 ExternalUnixOSProcess >> exitStatus [
 
 	^ exitStatus
@@ -347,91 +356,91 @@ ExternalUnixOSProcess >> setDefaults [
 ExternalUnixOSProcess >> sigabrt [
 	"Send a SIGABRT signal to the external process which I represent."
 
-	OSProcess thisOSProcess sigabrt: self
+	^ OSProcess thisOSProcess sigabrt: self
 ]
 
 { #category : #'OS signal sending' }
 ExternalUnixOSProcess >> sigalrm [
 	"Send a SIGALRM signal to the external process which I represent."
 
-	OSProcess thisOSProcess sigalrm: self
+	^ OSProcess thisOSProcess sigalrm: self
 ]
 
 { #category : #'OS signal sending' }
 ExternalUnixOSProcess >> sigchld [
 	"Send a SIGCHLD signal to the external process which I represent."
 
-	OSProcess thisOSProcess sigchld: self
+	^ OSProcess thisOSProcess sigchld: self
 ]
 
 { #category : #'OS signal sending' }
 ExternalUnixOSProcess >> sigcont [
 	"Send a SIGCONT signal to the external process which I represent."
 
-	OSProcess thisOSProcess sigcont: self
+	^ OSProcess thisOSProcess sigcont: self
 ]
 
 { #category : #'OS signal sending' }
 ExternalUnixOSProcess >> sighup [
 	"Send a SIGHUP signal to the external process which I represent."
 
-	OSProcess thisOSProcess sighup: self
+	^ OSProcess thisOSProcess sighup: self
 ]
 
 { #category : #'OS signal sending' }
 ExternalUnixOSProcess >> sigint [
 	"Send a SIGINT signal to the external process which I represent."
 
-	OSProcess thisOSProcess sigint: self
+	^ OSProcess thisOSProcess sigint: self
 ]
 
 { #category : #'OS signal sending' }
 ExternalUnixOSProcess >> sigkill [
 	"Send a SIGKILL signal to the external process which I represent."
 
-	OSProcess thisOSProcess sigkill: self
+	^ OSProcess thisOSProcess sigkill: self
 ]
 
 { #category : #'OS signal sending' }
 ExternalUnixOSProcess >> sigpipe [
 	"Send a SIGPIPE signal to the external process which I represent."
 
-	OSProcess thisOSProcess sigpipe: self
+	^ OSProcess thisOSProcess sigpipe: self
 ]
 
 { #category : #'OS signal sending' }
 ExternalUnixOSProcess >> sigquit [
 	"Send a SIGQUIT signal to the external process which I represent."
 
-	OSProcess thisOSProcess sigquit: self
+	^ OSProcess thisOSProcess sigquit: self
 ]
 
 { #category : #'OS signal sending' }
 ExternalUnixOSProcess >> sigstop [
 	"Send a SIGSTOP signal to the external process which I represent."
 
-	OSProcess thisOSProcess sigstop: self
+	^ OSProcess thisOSProcess sigstop: self
 ]
 
 { #category : #'OS signal sending' }
 ExternalUnixOSProcess >> sigterm [
 	"Send a SIGTERM signal to the external process which I represent."
 
-	OSProcess thisOSProcess sigterm: self
+	^ OSProcess thisOSProcess sigterm: self
 ]
 
 { #category : #'OS signal sending' }
 ExternalUnixOSProcess >> sigusr1 [
 	"Send a SIGUSR1 signal to the external process which I represent."
 
-	OSProcess thisOSProcess sigusr1: self
+	^ OSProcess thisOSProcess sigusr1: self
 ]
 
 { #category : #'OS signal sending' }
 ExternalUnixOSProcess >> sigusr2 [
 	"Send a SIGUSR2 signal to the external process which I represent."
 
-	OSProcess thisOSProcess sigusr2: self
+	^ OSProcess thisOSProcess sigusr2: self
 ]
 
 { #category : #testing }
@@ -442,10 +451,20 @@ ExternalUnixOSProcess >> succeeded [
 
 { #category : #'terminating child' }
 ExternalUnixOSProcess >> terminate [
-	"Kill the child process which I represent."
+	"Kill the child process that I represent. Set run state to unknown, expecting
+	that the child process watcher will update it soon. If this is a stale reference
+	to a child process that was created in an earlier session, then the child watcher
+	will not see the exit, and run state will be left in the unknown state.
+	Answer the result of the primitive, which will be -1 in the case of a child
+	process that could not be signalled, possibly because this is a stale reference
+	and the actual child no longer exists."
 
-	self sigkill.
-	self finalize
+	| signalPrimResult |
+	self isRunning ifTrue: [ self unknownRunState ].
+	signalPrimResult := self sigkill.
+	self finalize.
+	^ signalPrimResult
+
 
 
 ]

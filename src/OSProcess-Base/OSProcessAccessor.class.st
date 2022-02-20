@@ -155,6 +155,17 @@ OSProcessAccessor >> canObtainSessionIdentifierFromPlugin [
 		ifNil: [canObtainSessionIdentifierFromPlugin := self primGetSession notNil]
 ]
 
+{ #category : #'system configuration access' }
+OSProcessAccessor >> confstr: optionIndex [
+	"Answer the string result of confstr() for the supplied option index, an
+	integer value defined in unistd.h. On some platforms, the available index
+	values are defined in /usr/include/bits/confname.h"
+
+	"OSProcess accessor confstr: 0"
+
+	^self primConfstr: optionIndex
+]
+
 { #category : #'file lock registry' }
 OSProcessAccessor >> emulateWin32FileLocking [
 	"Answer the current value of this preference"
@@ -166,6 +177,19 @@ OSProcessAccessor >> emulateWin32FileLocking [
 OSProcessAccessor >> fileLockRegistry [
 
 	^ FileLockRegistry ifNil: [FileLockRegistry := Set new]
+
+]
+
+{ #category : #'system configuration access' }
+OSProcessAccessor >> fpathconf: fileStream index: optionIndex [
+	"Answer the result of fpathconf() for the file descriptor fo a FileStream,
+	and the supplied option index, an integer value defined in unistd.h.
+	On some platforms, the available index values are defined in
+	/usr/include/bits/confname.h"
+
+	"OSProcess accessor fpathconf: SourceFiles first index: 0"
+
+	^self primFpathconf: fileStream fileID index: optionIndex
 
 ]
 
@@ -298,16 +322,14 @@ OSProcessAccessor >> ioAccessorFromSQFile: aByteArray [
 ]
 
 { #category : #'file testing' }
-OSProcessAccessor >> isAtEndOfFile: anIOHandle [
+OSProcessAccessor >> isAtEndOfFile: anIOHandle [ 
 	"Answer whether the file represented by anIOHandle is at end of file, as determined
 	by a call to feof(). This is different from StandardFileStream>>primAtEnd: which answers
 	true if the file pointer is at the end of the file, but which does not call feof() to
 	determine that an end of file condition has occurred. The difference is significant
 	if aSqFileStruct represents a pipe or a device file, which may not be positionable
 	in the sense of a conventional disk file."
-
-	^ self primTestEndOfFileFlag: (self handleFromAccessor: anIOHandle)
-
+	^ (self primTestEndOfFileFlag: (self handleFromAccessor: anIOHandle)) = true
 ]
 
 { #category : #'platform identification' }
@@ -362,6 +384,19 @@ OSProcessAccessor >> osppModuleVersionString [
 	"OSProcess accessor osppModuleVersionString"
 
 	^ self subclassResponsibility
+]
+
+{ #category : #'system configuration access' }
+OSProcessAccessor >> pathconf: path index: optionIndex [
+	"Answer the result of pathconf() for file path string and the
+	supplied option index, an integer value defined in unistd.h. On
+	some platforms, the available index values are defined in
+	/usr/include/bits/confname.h"
+
+	"OSProcess accessor pathconf: '/bin/bash' index: 0"
+
+	^self primPathconf: path index: optionIndex
+
 ]
 
 { #category : #'session identification' }
@@ -444,6 +479,17 @@ OSProcessAccessor >> spaceFor: bytesRequired inDirectoryPath: dirPath [
 	"OSProcess accessor spaceFor: 16000000 inDirectoryPath: 'INVALID PATH' "
 
 	^ self primSpaceFor: bytesRequired InDirectoryPath: dirPath
+
+]
+
+{ #category : #'system configuration access' }
+OSProcessAccessor >> sysconf: optionIndex [
+	"Answer the result of sysconf() for the supplied option index, and integer
+	value typically defined in unistd.h or limits.h"
+
+	"OSProcess accessor sysconf: 0"
+
+	^self primSysconf: optionIndex
 
 ]
 

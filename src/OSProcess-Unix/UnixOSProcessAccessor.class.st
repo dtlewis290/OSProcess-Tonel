@@ -1270,6 +1270,16 @@ UnixOSProcessAccessor >> primChdir: pathString [
 ]
 
 { #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primConfstr: optionIndex [
+	"Answer the result of confstr() for the supplied option index, and integer
+	value typically defined in unistd.h or limits.h"
+
+	<primitive: 'primitiveConfstr' module: 'UnixOSProcessPlugin'>
+	^ self primitiveFailed
+
+]
+
+{ #category : #'private - primitive access' }
 UnixOSProcessAccessor >> primCreatePipe [
 	"Create a pipe, and answer an array of two file handles (SQFile data structures in interp.c)
 	for the pipe reader and writer."
@@ -1470,6 +1480,18 @@ UnixOSProcessAccessor >> primForwardSignal: signalNumber toSemaphore: semaphoreI
 
 	<primitive: 'primitiveForwardSignalToSemaphore' module: 'UnixOSProcessPlugin'>
 	^ nil
+
+]
+
+{ #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primFpathconf: fileID index: optionIndex [
+	"Answer the result of pathconf() for fileID, the fileID of a FileStream,
+	and the supplied option index, an integer value defined in unistd.h.
+	On some platforms, the available index values are defined in
+	/usr/include/bits/confname.h"
+
+	<primitive: 'primitiveFpathconf' module: 'UnixOSProcessPlugin'>
+	^ self primitiveFailed
 
 ]
 
@@ -1721,20 +1743,6 @@ UnixOSProcessAccessor >> primMkstemp: templateString [
 
 ]
 
-{ #category : #'private - primitive access' }
-UnixOSProcessAccessor >> primMktemp: templateString [
-	"Call mktemp() to generate a unique temporary filename from a template string.
-	The last six characters of template must be XXXXXX and these are replaced with
-	a string that make the filename unique. The templateString must be a mutable
-	string, because the primitive will change its contents.
-	
-	Use primitiveMkstemp to avoid file creation race condition, see man 3 mktemp."
-
-	<primitive: 'primitiveMktemp' module: 'UnixOSProcessPlugin'>
-	^ self primitiveFailed
-
-]
-
 { #category : #'fork and exec' }
 UnixOSProcessAccessor >> primNice: inc [
 	"Change the scheduling priority of this OS process by the given nice increment."
@@ -1777,6 +1785,18 @@ UnixOSProcessAccessor >> primOpenXDisplay [
 	<primitive: 'primitiveOpenDisplay' module: 'XDisplayControlPlugin'>
 	^ self oldPrimOpenXDisplay
 
+
+]
+
+{ #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primPathconf: path index: optionIndex [
+	"Answer the result of pathconf() for file path string and the
+	supplied option index, an integer value defined in unistd.h. On
+	some platforms, the available index values are defined in
+	/usr/include/bits/confname.h"
+
+	<primitive: 'primitivePathconf' module: 'UnixOSProcessPlugin'>
+	^ self primitiveFailed
 
 ]
 
@@ -2164,6 +2184,16 @@ UnixOSProcessAccessor >> primSpaceFor: byteSize InDirectoryPath: dirPath [
 
 	<primitive: 'primitiveSpaceForByteSizeInDirectoryPath' module: 'UnixOSProcessPlugin'>
 	^ self primitiveFailed
+]
+
+{ #category : #'private - primitive access' }
+UnixOSProcessAccessor >> primSysconf: optionIndex [
+	"Answer the result of sysconf() for the supplied option index, and integer
+	value typically defined in unistd.h or limits.h"
+
+	<primitive: 'primitiveSysconf' module: 'UnixOSProcessPlugin'>
+	^ self primitiveFailed
+
 ]
 
 { #category : #'private - primitive access' }

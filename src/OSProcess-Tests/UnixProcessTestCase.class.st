@@ -298,6 +298,19 @@ UnixProcessTestCase >> testEightLeafSqueakTree [
 
 ]
 
+{ #category : #'testing - class examples' }
+UnixProcessTestCase >> testExitCode [ 
+
+	"The exit code you expect in POSIX systems. "
+
+	|out|
+	out _ OSProcess waitForCommand: ' sh -c "exit 33" '. 
+	self assert: (out exitCode = 33). 
+
+
+
+]
+
 { #category : #'testing - child process creation' }
 UnixProcessTestCase >> testForkHeadlessSqueakAndDo [
 
@@ -432,6 +445,14 @@ UnixProcessTestCase >> testHeadlessChild [
 	self assert: p exitStatus == 0.
 	self assert: self numberOfOpenFiles == openFileCount
 
+]
+
+{ #category : #'testing - child process creation' }
+UnixProcessTestCase >> testIsExternalProcess [
+	self deny: ThisOSProcess thisOSProcess isExternalProcess.
+	self deny: OSProcess thisOSProcess isExternalProcess.
+	self assert: ExternalOSProcess new isExternalProcess.
+	self assert: (ExternalOSProcess command: 'pwd') isExternalProcess.
 ]
 
 { #category : #'testing - class examples' }

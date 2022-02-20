@@ -7,21 +7,6 @@ Class {
 	#category : #'OSProcess-Tests'
 }
 
-{ #category : #running }
-AioEventHandlerTestCase >> tearDown [
-	temporaryFileStream ifNotNil: [
-		temporaryFileStream close.
-		temporaryFileStream file delete ].
-	
-	super tearDown
-]
-
-{ #category : #accessing }
-AioEventHandlerTestCase >> temporaryFileStream [
-	^ temporaryFileStream ifNil: [
-		temporaryFileStream := (FileLocator temp / UUID new asString) unbufferedBinaryWriteStream ].
-]
-
 { #category : #testing }
 AioEventHandlerTestCase >> testEnableHandleAndDisable [
 

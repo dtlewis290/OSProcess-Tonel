@@ -124,7 +124,7 @@ UnixProcessAccessorTestCase >> testArgsAsFlatArrayAndOffsets [
 
 	| a pointerSize lengthOfCStrings totalLength stringsAndOffsets rs s arrayWithMachineDependentPointers |
 	pointerSize := OSProcess accessor sizeOfPointer.
-	a := { 'one' . 'two' . 'three' } collect: [ :e | e , (Character value: 0) ].
+	a := { 'one' . 'two' . 'three' } collect: [ :e | e , (Character value: 0) asString ].
 	stringsAndOffsets := OSProcess thisOSProcess argsAsFlatArrayAndOffsets: a.
 	self assert: stringsAndOffsets size == 2.
 	self assert: stringsAndOffsets second size == 3.
@@ -991,8 +991,8 @@ UnixProcessAccessorTestCase >> testSessionIdentifier [
 
 	| installedOSPPMajorVersion |
 	self should: [accessor getSessionIdentifier isKindOf: ByteArray].
-	installedOSPPMajorVersion := (OSProcess accessor osppModuleVersionString
-		ifNil: [-1]) asInteger.
+	installedOSPPMajorVersion := Integer readFrom:
+		(OSProcess accessor osppModuleVersionString ifNil: ['-1']) readStream.
 	(installedOSPPMajorVersion >= 4)
 		ifTrue: ["ignore this test"]
 		ifFalse: [self should:

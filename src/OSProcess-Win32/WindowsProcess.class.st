@@ -148,6 +148,7 @@ WindowsProcess >> initialize [
 	super initialize.
 	(self processAccessor canAccessSystem not or: [processAccessor primOneShot]) ifTrue:
 		["Restarting the VM in a new process"
+		OSProcessAccessor initialize. "new instance required in mingw environment"
 		self resetThreads.
 		self threads; mainThread.
 		processHandle := nil.

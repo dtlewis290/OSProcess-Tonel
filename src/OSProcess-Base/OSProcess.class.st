@@ -123,6 +123,34 @@ OSProcess class >> command: aCommandString [
 
 ]
 
+{ #category : #'utility - sysconf' }
+OSProcess class >> confnameTokens: tokenPrefix [
+	"Find the cpp macro definitions corresponding to tokenPrefix in system header files.
+	Assumptions: Running on a gnu-linux platform with system configuration parameters
+	defined in /usr/include/bits/confname.h"
+
+	| include names |
+	include := '/usr/include/bits/confname.h'.
+	names := ( OSProcess outputOf: 'grep ', tokenPrefix, ' ', include, ' | grep #define' ) findTokens: String lf.
+	^names collect: [:e |  (e findTokens: String tab, String space) second.].
+
+]
+
+{ #category : #'utility - sysconf' }
+OSProcess class >> confstr [
+	"Answer a dictionary of available confstr(3) values for this platform.
+
+	Assumptions: Running on a gnu-linux platform with system configuration parameters
+	defined in /usr/include/bits/confname.h"
+
+	"OSProcess sysconf"
+
+	| tokens entries |
+	tokens := self confnameTokens: '_CS_'.
+	entries := tokens withIndexCollect: [ :e :i | e asSymbol -> ( OSProcess accessor confstr: i - 1 ) ].
+	^Dictionary withAll: entries.
+]
+
 { #category : #debugging }
 OSProcess class >> debugMessage: aString [
 	"Print aString on standard output. The debug message is prefixed with the
@@ -238,12 +266,43 @@ OSProcess class >> fileNamed: path [
 
 ]
 
+{ #category : #'utility - sysconf' }
+OSProcess class >> fpathconf: fileStream [
+	"For the given file stream, answer a dictionary of available fpathconf(3) values for this platform.
+
+	Assumptions: Running on a gnu-linux platform with system configuration parameters
+	defined in /usr/include/bits/confname.h"
+
+	"OSProcess fpathconf: SourceFiles first"
+
+	| aFileStream tokens entries |
+	aFileStream := SourceFiles first.
+	tokens := self confnameTokens: '_PC_'.
+	entries := tokens withIndexCollect: [ :e :i | e asSymbol -> ( OSProcess accessor fpathconf: aFileStream index: i - 1 ) ].
+	^Dictionary withAll: entries.
+]
+
 { #category : #'version dependent' }
 OSProcess class >> getSystemAttribute: attributeID [ 
 	"After Squeak version 3.6, #getSystemAttribute was moved to SmalltalkImage "
 
 	^ ((Smalltalk classNamed: 'SmalltalkImage')
 		ifNil: [^ Smalltalk getSystemAttribute: attributeID]) current getSystemAttribute: attributeID
+]
+
+{ #category : #'utility - sysconf' }
+OSProcess class >> gnuLinuxConf [
+	"Answer system configuration values for the current platform, assuming
+	a gnu-linux or similar platform.. For file parameters use the Squeak sources
+	file as a representative example."
+
+	"OSProcess gnuLinuxConf"
+
+	^ Dictionary withAll: {
+		#sysconf -> self sysconf .
+		#confstr -> self confstr .
+		#fpathconf -> (self fpathconf: SourceFiles first)
+	}.
 ]
 
 { #category : #examples }
@@ -292,7 +351,7 @@ OSProcess class >> isNonUnixMac [
 	"OSProcess isNonUnixMac"
 
 	| numericOsVersion |
-	numericOsVersion := self osVersion asInteger ifNil: [0].
+	numericOsVersion := [Integer readFrom: self osVersion readStream] on: Error do: [ 0 ].
 	^ (self platformName = 'Mac OS') and: [numericOsVersion < 1000]
 
 ]
@@ -362,7 +421,7 @@ OSProcess class >> isUnix [
 	| numericOsVersion |
 
 	^ (self platformName = 'unix') or:
-		[numericOsVersion := self osVersion asInteger ifNil: [0].
+		[numericOsVersion := [Integer readFrom: self osVersion readStream] on: Error do: [ 0 ].
 		(self platformName = 'Mac OS') and: [numericOsVersion >= 1000]]
 
 ]
@@ -376,7 +435,7 @@ OSProcess class >> isUnixMac [
 	| osVersion numericOsVersion |
 	osVersion := self osVersion.
 	^ ('darwin*' match: osVersion "Ian's VM")
-		or: [numericOsVersion := osVersion asInteger ifNil: [0].
+		or: [numericOsVersion := [Integer readFrom: osVersion readStream] on: Error do: [ 0 ].
 			(self platformName = 'Mac OS') and: [numericOsVersion >= 1000] "John's VM"]
 
 ]
@@ -496,6 +555,22 @@ OSProcess class >> pathSeparator [
 			ifTrue: [((Smalltalk at: #DiskStore) current perform: #delimiter) asString]
 			ifFalse: [(Smalltalk at: #FileDirectory) slash]]
 
+]
+
+{ #category : #'utility - sysconf' }
+OSProcess class >> pathconf: path [
+	"For a file at path, answer a dictionary of available pathconf(3) values for this platform.
+
+	Assumptions: Running on a gnu-linux platform with system configuration parameters
+	defined in /usr/include/bits/confname.h"
+
+	"OSProcess pathconf: '/bin/date' "
+
+	| aPath tokens entries |
+	aPath := '/bin/bash'.
+	tokens := self confnameTokens: '_PC_'.
+	entries := tokens withIndexCollect: [ :e :i | e asSymbol -> ( OSProcess accessor pathconf: aPath index: i - 1 ) ].
+	^Dictionary withAll: entries.
 ]
 
 { #category : #'version dependent' }
@@ -644,6 +719,21 @@ OSProcess class >> squeak [
 
 ]
 
+{ #category : #'utility - sysconf' }
+OSProcess class >> sysconf [
+	"Answer a dictionary of available sysconf(3) values for this platform.
+
+	Assumptions: Running on a gnu-linux platform with system configuration parameters
+	defined in /usr/include/bits/confname.h"
+
+	"OSProcess sysconf"
+
+	| tokens entries |
+	tokens := self confnameTokens: '_SC_'.
+	entries := tokens withIndexCollect: [ :e :i | e asSymbol -> ( OSProcess accessor sysconf: i - 1 ) ].
+	^Dictionary withAll: entries.
+]
+
 { #category : #utility }
 OSProcess class >> systemAttributes [
 	"Answer a Dictionary of all of the system attributes which can be obtained from
@@ -777,7 +867,7 @@ OSProcess class >> versionString [
 
 	"OSProcess versionString"
 
-	^ '4.6.21'
+	^ '4.6.27'
 ]
 
 { #category : #'version dependent' }
